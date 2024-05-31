@@ -505,7 +505,7 @@
 				);
 				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = gr.scytales.eudi.dev;
-				PRODUCT_NAME = "EUDI Wallet RI app";
+				PRODUCT_NAME = "Dev EUDI Wallet RI app";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -669,7 +669,7 @@
 				);
 				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.scytales.euidi.dev;
-				PRODUCT_NAME = "EUDI Wallet RI app";
+				PRODUCT_NAME = "Dev EUDI Wallet RI app";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -713,7 +713,7 @@
 				);
 				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = gr.scytales.eudi.dev;
-				PRODUCT_NAME = "EUDI Wallet RI app";
+				PRODUCT_NAME = "Dev EUDI Wallet RI app";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

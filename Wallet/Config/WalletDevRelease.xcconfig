@@ -5,4 +5,4 @@ VCI_ISSUER_URL = https:/$()/dev.issuer.eudiw.dev
 VCI_CLIENT_ID = wallet-dev
 VCI_REDIRECT_URI = eudi-openid4ci:/$()/authorize
 CORE_USER_AUTH = false
-PRODUCT_NAME = EUDI WALLET DEV
+PRODUCT_NAME = EUDI_Wallet_DEV
