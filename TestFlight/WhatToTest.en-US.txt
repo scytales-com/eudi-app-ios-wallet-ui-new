@@ -1,4 +1,5 @@
 - Support presentation of multiple PID, mDL
 - VCI offer Support
-- PreAuth functionality
+- PreAuth issuance
+- Deferred issuance
 - Age Verification POC
