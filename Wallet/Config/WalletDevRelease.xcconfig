@@ -4,6 +4,6 @@ VERIFIER_API_URI = https:/$()/dev.verifier.eudiw.dev
 VERIFIER_LEGAL_NAME = EUDI Verifier
 VCI_ISSUER_URL = https:/$()/dev.issuer.eudiw.dev
 VCI_CLIENT_ID = wallet-dev
-VCI_REDIRECT_URI = eudi-openid4ci:/$()/authorize
+VCI_REDIRECT_URI = eu.europa.ec.euidi:/$()/authorization
 CORE_USER_AUTH = false
 PRODUCT_NAME = EUDI_Wallet_DEV
