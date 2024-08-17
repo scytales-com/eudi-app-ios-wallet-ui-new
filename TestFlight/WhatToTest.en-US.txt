@@ -4,3 +4,4 @@
 - PreAuth issuance
 - Deferred issuance
 - Age Verification POC
+- PhotoID
