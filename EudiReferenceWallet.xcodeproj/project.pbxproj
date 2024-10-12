@@ -60,7 +60,7 @@
 		F0C6207D2B6A6246007F903F /* logic-analytics */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-analytics"; path = "Modules/logic-analytics"; sourceTree = "<group>"; };
 		F0DF43F42BA083DF003498ED /* logic-authentication */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-authentication"; path = "Modules/logic-authentication"; sourceTree = "<group>"; };
 		F12E940E2ABC6C000086EC93 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "EUDI Wallet RI app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dev EUDI Wallet RI app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F14907BB2ABAF54B00DDFE56 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		F14907BF2ABAF55000DDFE56 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F14907C22ABAF55000DDFE56 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -118,7 +118,7 @@
 		F14907B92ABAF54B00DDFE56 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */,
+				F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -198,7 +198,7 @@
 				F02AE3902BA6E59600C25C59 /* logic-assembly */,
 			);
 			productName = "EUDI Reference App";
-			productReference = F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */;
+			productReference = F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -486,7 +486,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
-				DEVELOPMENT_TEAM = 5T7UHW36CL;
+				DEVELOPMENT_TEAM = QS5HDV4ZS9;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -508,7 +508,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = gr.scytales.eudi.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scytales.euidi.dev;
 				PRODUCT_NAME = "Dev EUDI Wallet RI app";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -694,7 +694,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
-				DEVELOPMENT_TEAM = 5T7UHW36CL;
+				DEVELOPMENT_TEAM = QS5HDV4ZS9;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -716,7 +716,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = gr.scytales.eudi.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scytales.euidi.dev;
 				PRODUCT_NAME = "Dev EUDI Wallet RI app";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
