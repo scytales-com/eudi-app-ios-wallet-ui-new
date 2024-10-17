@@ -57,7 +57,7 @@
 		F0C6207D2B6A6246007F903F /* logic-analytics */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-analytics"; path = "Modules/logic-analytics"; sourceTree = "<group>"; };
 		F0DF43F42BA083DF003498ED /* logic-authentication */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-authentication"; path = "Modules/logic-authentication"; sourceTree = "<group>"; };
 		F12E940E2ABC6C000086EC93 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "EUDI Wallet RI app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dev EUDI Wallet RI app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F14907BB2ABAF54B00DDFE56 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		F14907BF2ABAF55000DDFE56 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F14907C22ABAF55000DDFE56 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -88,6 +88,14 @@
 			path = Sample;
 			sourceTree = "<group>";
 		};
+		B0AD6D692CC10793007C0793 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B070C01C2C0A27400061295A /* InfoPlist.strings */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		F09E1EA02AC33A6800779C25 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -107,13 +115,14 @@
 				F14908692ABC467600DDFE56 /* Packages */,
 				F14907B92ABAF54B00DDFE56 /* Products */,
 				F14908182ABC3D0400DDFE56 /* Frameworks */,
+				B0AD6D692CC10793007C0793 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
 		F14907B92ABAF54B00DDFE56 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */,
+				F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -181,7 +190,6 @@
 				F14907B42ABAF54B00DDFE56 /* Sources */,
 				F14907B52ABAF54B00DDFE56 /* Frameworks */,
 				F14907B62ABAF54B00DDFE56 /* Resources */,
-				F09E1EA52AC3468300779C25 /* Swift Lint */,
 			);
 			buildRules = (
 			);
@@ -192,7 +200,7 @@
 				F02AE3902BA6E59600C25C59 /* logic-assembly */,
 			);
 			productName = "EUDI Reference App";
-			productReference = F14907B82ABAF54B00DDFE56 /* EUDI Wallet RI app.app */;
+			productReference = F14907B82ABAF54B00DDFE56 /* Dev EUDI Wallet RI app.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -258,28 +266,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		F09E1EA52AC3468300779C25 /* Swift Lint */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nexport PATH=\"$PATH:/opt/homebrew/bin\"\nif which swiftlint > /dev/null; then\n  swiftlint --fix && swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F14907B42ABAF54B00DDFE56 /* Sources */ = {
