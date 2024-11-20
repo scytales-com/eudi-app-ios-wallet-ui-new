@@ -1,3 +1,4 @@
+- RQES functionality
 - Issuance preview
 
 - Support presentation of multiple PID, mDL
