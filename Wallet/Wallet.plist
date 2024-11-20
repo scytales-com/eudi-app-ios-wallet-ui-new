@@ -19,19 +19,16 @@
 				<string>mdoc-openid4vp</string>
 				<string>openid4vp</string>
 				<string>openid-credential-offer</string>
+				<string>rqes</string>
 			</array>
 		</dict>
 	</array>
 	<key>Core User Auth</key>
 	<string>$(CORE_USER_AUTH)</string>
+	<key>Build Variant</key>
+	<string>$(BUILD_VARIANT)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>Vci Client Id</key>
-	<string>$(VCI_CLIENT_ID)</string>
-	<key>Vci Issuer URL</key>
-	<string>$(VCI_ISSUER_URL)</string>
-	<key>Vci Redirect Uri</key>
-	<string>$(VCI_REDIRECT_URI)</string>
 	<key>Wallet Host Url</key>
 	<string>$(WALLET_HOST_URL)</string>
 </dict>
