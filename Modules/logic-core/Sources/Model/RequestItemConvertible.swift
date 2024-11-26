@@ -14,8 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 import Foundation
+import EudiWalletKit
 
-public typealias RequestConvertibleItems = [String: [String: [String]]]
+public typealias RequestConvertibleItems = [String: [String: [RequestItem]]]
 
 public protocol RequestItemConvertible: Sendable {
   func asRequestItems() -> RequestConvertibleItems
