@@ -6,6 +6,8 @@
 	<false/>
 	<key>Build Type</key>
 	<string>$(BUILD_TYPE)</string>
+	<key>Build Variant</key>
+	<string>$(BUILD_VARIANT)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -25,8 +27,6 @@
 	</array>
 	<key>Core User Auth</key>
 	<string>$(CORE_USER_AUTH)</string>
-	<key>Build Variant</key>
-	<string>$(BUILD_VARIANT)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>Wallet Host Url</key>
