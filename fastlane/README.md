@@ -39,6 +39,14 @@ Run tests
 
 Build EUDI Wallet Demo version and upload it to AppCenter
 
+### ios upload_tag
+
+```sh
+[bundle exec] fastlane ios upload_tag
+```
+
+Upload tag to remote repo
+
 ### ios upload_upstore
 
 ```sh
