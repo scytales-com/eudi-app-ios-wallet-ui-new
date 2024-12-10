@@ -1402,6 +1402,100 @@ public class DashboardInteractorStub:DashboardInteractor, @unchecked Sendable {
 
 
 
+// MARK: - Mocks generated from file: 'Modules/feature-dashboard/Sources/Interactor/DocumentSignInteractor.swift'
+
+import Cuckoo
+import Foundation
+import EudiRQESUi
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+public class MockDocumentSignInteractor: DocumentSignInteractor, Cuckoo.ProtocolMock, @unchecked Sendable {
+    public typealias MocksType = DocumentSignInteractor
+    public typealias Stubbing = __StubbingProxy_DocumentSignInteractor
+    public typealias Verification = __VerificationProxy_DocumentSignInteractor
+
+    // Original typealiases
+
+    public let cuckoo_manager = Cuckoo.MockManager.preconfiguredManager ?? Cuckoo.MockManager(hasParent: false)
+
+    private var __defaultImplStub: (any DocumentSignInteractor)?
+
+    public func enableDefaultImplementation(_ stub: any DocumentSignInteractor) {
+        __defaultImplStub = stub
+        cuckoo_manager.enableDefaultStubImplementation()
+    }
+
+    
+    public func initiateSigning(url p0: URL) async {
+        return await cuckoo_manager.call(
+            "initiateSigning(url p0: URL) async",
+            parameters: (p0),
+            escapingParameters: (p0),
+            superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+            defaultCall: await __defaultImplStub!.initiateSigning(url: p0)
+        )
+    }
+
+    public struct __StubbingProxy_DocumentSignInteractor: Cuckoo.StubbingProxy {
+        private let cuckoo_manager: Cuckoo.MockManager
+    
+        public init(manager: Cuckoo.MockManager) {
+            self.cuckoo_manager = manager
+        }
+        
+        func initiateSigning<M1: Cuckoo.Matchable>(url p0: M1) -> Cuckoo.ProtocolStubNoReturnFunction<(URL)> where M1.MatchedType == URL {
+            let matchers: [Cuckoo.ParameterMatcher<(URL)>] = [wrap(matchable: p0) { $0 }]
+            return .init(stub: cuckoo_manager.createStub(for: MockDocumentSignInteractor.self,
+                method: "initiateSigning(url p0: URL) async",
+                parameterMatchers: matchers
+            ))
+        }
+    }
+
+    public struct __VerificationProxy_DocumentSignInteractor: Cuckoo.VerificationProxy {
+        private let cuckoo_manager: Cuckoo.MockManager
+        private let callMatcher: Cuckoo.CallMatcher
+        private let sourceLocation: Cuckoo.SourceLocation
+    
+        public init(manager: Cuckoo.MockManager, callMatcher: Cuckoo.CallMatcher, sourceLocation: Cuckoo.SourceLocation) {
+            self.cuckoo_manager = manager
+            self.callMatcher = callMatcher
+            self.sourceLocation = sourceLocation
+        }
+        
+        
+        @discardableResult
+        func initiateSigning<M1: Cuckoo.Matchable>(url p0: M1) -> Cuckoo.__DoNotUse<(URL), Void> where M1.MatchedType == URL {
+            let matchers: [Cuckoo.ParameterMatcher<(URL)>] = [wrap(matchable: p0) { $0 }]
+            return cuckoo_manager.verify(
+                "initiateSigning(url p0: URL) async",
+                callMatcher: callMatcher,
+                parameterMatchers: matchers,
+                sourceLocation: sourceLocation
+            )
+        }
+    }
+}
+
+public class DocumentSignInteractorStub:DocumentSignInteractor, @unchecked Sendable {
+
+
+    
+    public func initiateSigning(url p0: URL) async {
+        return DefaultValueRegistry.defaultValue(for: (Void).self)
+    }
+}
+
+
+
+
 // MARK: - Mocks generated from file: 'Modules/feature-dashboard/Sources/UI/Dashboard/Cell/BearerCellView.swift'
 
 import Cuckoo
@@ -1519,6 +1613,36 @@ import UIKit
 import Cuckoo
 import Foundation
 import logic_resources
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+
+
+// MARK: - Mocks generated from file: 'Modules/feature-dashboard/Sources/UI/SignDocument/SignDocumentView.swift'
+
+import Cuckoo
+import SwiftUI
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+
+
+// MARK: - Mocks generated from file: 'Modules/feature-dashboard/Sources/UI/SignDocument/SignDocumentViewModel.swift'
+
+import Cuckoo
+import Foundation
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -3015,6 +3139,7 @@ import Cuckoo
 
 import Cuckoo
 import Foundation
+import EudiRQESUi
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -3060,12 +3185,32 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
         }
     }
     
+    public var appBuildVariant: AppBuildVariant {
+        get {
+            return cuckoo_manager.getter(
+                "appBuildVariant",
+                superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+                defaultCall: __defaultImplStub!.appBuildVariant
+            )
+        }
+    }
+    
     public var appVersion: String {
         get {
             return cuckoo_manager.getter(
                 "appVersion",
                 superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
                 defaultCall: __defaultImplStub!.appVersion
+            )
+        }
+    }
+    
+    public var rqesConfig: EudiRQESUiConfig {
+        get {
+            return cuckoo_manager.getter(
+                "rqesConfig",
+                superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+                defaultCall: __defaultImplStub!.rqesConfig
             )
         }
     }
@@ -3086,8 +3231,16 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
             return .init(manager: cuckoo_manager, name: "appBuildType")
         }
         
+        var appBuildVariant: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,AppBuildVariant> {
+            return .init(manager: cuckoo_manager, name: "appBuildVariant")
+        }
+        
         var appVersion: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,String> {
             return .init(manager: cuckoo_manager, name: "appVersion")
+        }
+        
+        var rqesConfig: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,EudiRQESUiConfig> {
+            return .init(manager: cuckoo_manager, name: "rqesConfig")
         }
     }
 
@@ -3110,8 +3263,16 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
             return .init(manager: cuckoo_manager, name: "appBuildType", callMatcher: callMatcher, sourceLocation: sourceLocation)
         }
         
+        var appBuildVariant: Cuckoo.VerifyReadOnlyProperty<AppBuildVariant> {
+            return .init(manager: cuckoo_manager, name: "appBuildVariant", callMatcher: callMatcher, sourceLocation: sourceLocation)
+        }
+        
         var appVersion: Cuckoo.VerifyReadOnlyProperty<String> {
             return .init(manager: cuckoo_manager, name: "appVersion", callMatcher: callMatcher, sourceLocation: sourceLocation)
+        }
+        
+        var rqesConfig: Cuckoo.VerifyReadOnlyProperty<EudiRQESUiConfig> {
+            return .init(manager: cuckoo_manager, name: "rqesConfig", callMatcher: callMatcher, sourceLocation: sourceLocation)
         }
     }
 }
@@ -3130,9 +3291,21 @@ public class ConfigLogicStub:ConfigLogic, @unchecked Sendable {
         }
     }
     
+    public var appBuildVariant: AppBuildVariant {
+        get {
+            return DefaultValueRegistry.defaultValue(for: (AppBuildVariant).self)
+        }
+    }
+    
     public var appVersion: String {
         get {
             return DefaultValueRegistry.defaultValue(for: (String).self)
+        }
+    }
+    
+    public var rqesConfig: EudiRQESUiConfig {
+        get {
+            return DefaultValueRegistry.defaultValue(for: (EudiRQESUiConfig).self)
         }
     }
 
@@ -6749,6 +6922,21 @@ import logic_resources
 
 
 
+// MARK: - Mocks generated from file: 'Modules/logic-core/Sources/Extension/RequestItem+Extensions.swift'
+
+import Cuckoo
+import EudiWalletKit
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+
+
 // MARK: - Mocks generated from file: 'Modules/logic-core/Sources/Extension/String+Extensions.swift'
 
 import Cuckoo
@@ -6874,6 +7062,7 @@ import Foundation
 
 import Cuckoo
 import Foundation
+import EudiWalletKit
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -7247,6 +7436,7 @@ public class UIConfigTypeStub:UIConfigType, @unchecked Sendable {
 
 import Cuckoo
 import Foundation
+import EudiRQESUi
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics

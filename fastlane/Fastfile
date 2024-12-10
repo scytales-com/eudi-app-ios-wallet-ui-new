@@ -33,7 +33,10 @@ platform :ios do
 
   desc "Run tests"
   lane :tests do
-    scan(scheme: ENV["APP_SCHEME"])
+    scan(
+      scheme: ENV["APP_SCHEME"],
+      xcargs: "-skipPackagePluginValidation -skipMacroValidation"
+    )
   end
 
   desc "Build EUDI Wallet Demo version and upload it to AppCenter"
@@ -109,7 +112,27 @@ platform :ios do
       tag: tagVersion,
     )
 
-    push_git_tags
+    if ENV['PROD_REMOTE_REPO']
+      upload_tag(
+        remoteUrl: ENV['PROD_REMOTE_REPO'],
+        tag: tagVersion,
+      )
+    end
+  
+    if ENV['DEV_REMOTE_REPO']
+      upload_tag(
+        remoteUrl: ENV['DEV_REMOTE_REPO'],
+        tag: tagVersion,
+      )
+    end
+  end
+
+  desc "Upload tag to remote repo"
+  lane :upload_tag do |values|
+    remoteUrl = values[:remoteUrl]
+    tag = values[:tag]
+    sh("git remote set-url origin #{remoteUrl}")
+    push_git_tags(tag: tag)
   end
 
   desc "Reset version and build number to default"

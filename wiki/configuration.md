@@ -14,23 +14,53 @@
 
 The application allows the configuration of:
 
-1. Verifier API
-2. Issuing API
-
-Via the *WalletDemo* and *WalletDemoRelease* xcconfigs inside the Wallet/Config folder.
-
-```
-VCI_ISSUER_URL = https:/$()/issuer.eudiw.dev/oidc
-VCI_CLIENT_ID = wallet-demo
-VCI_REDIRECT_URI = eudi-openid4ci:/$()/authorize/
-CORE_USER_AUTH = false
-```
-
-3. Trusted certificates
+1. Issuing API
 
 Via the *WalletKitConfig* protocol inside the logic-core module.
 
+```swift
+public protocol WalletKitConfig {
+  /**
+   * VCI Configuration
+   */
+  var vciConfig: VciConfig { get }
+}
 ```
+Based on the Build Variant of the Wallet (e.g. Dev)
+
+```swift
+struct WalletKitConfigImpl: WalletKitConfig {
+
+  let configLogic: ConfigLogic
+
+  init(configLogic: ConfigLogic) {
+    self.configLogic = configLogic
+  }
+
+  var vciConfig: VciConfig {
+    return switch configLogic.appBuildVariant {
+    case .DEMO:
+        .init(
+          issuerUrl: "your_demo_url",
+          clientId: "your_demo_clientid",
+          redirectUri: URL(string: "your_demo_redirect")!
+        )
+    case .DEV:
+        .init(
+          issuerUrl: "your_dev_url",
+          clientId: "your_dev_clientid",
+          redirectUri: URL(string: "your_dev_redirect")!
+        )
+    }
+  }
+}
+```
+
+2. Trusted certificates
+
+Via the *WalletKitConfig* protocol inside the logic-core module.
+
+```swift
 public protocol WalletKitConfig {
   /**
    * Reader Configuration
@@ -39,7 +69,7 @@ public protocol WalletKitConfig {
 }
 ```
 
-```
+```swift
 public struct ReaderConfig {
   public let trustedCerts: [Data]
 }
@@ -47,9 +77,9 @@ public struct ReaderConfig {
 
 The *WalletKitConfigImpl* implementation of the *WalletKitConfig* protocol can be located inside the logic-core module.
 
-The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/tree/main/Wallet/Sample):
+The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/tree/main/Wallet/Sample)
 
-```
+```swift
   var readerConfigConfig: ReaderConfig {
     guard let cert = Data(name: "eudi_pid_issuer_ut", ext: "der") else {
       return .init(trustedCerts: [])
@@ -58,13 +88,102 @@ The application's IACA certificates are located [here](https://github.com/eu-dig
   }
 ```
 
-4. Preregistered Client Scheme
+3. Preregistered Client Scheme
 
 If you plan to use the Preregistered for OpenId4VP configuration, please add the following to the *WalletKitConfigImpl* initializer.
 
-```
+```swift
 wallet.verifierApiUri = "your_verifier_url"
 wallet.verifierLegalName = "your_verifier_legal_name"
+```
+
+4. RQES
+
+Via the *RQESConfig* struct, which implements the *EudiRQESUiConfig* protocol from the RQESUi SDK, inside the logic-business module.
+
+```swift
+final class RQESConfig: EudiRQESUiConfig {
+
+  let buildVariant: AppBuildVariant
+  let buildType: AppBuildType
+
+  init(buildVariant: AppBuildVariant, buildType: AppBuildType) {
+    self.buildVariant = buildVariant
+    self.buildType = buildType
+  }
+
+  var rssps: [QTSPData]
+
+  // Optional. Default is false.
+  var printLogs: Bool
+
+  var rQESConfig: RqesServiceConfig
+
+  // Optional. Default English translations will be used if not set.
+  var translations: [String : [LocalizableKey : String]]
+
+  // Optional. Default theme will be used if not set.
+  var theme: ThemeProtocol
+}
+```
+
+Based on the Build Variant and Type of the Wallet (e.g. Dev Debug)
+
+```swift
+final class RQESConfig: EudiRQESUiConfig {
+
+  let buildVariant: AppBuildVariant
+  let buildType: AppBuildType
+
+  init(buildVariant: AppBuildVariant, buildType: AppBuildType) {
+    self.buildVariant = buildVariant
+    self.buildType = buildType
+  }
+
+  var rssps: [QTSPData] {
+    return switch buildVariant {
+    case .DEV:
+      [
+        .init(
+          name: "your_dev_name",
+          uri: URL(string: "your_dev_uri")!,
+          scaURL: "your_dev_sca"
+        )
+      ]
+    case .DEMO:
+      [
+        .init(
+          name: "your_demo_name",
+          uri: URL(string: "your_demo_uri")!,
+          scaURL: "your_demo_sca"
+        )
+      ]
+    }
+  }
+
+  var printLogs: Bool {
+    buildType == .DEBUG
+  }
+
+  var rQESConfig: RqesServiceConfig {
+    return switch buildVariant {
+    case .DEV:
+        .init(
+          clientId: "your_dev_clientid",
+          clientSecret: "your_dev_secret",
+          authFlowRedirectionURI: "your_dev_redirect",
+          hashAlgorithm: .SHA256
+        )
+    case .DEMO:
+        .init(
+          clientId: "your_demo_clientid",
+          clientSecret: "your_demo_secret",
+          authFlowRedirectionURI: "your_demo_redirect",
+          hashAlgorithm: .SHA256
+        )
+    }
+  }
+}
 ```
 
 ## DeepLink Schemas configuration
@@ -73,7 +192,7 @@ According to the specifications issuance and presentation require deep-linking f
 
 If you want to change or add your own you can do it by adjusting the *Wallet.plist* file.
 
-```
+```xml
 <array>
 	<dict>
 		<key>CFBundleTypeRole</key>
@@ -93,7 +212,7 @@ If you want to change or add your own you can do it by adjusting the *Wallet.pli
 
 Let's assume you want to add a new one for the credential offer (e.g. custom-my-offer://) the *Wallet.plist* should look like this:
 
-```
+```xml
 <array>
 	<dict>
 		<key>CFBundleTypeRole</key>
@@ -116,7 +235,7 @@ After the *Wallet.plist* adjustment, you must also adjust the *DeepLinkControlle
 
 Current Implementation:
 
-```
+```swift
 public extension DeepLink {
   enum Action: String, Equatable {
 
@@ -143,7 +262,7 @@ public extension DeepLink {
 
 Adjusted with the new schema:
 
-```
+```swift
 public extension DeepLink {
   enum Action: String, Equatable {
 
@@ -183,7 +302,7 @@ In *LocalizableString.swift* and *Localizable.xcstrings*, inside logic-resources
 
 *Localizable.xcstrings* Example:
 
-```
+```json
 "age_verification" : {
    "extractionState" : "manual",
    "localizations" : {
@@ -210,7 +329,7 @@ In *LocalizableString.swift* and *Localizable.xcstrings*, inside logic-resources
 
 *LocalizableString.swift* Example:
 
-```
+```swift
 public extension LocalizableString {
   enum Key: Equatable {
    case yourOwn
@@ -229,7 +348,7 @@ In *DocumentIdentifier*, inside the logic-core module, you must add a new case t
 
 Example:
 
-```
+```swift
 public enum DocumentTypeIdentifier: RawRepresentable, Equatable {
 
   case PID
@@ -303,7 +422,7 @@ In *RequestDataUIModel*, inside feature-common module, add a new *RequestDataSec
 
 Example:
 
-```
+```swift
 public extension RequestDataSection {
   enum `Type`: Equatable {
     case id
@@ -332,7 +451,7 @@ public extension RequestDataSection {
 
 In *AddDocumentUIModel*, inside feature-issuance module, please adjust the *AddDocumentUIModel.items* extension variable to add your new document.
 
-```
+```swift
 public extension AddDocumentUIModel {
 
   static var items: [AddDocumentUIModel] {
@@ -373,7 +492,7 @@ In *AddDocumentInteractor*, inside feature-issuance module, please adjust the *f
 
 Example:
 
-```
+```swift
 let types = AddDocumentUIModel.items.map({
   var item = $0
   switch item.type {
@@ -398,7 +517,7 @@ This section describes configuring the application to interact with services uti
 
 Add these lines of code to the top of the file *WalletKitController*, inside the logic-core module, just below the import statements. 
 
-```
+```swift
 class SelfSignedDelegate: NSObject, URLSessionDelegate {
   func urlSession(
     _ session: URLSession,
@@ -432,7 +551,7 @@ let walletSession: URLSession = {
 
 Once the above is in place add the following:
 
-```
+```swift
 wallet.urlSession = walletSession
 ```
 
@@ -460,7 +579,7 @@ The application allows the configuration of the PIN storage. You can configure t
 
 Via the *LogicAuthAssembly* inside the logic-authentication module.
 
-```
+```swift
 public final class LogicAuthAssembly: Assembly {
 
   public init() {}
@@ -473,7 +592,8 @@ public final class LogicAuthAssembly: Assembly {
 You can provide your storage implementation by implementing the *PinStorageProvider* protocol and then providing the implementation inside the Assembly DI Graph *LogicAuthAssembly*
 
 Implementation Example:
-```
+
+```swift
 final class KeychainPinStorageProvider: PinStorageProvider {
 
   private let keyChainController: KeyChainController
@@ -497,7 +617,8 @@ final class KeychainPinStorageProvider: PinStorageProvider {
 ```
 
 Config Example:
-```
+
+```swift
 container.register(PinStorageProvider.self) { r in
   KeychainPinStorageProvider(keyChainController: r.force(KeyChainController.self))
 }
@@ -514,7 +635,7 @@ The application allows the configuration of multiple analytics providers. You ca
 
 Via the *AnalyticsConfig* and *LogicAnalyticsAssembly* inside the logic-analytics module.
 
-```
+```swift
 protocol AnalyticsConfig {
   /**
    * Supported Analytics Provider, e.g. Firebase
@@ -528,7 +649,8 @@ You will also need the provider's token/key, thus requiring a [String: Analytics
 The project utilizes Dependency Injection (DI), thus requiring adjustment of the *LogicAnalyticsAssembly* graph to provide the configuration.
 
 Implementation Example:
-```
+
+```swift
 struct AppCenterProvider: AnalyticsProvider {
  
   func initialize(key: String) {
@@ -553,7 +675,8 @@ struct AppCenterProvider: AnalyticsProvider {
 ```
 
 Config Example:
-```
+
+```swift
 struct AnalyticsConfigImpl: AnalyticsConfig {
   var analyticsProviders: [String: AnalyticsProvider] {
     return ["YOUR_OWN_KEY": AppCenterProvider()]
@@ -562,7 +685,8 @@ struct AnalyticsConfigImpl: AnalyticsConfig {
 ```
 
 Config Construction via DI Graph Example:
-```
+
+```swift
 container.register(AnalyticsConfig.self) { _ in
  AnalyticsConfigImpl()
 }

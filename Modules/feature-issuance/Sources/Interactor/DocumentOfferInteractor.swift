@@ -56,7 +56,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
 
       if let spec = offer.txCodeSpec,
          let codeLength = spec.length,
-         (!(codeMinLength...codeMaxLength).contains(codeLength) || spec.inputMode == .text) {
+         !(codeMinLength...codeMaxLength).contains(codeLength) || spec.inputMode == .text {
         return .failure(WalletCoreError.transactionCodeFormat(["\(codeMinLength)", "\(codeMaxLength)"]))
       }
 
@@ -173,7 +173,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
         webUrl: pendingData.url
       )
 
-      if doc.status != .pending {
+      if doc.status == .issued {
         return .success(
           retrieveSuccessRoute(
             caption: .credentialOfferSuccessCaption([issuerName]),
@@ -181,6 +181,16 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
             title: .init(value: .success),
             buttonTitle: .credentialOfferSuccessButton,
             visualKind: .defaultIcon
+          )
+        )
+      } else if doc.status == .deferred {
+        return .success(
+          retrieveSuccessRoute(
+            caption: .issuanceSuccessDeferredCaption([issuerName]),
+            successNavigation: successNavigation,
+            title: .init(value: .inProgress, color: Theme.shared.color.warning),
+            buttonTitle: .okButton,
+            visualKind: .customIcon(Theme.shared.image.clock, Theme.shared.color.warning)
           )
         )
       } else {

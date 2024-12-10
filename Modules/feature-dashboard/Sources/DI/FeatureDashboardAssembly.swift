@@ -30,5 +30,9 @@ public final class FeatureDashboardAssembly: Assembly {
       )
     }
     .inObjectScope(ObjectScope.transient)
+
+    container.register(DocumentSignInteractor.self) { r in
+      DocumentSignInteractorImpl(configLogic: r.force(ConfigLogic.self))
+    }
   }
 }

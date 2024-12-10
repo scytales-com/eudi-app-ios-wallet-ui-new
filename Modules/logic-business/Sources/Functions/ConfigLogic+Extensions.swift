@@ -27,6 +27,16 @@ extension ConfigLogic {
     return buildType
   }
 
+  func getBuildVariant() -> AppBuildVariant {
+    guard
+      let name = getBundleNullableValue(key: "Build Variant"),
+      let variant = AppBuildVariant(rawValue: name)
+    else {
+      return AppBuildVariant.DEV
+    }
+    return variant
+  }
+
   func getBundleValue(key: String) -> String {
     return key.valueFromBundle
   }

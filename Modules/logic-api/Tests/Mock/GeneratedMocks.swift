@@ -897,6 +897,7 @@ import Cuckoo
 
 import Cuckoo
 import Foundation
+import EudiRQESUi
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -938,12 +939,32 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
         }
     }
     
+    public var appBuildVariant: AppBuildVariant {
+        get {
+            return cuckoo_manager.getter(
+                "appBuildVariant",
+                superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+                defaultCall: __defaultImplStub!.appBuildVariant
+            )
+        }
+    }
+    
     public var appVersion: String {
         get {
             return cuckoo_manager.getter(
                 "appVersion",
                 superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
                 defaultCall: __defaultImplStub!.appVersion
+            )
+        }
+    }
+    
+    public var rqesConfig: EudiRQESUiConfig {
+        get {
+            return cuckoo_manager.getter(
+                "rqesConfig",
+                superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+                defaultCall: __defaultImplStub!.rqesConfig
             )
         }
     }
@@ -964,8 +985,16 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
             return .init(manager: cuckoo_manager, name: "appBuildType")
         }
         
+        var appBuildVariant: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,AppBuildVariant> {
+            return .init(manager: cuckoo_manager, name: "appBuildVariant")
+        }
+        
         var appVersion: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,String> {
             return .init(manager: cuckoo_manager, name: "appVersion")
+        }
+        
+        var rqesConfig: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockConfigLogic,EudiRQESUiConfig> {
+            return .init(manager: cuckoo_manager, name: "rqesConfig")
         }
     }
 
@@ -988,8 +1017,16 @@ public class MockConfigLogic: ConfigLogic, Cuckoo.ProtocolMock, @unchecked Senda
             return .init(manager: cuckoo_manager, name: "appBuildType", callMatcher: callMatcher, sourceLocation: sourceLocation)
         }
         
+        var appBuildVariant: Cuckoo.VerifyReadOnlyProperty<AppBuildVariant> {
+            return .init(manager: cuckoo_manager, name: "appBuildVariant", callMatcher: callMatcher, sourceLocation: sourceLocation)
+        }
+        
         var appVersion: Cuckoo.VerifyReadOnlyProperty<String> {
             return .init(manager: cuckoo_manager, name: "appVersion", callMatcher: callMatcher, sourceLocation: sourceLocation)
+        }
+        
+        var rqesConfig: Cuckoo.VerifyReadOnlyProperty<EudiRQESUiConfig> {
+            return .init(manager: cuckoo_manager, name: "rqesConfig", callMatcher: callMatcher, sourceLocation: sourceLocation)
         }
     }
 }
@@ -1008,9 +1045,21 @@ public class ConfigLogicStub:ConfigLogic, @unchecked Sendable {
         }
     }
     
+    public var appBuildVariant: AppBuildVariant {
+        get {
+            return DefaultValueRegistry.defaultValue(for: (AppBuildVariant).self)
+        }
+    }
+    
     public var appVersion: String {
         get {
             return DefaultValueRegistry.defaultValue(for: (String).self)
+        }
+    }
+    
+    public var rqesConfig: EudiRQESUiConfig {
+        get {
+            return DefaultValueRegistry.defaultValue(for: (EudiRQESUiConfig).self)
         }
     }
 
@@ -4503,6 +4552,17 @@ import logic_resources
 
 
 
+// MARK: - Mocks generated from file: 'Modules/logic-core/Sources/Extension/RequestItem+Extensions.swift'
+
+import Cuckoo
+import EudiWalletKit
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_api
+
+
+
 // MARK: - Mocks generated from file: 'Modules/logic-core/Sources/Extension/String+Extensions.swift'
 
 import Cuckoo
@@ -4596,6 +4656,7 @@ import Foundation
 
 import Cuckoo
 import Foundation
+import EudiWalletKit
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
