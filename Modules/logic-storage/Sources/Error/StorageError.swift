@@ -13,8 +13,20 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import logic_business
+import Foundation
+import logic_resources
 
-public protocol WelcomeInteractor: Sendable {}
+public enum StorageError: LocalizedError {
 
-final class WelcomeInteractorImpl: WelcomeInteractor {}
+  case itemNotFound
+  case itemsNotFound
+
+  public var errorDescription: String? {
+    return switch self {
+    case .itemNotFound:
+      LocalizableString.shared.get(with: .itemNotFoundInStorage)
+    case .itemsNotFound:
+      LocalizableString.shared.get(with: .itemsNotFoundInStorage)
+    }
+  }
+}

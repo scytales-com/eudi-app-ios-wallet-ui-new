@@ -13,23 +13,31 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Swinject
-import logic_core
-import feature_common
+import Foundation
+import SwiftUI
 
-public final class FeatureLoginAssembly: Assembly {
+public enum DocValue {
+  case string(String)
+  case unavailable(String)
+  case image(Image)
 
-  public init() {}
-
-  public func assemble(container: Container) {
-    container.register(FAQsInteractor.self) { _ in
-      FAQsInteractorImpl()
+  public var string: String? {
+    switch self {
+    case .string(let string):
+      string
+    case .unavailable(let string):
+      string
+    default:
+      nil
     }
-    .inObjectScope(ObjectScope.transient)
+  }
 
-    container.register(WelcomeInteractor.self) { _ in
-      WelcomeInteractorImpl()
+  public var image: Image? {
+    switch self {
+    case .image(let image):
+      image
+    default:
+      nil
     }
-    .inObjectScope(ObjectScope.transient)
   }
 }

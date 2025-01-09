@@ -13,35 +13,22 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import XCTest
-import logic_business
-@testable import feature_login
-@testable import logic_test
-@testable import feature_test
+import RealmSwift
 
-final class TestFAQsInteractor: EudiTest {
-  
-  var interactor: FAQsInteractor!
-  
-  override func setUp() {
-    self.interactor = FAQsInteractorImpl()
+protocol RealmService: Sendable {
+  func get() throws -> Realm
+}
+
+final class RealmServiceImpl: RealmService {
+
+  private let storageConfig: StorageConfig
+
+  init(storageConfig: StorageConfig) {
+    self.storageConfig = storageConfig
   }
-  
-  override func tearDown() {
-    self.interactor = nil
+
+  func get() throws -> Realm {
+    return try Realm(configuration: storageConfig.realmConfiguration)
   }
-  
-  func testFetchFAQs_WhenRetrievalIsSuccessful_ThenReturnSuccessPartialState() async {
-    // Given
-    let expectedList = FAQUIModel.mocks()
-    // When
-    let state = await interactor.fetchFAQs()
-    // Then
-    switch state {
-    case .success(let faqs):
-      XCTAssertEqual(faqs, expectedList)
-    default:
-      XCTFail("Wrong state \(state)")
-    }
-  }
+
 }
