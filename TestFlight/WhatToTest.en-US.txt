@@ -1,3 +1,5 @@
+- SD-JWT support
+- Localisation metadata support
 - RQES functionality
 - Issuance preview
 
