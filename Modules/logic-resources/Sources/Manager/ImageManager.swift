@@ -38,9 +38,6 @@ public protocol ImageManagerProtocol: Sendable {
   var plus: Image { get }
   var share: Image { get }
   var checkMarkSealFill: Image { get }
-  var more: Image { get }
-  var pencil: Image { get }
-  var qrScan: Image { get }
   var photo: Image { get }
   var trash: Image { get }
   var viewFinder: Image { get }
@@ -66,11 +63,9 @@ public protocol ImageManagerProtocol: Sendable {
   var logoEuDigitalIndentityWallet: Image { get }
   var homeContract: Image { get }
   var homeIdentity: Image { get }
-  var issuerCardImagePlaceholder: Image { get }
   var successSecuredWallet: Image { get }
   var digitalIdIssuance: Image { get }
   var documentSuccessPending: Image { get }
-  var nfcImage: Image { get }
 }
 
 final class ImageManager: ImageManagerProtocol {
@@ -97,9 +92,6 @@ final class ImageManager: ImageManagerProtocol {
     case plus = "plus"
     case share = "square.and.arrow.up"
     case checkMarkSealFill = "checkmark.seal.fill"
-    case more = "ic-more"
-    case pencil = "ic-edit"
-    case qrScan = "ic-qr-scanner"
     case photo = "photo.fill"
     case trash = "trash"
     case viewFinder = "viewfinder"
@@ -110,7 +102,7 @@ final class ImageManager: ImageManagerProtocol {
     case euditext = "EUDI-text"
     case walletVerified = "wallet-verified"
     case bell
-    case menuIcon = "menu-icon"
+    case menuIcon = "line.3.horizontal"
     case filterMenuIcon = "filter-menu-icon"
     case bookmarkIcon = "bookmark"
     case bookmarkIconFill = "bookmark.fill"
@@ -125,11 +117,9 @@ final class ImageManager: ImageManagerProtocol {
     case logoEuDigitalIndentityWallet = "logo-eu-digital-indentity-wallet"
     case homeContract = "home-contract"
     case homeIdentity = "home-identity"
-    case issuerCardImagePlaceholder = "issuer-card-image-placeholder"
     case successSecuredWallet = "success-secured-wallet"
     case digitalIdIssuance = "digital-id-issuance"
     case documentSuccessPending = "document-success-pending"
-    case nfcImage = "nfc-image"
   }
 
   // MARK: - Properties
@@ -204,15 +194,6 @@ final class ImageManager: ImageManagerProtocol {
   var checkMarkSealFill: Image {
     Image(systemName: ImageEnum.checkMarkSealFill.rawValue)
   }
-  var more: Image {
-    Image(ImageEnum.more.rawValue, bundle: bundle)
-  }
-  var pencil: Image {
-    Image(ImageEnum.pencil.rawValue, bundle: bundle)
-  }
-  var qrScan: Image {
-    Image(ImageEnum.qrScan.rawValue, bundle: bundle)
-  }
   var photo: Image {
     Image(systemName: ImageEnum.photo.rawValue)
   }
@@ -244,7 +225,7 @@ final class ImageManager: ImageManagerProtocol {
     Image(systemName: ImageEnum.bell.rawValue)
   }
   var menuIcon: Image {
-    Image(ImageEnum.menuIcon.rawValue, bundle: bundle)
+    Image(systemName: ImageEnum.menuIcon.rawValue)
   }
   var filterMenuIcon: Image {
     Image(ImageEnum.filterMenuIcon.rawValue, bundle: bundle)
@@ -288,9 +269,6 @@ final class ImageManager: ImageManagerProtocol {
   var homeIdentity: Image {
     Image(ImageEnum.homeIdentity.rawValue, bundle: bundle)
   }
-  var issuerCardImagePlaceholder: Image {
-    Image(ImageEnum.issuerCardImagePlaceholder.rawValue, bundle: bundle)
-  }
   var successSecuredWallet: Image {
     Image(ImageEnum.successSecuredWallet.rawValue, bundle: bundle)
   }
@@ -299,8 +277,5 @@ final class ImageManager: ImageManagerProtocol {
   }
   var documentSuccessPending: Image {
     Image(ImageEnum.documentSuccessPending.rawValue, bundle: bundle)
-  }
-  var nfcImage: Image {
-    Image(ImageEnum.nfcImage.rawValue, bundle: bundle)
   }
 }
