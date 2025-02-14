@@ -70,6 +70,7 @@ public protocol WalletKitController: Sendable {
   func storeDynamicIssuancePendingUrl(with url: URL)
   func getDynamicIssuancePendingData() async -> DynamicIssuancePendingData?
   func getScopedDocuments() async throws -> [ScopedDocument]
+  func getDocumentCategories() -> DocumentCategories
 }
 
 final class WalletKitControllerImpl: WalletKitController {
@@ -165,7 +166,7 @@ final class WalletKitControllerImpl: WalletKitController {
   }
 
   func fetchAllDocuments() -> [DocClaimsDecodable] {
-    return fetchIssuedDocuments() + fetchDeferredDocuments().transformToDocsDecodable()
+    return fetchIssuedDocuments() + fetchDeferredDocuments().transformToDeferredDecodables()
   }
 
   func fetchDeferredDocuments() -> [WalletStorage.Document] {
@@ -206,7 +207,7 @@ final class WalletKitControllerImpl: WalletKitController {
   func requestDeferredIssuance(with doc: WalletStorage.Document) async throws -> DocClaimsDecodable {
     let result = try await wallet.requestDeferredIssuance(deferredDoc: doc)
     if result.isDeferred {
-      return result.transformToDocDecodable()
+      return result.transformToDeferredDecodable()
     } else if let doc = fetchDocument(with: result.id) {
       return doc
     } else {
@@ -281,6 +282,11 @@ final class WalletKitControllerImpl: WalletKitController {
       }
     }
   }
+
+  func getDocumentCategories() -> DocumentCategories {
+    let sorted = configLogic.documentsCategories.sorted { $0.key.order < $1.key.order }
+    return DocumentCategories(uniqueKeysWithValues: sorted)
+  }
 }
 
 private extension WalletKitControllerImpl {
@@ -317,6 +323,7 @@ extension WalletKitController {
       return [
         "issuance_date",
         DocumentJsonKeys.EXPIRY_DATE,
+        "exp",
         "issuing_authority",
         "document_number",
         "administrative_number",

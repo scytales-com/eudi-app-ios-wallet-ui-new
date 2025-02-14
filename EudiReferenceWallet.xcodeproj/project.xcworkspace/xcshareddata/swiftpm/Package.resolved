@@ -1,5 +1,5 @@
 {
-  "originHash" : "2e71d0bc83f426c51576681a7d756243e4c75ee3579eac130a948b812915f293",
+  "originHash" : "3ab912d21a7dd53f85eabe5f8259ce342b25d43932a91b167c05c66a9fcffe0e",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -35,15 +35,6 @@
       "state" : {
         "revision" : "b39252eacd159904afd7d718bba0afabb87f2f2f",
         "version" : "1.3.9"
-      }
-    },
-    {
-      "identity" : "appcenter-sdk-apple",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/appcenter-sdk-apple.git",
-      "state" : {
-        "revision" : "ab54f758243f282d290b33027e8aac910d3d859a",
-        "version" : "5.0.5"
       }
     },
     {
@@ -105,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Brightify/Cuckoo.git",
       "state" : {
-        "revision" : "305e7a1f55816f5b6410a69c9b031ee7bf602486",
-        "version" : "2.0.10"
+        "revision" : "4379da27d87754aca5121ac906ecb4c640ba82d0",
+        "version" : "2.0.14"
       }
     },
     {
@@ -114,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-model.git",
       "state" : {
-        "revision" : "885c4decfc8bdfc5525c993d08a854c2c760058e",
-        "version" : "0.5.3"
+        "revision" : "510218117d7f3b4ea00ea1914db01cc851d35602",
+        "version" : "0.5.4"
       }
     },
     {
@@ -123,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-transfer.git",
       "state" : {
-        "revision" : "b26036d44f91d46501acfba833bfd9745e7ea1be",
-        "version" : "0.5.3"
+        "revision" : "e062f57b452fddfc6f52ecb1ac078f80aa396812",
+        "version" : "0.5.4"
       }
     },
     {
@@ -132,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-security.git",
       "state" : {
-        "revision" : "48cab4f3fb92b70412a808c1a902d0c00db092e8",
-        "version" : "0.4.3"
+        "revision" : "ef4e481cad184d50f001fafa86239d8d8b53063d",
+        "version" : "0.4.4"
       }
     },
     {
@@ -195,8 +186,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "293f42fb47867025a4cda33be66babedbabebe8a",
-        "version" : "0.9.3"
+        "revision" : "b4aad1bc7d4194042d98c3e1695e7cd87007cfb3",
+        "version" : "0.9.4"
       }
     },
     {
@@ -204,8 +195,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-storage.git",
       "state" : {
-        "revision" : "5423d19017fdfc70d0beffd0eb4e2b688a50837b",
-        "version" : "0.4.4"
+        "revision" : "d82f256f5c9b52c4536ade2a94221bda58a9cc02",
+        "version" : "0.4.5"
       }
     },
     {
@@ -305,15 +296,6 @@
       "state" : {
         "revision" : "9e3db637fbf8041c23a1b7f71e4ef16ac54f833f",
         "version" : "1.2.0"
-      }
-    },
-    {
-      "identity" : "plcrashreporter",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/PLCrashReporter.git",
-      "state" : {
-        "revision" : "6752f71de206f6a53fa6a758c3660fd9a7fe7527",
-        "version" : "1.11.2"
       }
     },
     {
@@ -438,8 +420,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto.git",
       "state" : {
-        "revision" : "ff0f781cf7c6a22d52957e50b104f5768b50c779",
-        "version" : "3.10.0"
+        "revision" : "b828ba476ab068f0b00d6b41f92f364961b0f323",
+        "version" : "3.10.2"
       }
     },
     {
@@ -503,6 +485,15 @@
       "state" : {
         "revision" : "ef98211fe120f887fdd772d5ae4f025b759551dd",
         "version" : "0.0.1"
+      }
+    },
+    {
+      "identity" : "swiftui-cached-async-image",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git",
+      "state" : {
+        "revision" : "467a3d17479887943ab917a379e62bbaff60ac8a",
+        "version" : "2.1.1"
       }
     },
     {
