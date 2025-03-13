@@ -1,3 +1,6 @@
+- Nested field support for presentation
+- OpenID4VP draft 23 support
+
 - SD-JWT support
 - Localisation metadata support
 - RQES functionality
