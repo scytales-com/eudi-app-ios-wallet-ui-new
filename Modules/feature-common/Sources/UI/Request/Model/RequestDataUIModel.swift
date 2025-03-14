@@ -150,7 +150,21 @@ public extension Array where Element == RequestDataUiModel {
             }
             return [path[1]]
           case .sdjwt:
-            return  claim.domainModel?.path ?? []
+            guard let path = claim.domainModel?.path else {
+              return []
+            }
+            let claimPath = path.compactMap {
+              return if !$0.isEmpty {
+                $0
+              } else {
+                nil
+              }
+            }
+            return if let path = claimPath.last {
+              [path]
+            } else {
+              claimPath
+            }
           default:
             return []
           }
@@ -400,18 +414,20 @@ private extension Array where Element == DocClaim {
     walletKitController: WalletKitController
   ) -> [DocumentElementClaim] {
     self
-      .map { claim in
-        return walletKitController.parseDocClaim(
-          docId: id,
-          groupId: nil,
-          docClaim: claim,
-          type: type,
-          parser: {
-            Locale.current.localizedDateTime(
-              date: $0,
-              uiFormatter: "dd MMM yyyy"
-            )
-          }
+      .reduce(into: [DocumentElementClaim]()) { partialResult, claim in
+        partialResult.append(
+          contentsOf: walletKitController.parseDocClaim(
+            docId: id,
+            groupId: UUID().uuidString,
+            docClaim: claim,
+            type: type,
+            parser: {
+              Locale.current.localizedDateTime(
+                date: $0,
+                uiFormatter: "dd MMM yyyy"
+              )
+            }
+          )
         )
       }
   }
