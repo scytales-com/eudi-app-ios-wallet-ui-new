@@ -79,12 +79,12 @@ private func content(
           WrapCardView {
             WrapListItemView(
               listItem: cell.listItem,
+              isLoading: cell.isLoading,
               action: { action(cell.configId) }
             )
           }
         }
       }
-      .shimmer(isLoading: viewState.isLoading)
     }
     .padding(.horizontal, Theme.shared.dimension.padding)
     .padding(.bottom)
@@ -110,8 +110,7 @@ private func scanFooter(
 
         Text(.or)
           .typography(Theme.shared.font.bodyMedium)
-          .foregroundColor(Theme.shared.color.onSurfaceVariant )
-          .shimmer(isLoading: viewState.isLoading)
+          .foregroundColor(Theme.shared.color.onSurfaceVariant)
 
         Theme.shared.image.scanDocumentImage
       }
@@ -120,12 +119,14 @@ private func scanFooter(
     }
 
     WrapButtonView(
-      style: .secondaryWithColor(
+      style: .custom(
         textColor: Theme.shared.color.primary,
         backgroundColor: Theme.shared.color.surfaceContainerLowest,
-        borderColor: Theme.shared.color.primary
+        borderColor: Theme.shared.color.primary,
+        useBorder: true
       ),
       title: .scanQrCode,
+      isLoading: viewState.isLoading,
       onAction: action()
     )
 
