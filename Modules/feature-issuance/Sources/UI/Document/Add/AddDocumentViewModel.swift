@@ -32,7 +32,7 @@ struct AddDocumentViewState: ViewState {
   }
 
   var isLoading: Bool {
-    addDocumentCellModels.allSatisfy { $0.isLoading }
+    !addDocumentCellModels.isEmpty && addDocumentCellModels.allSatisfy { $0.isLoading }
   }
 }
 
@@ -64,6 +64,19 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
   }
 
   func initialize() async {
+
+    setState {
+      $0
+        .copy(
+          addDocumentCellModels: viewState.addDocumentCellModels.isEmpty
+          ? AddDocumentUIModel.mocks
+          : viewState.addDocumentCellModels
+        )
+        .copy(error: nil)
+    }
+
+    let link = hasDeepLink()
+
     switch await self.interactor.fetchScopedDocuments(
       with: viewState.config.flow
     ) {
@@ -74,21 +87,24 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
         )
         .copy(error: nil)
       }
-      if let link = hasDeepLink() {
-        handleDeepLink(with: link)
-      } else {
-        await handleResumeIssuance()
-      }
     case .failure(let error):
       setState {
         $0.copy(
-          error: .init(
+          addDocumentCellModels: [],
+          error: link == nil
+          ? .init(
             description: .custom(error.localizedDescription),
-            cancelAction: self.pop(),
+            cancelAction: self.setState { $0.copy(error: nil) },
             action: { Task { await self.initialize() } }
           )
+          : nil
         )
       }
+    }
+    if let link {
+      handleDeepLink(with: link)
+    } else {
+      await handleResumeIssuance()
     }
   }
 
