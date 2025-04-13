@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1194D2322B06363400377213 /* EUDI_sample_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 1194D2302B06362900377213 /* EUDI_sample_data.json */; };
+		1194D2322B06363400377213 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		B070C01E2C0A27400061295A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B070C01C2C0A27400061295A /* InfoPlist.strings */; };
 		F02921632B8E07870076A58B /* WalletDemoRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */; };
 		F02921642B8E07870076A58B /* WalletDevRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F02921622B8E07870076A58B /* WalletDevRelease.xcconfig */; };
@@ -78,6 +78,10 @@
 		F1CACAE12AC3098C00B40DED /* WalletDemo.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WalletDemo.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B0E0713E2DAC819B0082E58A /* ci_scripts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ci_scripts; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		F14907B52ABAF54B00DDFE56 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -90,6 +94,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B0E0713C2DAC81830082E58A /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B070C01C2C0A27400061295A /* InfoPlist.strings */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		F09E1EA02AC33A6800779C25 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -118,11 +130,13 @@
 		F14907AF2ABAF54B00DDFE56 = {
 			isa = PBXGroup;
 			children = (
+				B0E0713E2DAC819B0082E58A /* ci_scripts */,
 				F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */,
 				F14907BA2ABAF54B00DDFE56 /* Wallet */,
 				F14908692ABC467600DDFE56 /* Packages */,
 				F14907B92ABAF54B00DDFE56 /* Products */,
 				F14908182ABC3D0400DDFE56 /* Frameworks */,
+				B0E0713C2DAC81830082E58A /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -249,7 +263,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1194D2322B06363400377213 /* EUDI_sample_data.json in Resources */,
+				1194D2322B06363400377213 /* (null) in Resources */,
 				B070C01E2C0A27400061295A /* InfoPlist.strings in Resources */,
 				F02AE38F2BA6E45F00C25C59 /* logic-assembly in Resources */,
 				F06325122AC59AF50004601F /* feature-test in Resources */,
