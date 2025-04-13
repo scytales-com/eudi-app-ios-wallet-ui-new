@@ -25,8 +25,9 @@ struct OfferCodeViewState: ViewState {
   let isLoading: Bool
   let error: ContentErrorView.Config?
   let config: IssuanceCodeUiConfig
-  let title: LocalizableString.Key
-  let caption: LocalizableString.Key
+  let title: LocalizableStringKey
+  let caption: LocalizableStringKey
+  let contentHeaderConfig: ContentHeaderConfig
 }
 
 final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeViewState> {
@@ -55,7 +56,13 @@ final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeV
         error: nil,
         config: config,
         title: .issuanceCodeTitle([config.issuerName]),
-        caption: .issuanceCodeCaption([config.txCodeLength.string])
+        caption: .issuanceCodeCaption([config.txCodeLength.string]),
+        contentHeaderConfig: .init(
+          appIconAndTextData: AppIconAndTextData(
+            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+            appText: ThemeManager.shared.image.euditext
+          )
+        )
       )
     )
 
@@ -101,6 +108,17 @@ final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeV
     }
   }
 
+  func toolbarContent() -> ToolBarContent {
+    .init(
+      trailingActions: [],
+      leadingActions: [
+        Action(image: Theme.shared.image.chevronLeft) {
+          self.onPop()
+        }
+      ]
+    )
+  }
+
   private func onIssueDocuments() {
     Task {
 
@@ -109,7 +127,7 @@ final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeV
 
       let config = viewState.config
 
-      let state = await Task.detached { () -> IssueOfferDocumentsPartialState in
+      let state = await Task.detached { () -> OfferResultPartialState in
         return await self.interactor.issueDocuments(
           with: config.offerUri,
           issuerName: config.issuerName,

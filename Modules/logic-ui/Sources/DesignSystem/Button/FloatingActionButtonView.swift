@@ -18,7 +18,7 @@ import logic_resources
 
 public struct FloatingActionButtonView: View {
 
-  private let title: LocalizableString.Key
+  private let title: LocalizableStringKey
   private let textColor: Color
   private let backgroundColor: Color
   private let icon: Image
@@ -27,11 +27,11 @@ public struct FloatingActionButtonView: View {
   private let action: () -> Void
 
   public init(
-    title: LocalizableString.Key,
-    textColor: Color = Theme.shared.color.textPrimaryDark,
+    title: LocalizableStringKey,
+    textColor: Color = Theme.shared.color.onSurface,
     backgroundColor: Color = Theme.shared.color.primary,
     icon: Image,
-    iconColor: Color = Theme.shared.color.textPrimaryDark,
+    iconColor: Color = Theme.shared.color.onSurface,
     isLoading: Bool = false,
     action: @escaping () -> Void
   ) {
@@ -75,7 +75,7 @@ public struct FloatingActionButtonView: View {
 
 public struct FloatingActionButtonModifier: ViewModifier {
 
-  private let title: LocalizableString.Key
+  private let title: LocalizableStringKey
   private let textColor: Color
   private let backgroundColor: Color
   private let icon: Image
@@ -86,11 +86,11 @@ public struct FloatingActionButtonModifier: ViewModifier {
   private let trailingPadding: CGFloat
 
   public init(
-    title: LocalizableString.Key,
-    textColor: Color = Theme.shared.color.textPrimaryDark,
+    title: LocalizableStringKey,
+    textColor: Color = Theme.shared.color.onSurface,
     backgroundColor: Color = Theme.shared.color.secondary,
     icon: Image,
-    iconColor: Color = Theme.shared.color.textPrimaryDark,
+    iconColor: Color = Theme.shared.color.onSurface,
     bottomPadding: CGFloat = 20,
     trailingPadding: CGFloat = 15,
     isLoading: Bool = false,
@@ -130,14 +130,14 @@ public struct FloatingActionButtonModifier: ViewModifier {
 #Preview {
   Group {
     FloatingActionButtonView(
-      title: LocalizableString.Key.addDocumentSubtitle,
+      title: LocalizableStringKey.addDocumentSubtitle,
       icon: Image(systemName: "calendar"),
       action: {}
     )
     .lightModePreview()
 
     FloatingActionButtonView(
-      title: LocalizableString.Key.addDocumentSubtitle,
+      title: LocalizableStringKey.addDocumentSubtitle,
       icon: Image(systemName: "calendar"),
       action: {}
     )

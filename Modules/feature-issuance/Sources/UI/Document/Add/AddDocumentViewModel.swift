@@ -25,13 +25,14 @@ struct AddDocumentViewState: ViewState {
   let addDocumentCellModels: [AddDocumentUIModel]
   let error: ContentErrorView.Config?
   let config: IssuanceFlowUiConfig
+  let showFooterScanner: Bool
 
   var isFlowCancellable: Bool {
     return config.isExtraDocumentFlow
   }
 
   var isLoading: Bool {
-    addDocumentCellModels.allSatisfy { $0.isLoading }
+    !addDocumentCellModels.isEmpty && addDocumentCellModels.allSatisfy { $0.isLoading }
   }
 }
 
@@ -56,48 +57,98 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
       initialState: .init(
         addDocumentCellModels: AddDocumentUIModel.mocks,
         error: nil,
-        config: config
+        config: config,
+        showFooterScanner: config.isNoDocumentFlow
       )
     )
   }
 
   func initialize() async {
-    switch self.interactor.fetchStoredDocuments(with: viewState.config.flow) {
+
+    setState {
+      $0
+        .copy(
+          addDocumentCellModels: viewState.addDocumentCellModels.isEmpty
+          ? AddDocumentUIModel.mocks
+          : viewState.addDocumentCellModels
+        )
+        .copy(error: nil)
+    }
+
+    let link = hasDeepLink()
+
+    switch await self.interactor.fetchScopedDocuments(
+      with: viewState.config.flow
+    ) {
     case .success(let documents):
-      setState { $0.copy(addDocumentCellModels: documents).copy(error: nil) }
-      if let link = hasDeepLink() {
-        handleDeepLink(with: link)
-      } else {
-        await handleResumeIssuance()
+      setState {
+        $0.copy(
+          addDocumentCellModels: documents
+        )
+        .copy(error: nil)
       }
     case .failure(let error):
       setState {
         $0.copy(
-          error: .init(
+          addDocumentCellModels: [],
+          error: link == nil
+          ? .init(
             description: .custom(error.localizedDescription),
-            cancelAction: self.pop(),
+            cancelAction: self.setState { $0.copy(error: nil) },
             action: { Task { await self.initialize() } }
           )
+          : nil
         )
       }
     }
-  }
-
-  func onClick(for documentIdentifier: DocumentTypeIdentifier) {
-    switch documentIdentifier {
-    case .GENERIC:
-      loadSampleData()
-    default:
-      issueDocument(docType: documentIdentifier.rawValue)
+    if let link {
+      handleDeepLink(with: link)
+    } else {
+      await handleResumeIssuance()
     }
   }
 
+  func onClick(for configId: String) {
+    issueDocument(configId: configId)
+  }
+
   func onScanClick() {
-    router.push(with: .featureCommonModule(.qrScanner(config: ScannerUiConfig(flow: .issuing(viewState.config)))))
+    router.push(
+      with: .featureCommonModule(
+        .qrScanner(
+          config: ScannerUiConfig(
+            flow: .issuing(
+              successNavigation: .push(.featureDashboardModule(.dashboard)),
+              cancelNavigation: .popTo(
+                .featureIssuanceModule(
+                  .issuanceAddDocument(config: viewState.config)
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   }
 
   func pop() {
     router.pop()
+  }
+
+  func toolbarContent() -> ToolBarContent? {
+    return switch viewState.config.flow {
+    case .noDocument:
+      nil
+    case .extraDocument:
+        .init(
+          trailingActions: [],
+          leadingActions: [
+            Action(image: Theme.shared.image.chevronLeft) {
+              self.pop()
+            }
+          ]
+        )
+    }
   }
 
   private func handleResumeIssuance() async {
@@ -114,13 +165,10 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
 
     switch state {
     case .success(let docId):
+      await fetchStoredDocuments(docId: docId)
+    case .deferredSuccess:
       router.push(
-        with: .featureIssuanceModule(
-          .issuanceSuccess(
-            config: viewState.config,
-            documentIdentifier: docId
-          )
-        )
+        with: onDeferredSuccess()
       )
     case .noPending:
       setState {
@@ -141,30 +189,22 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
     }
   }
 
-  private func issueDocument(docType: String) {
+  private func issueDocument(configId: String) {
     Task {
       setState {
-        $0
-          .copy(
-            addDocumentCellModels: transformCellLoadingState(with: true)
-          )
-          .copy(error: nil)
+        $0.copy(
+          addDocumentCellModels: transformCellLoadingState(with: true)
+        )
+        .copy(error: nil)
       }
 
-      let state = await Task.detached { () -> IssueDocumentPartialState in
-        return await self.interactor.issueDocument(docType: docType)
+      let state = await Task.detached { () -> IssueResultPartialState in
+        return await self.interactor.issueDocument(configId: configId)
       }.value
 
       switch state {
       case .success(let docId):
-        router.push(
-          with: .featureIssuanceModule(
-            .issuanceSuccess(
-              config: viewState.config,
-              documentIdentifier: docId
-            )
-          )
-        )
+        await fetchStoredDocuments(docId: docId)
       case .dynamicIssuance(let session):
         setState {
           $0.copy(
@@ -190,12 +230,24 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
           )
         }
       case .deferredSuccess:
-        router.push(with: onDeferredSuccess())
+        let metaData = try await interactor.getScopedDocument(
+          configId: configId
+        )
+
+        router.push(
+          with: onDeferredSuccess(
+            issuerName: metaData.issuer,
+            documentName: metaData.name
+          )
+        )
       }
     }
   }
 
-  private func onDeferredSuccess() -> AppRoute {
+  private func onDeferredSuccess(
+    issuerName: String = "",
+    documentName: String = ""
+  ) -> AppRoute {
     var navigationType: UIConfig.DeepLinkNavigationType {
       return switch viewState.config.flow {
       case .noDocument:
@@ -204,11 +256,25 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
           .pop(screen: .featureDashboardModule(.dashboard))
       }
     }
+
+    var subTitle: LocalizableStringKey {
+      if documentName.isEmpty {
+        return .scopedIssuanceSuccessDeferredCaptionDocName([documentName])
+      } else if !documentName.isEmpty, !issuerName.isEmpty {
+        return .scopedIssuanceSuccessDeferredCaptionDocNameAndIssuer([documentName, issuerName])
+      } else {
+        return .scopedIssuanceSuccessDeferredCaption
+      }
+    }
+
     return .featureCommonModule(
-      .success(
+      .genericSuccess(
         config: UIConfig.Success(
-          title: .init(value: .inProgress, color: Theme.shared.color.warning),
-          subtitle: .scopedIssuanceSuccessDeferredCaption,
+          title: .init(
+            value: .inProgress,
+            color: Theme.shared.color.pending
+          ),
+          subtitle: subTitle,
           buttons: [
             .init(
               title: .okButton,
@@ -216,7 +282,10 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
               navigationType: navigationType
             )
           ],
-          visualKind: .customIcon(Theme.shared.image.clock, Theme.shared.color.warning)
+          visualKind: .customIcon(
+            Theme.shared.image.documentSuccessPending,
+            Color.clear
+          )
         )
       )
     )
@@ -229,29 +298,6 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
       return cell
     }
     )
-  }
-
-  private func loadSampleData() {
-    Task {
-
-      let state = await Task.detached { () -> LoadSampleDataPartialState in
-        return await self.interactor.loadSampleData()
-      }.value
-
-      switch state {
-      case .success:
-        router.push(with: .featureDashboardModule(.dashboard))
-      case .failure(let error):
-        setState {
-          $0.copy(
-            error: .init(
-              description: .custom(error.localizedDescription),
-              cancelAction: self.setState { $0.copy(error: nil) }
-            )
-          )
-        }
-      }
-    }
   }
 
   private func hasDeepLink() -> String? {
@@ -274,5 +320,53 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
         )
       )
     )
+  }
+
+  private func fetchStoredDocuments(docId: String) async {
+    let state = await Task.detached { () -> IssueDocumentsPartialState in
+      return await self.interactor.fetchStoredDocuments(
+        documentIds: [docId]
+      )
+    }.value
+
+    let onSuccesNavigation = switch viewState.config.flow {
+    case .noDocument:
+      UIConfig.DeepLinkNavigationType.push(screen: .featureDashboardModule(.dashboard))
+    case .extraDocument:
+      UIConfig.DeepLinkNavigationType.pop(screen: .featureDashboardModule(.dashboard))
+    }
+
+    switch state {
+    case .success(let documents):
+      router.push(
+        with: .featureIssuanceModule(
+          .issuanceSuccess(
+            config: DocumentSuccessUIConfig(
+              successNavigation: onSuccesNavigation,
+              relyingParty: documents.first?.issuer?.name,
+              issuerLogoUrl: documents.first?.issuer?.logoUrl,
+              relyingPartyIsTrusted: false
+            ),
+            requestItems: documents.map { item in
+              ListItemSection(
+                id: item.id,
+                title: item.documentName,
+                listItems: item.documentFields
+              )
+            }
+          )
+        )
+      )
+    case .failure(let error):
+      setState {
+        $0.copy(
+          addDocumentCellModels: transformCellLoadingState(with: false),
+          error: .init(
+            description: .custom(error.localizedDescription),
+            cancelAction: self.setState { $0.copy(error: nil) }
+          )
+        )
+      }
+    }
   }
 }

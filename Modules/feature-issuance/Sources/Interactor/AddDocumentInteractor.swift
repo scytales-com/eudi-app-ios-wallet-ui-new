@@ -21,10 +21,14 @@ import logic_business
 import logic_core
 
 public protocol AddDocumentInteractor: Sendable {
-  func fetchStoredDocuments(with flow: IssuanceFlowUiConfig.Flow) -> StoredDocumentsPartialState
-  func loadSampleData() async -> LoadSampleDataPartialState
-  func issueDocument(docType: String) async -> IssueDocumentPartialState
+  func fetchScopedDocuments(with flow: IssuanceFlowUiConfig.Flow) async -> ScopedDocumentsPartialState
+  func issueDocument(configId: String) async -> IssueResultPartialState
   func resumeDynamicIssuance() async -> IssueDynamicDocumentPartialState
+  func getScopedDocument(configId: String) async throws -> ScopedDocument
+
+  func getHoldersName(for documentIdentifier: String) -> String?
+  func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey?
+  func fetchStoredDocuments(documentIds: [String]) async -> IssueDocumentsPartialState
 }
 
 final class AddDocumentInteractorImpl: AddDocumentInteractor {
@@ -37,55 +41,35 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
     self.walletController = walletController
   }
 
-  public func fetchStoredDocuments(with flow: IssuanceFlowUiConfig.Flow) -> StoredDocumentsPartialState {
-
-    let types = AddDocumentUIModel.items.map({
-      var item = $0
-      switch item.type {
-      case .PID:
-        item.isEnabled = true
-      case .MDL:
-        item.isEnabled = flow == .extraDocument
-      case .AGE:
-        item.isEnabled = flow == .extraDocument
-      case .PHOTOID:
-        item.isEnabled = flow == .extraDocument
-      case .GENERIC:
-        break
-      }
-      return item
-    })
-
-    switch flow {
-    case .noDocument:
-      return .success(
-        types + [
-          .init(
-            isEnabled: true,
-            documentName: .loadSampleData,
-            image: Theme.shared.image.id,
-            isLoading: false,
-            type: .GENERIC(docType: "load_sample_data")
-          )
-        ]
-      )
-    case .extraDocument:
-      return .success(types)
-    }
-  }
-
-  public func loadSampleData() async -> LoadSampleDataPartialState {
+  public func fetchScopedDocuments(with flow: IssuanceFlowUiConfig.Flow) async -> ScopedDocumentsPartialState {
     do {
-      try await walletController.loadSampleData(dataFiles: ["EUDI_sample_data"])
-      return .success
+      let documents: [AddDocumentUIModel] = try await walletController.getScopedDocuments().compactMap { doc in
+        if flow == .extraDocument || doc.isPid {
+          return .init(
+            listItem: .init(
+              mainText: .custom(doc.name),
+              trailingContent: .icon(Theme.shared.image.plus)
+            ),
+            isEnabled: true,
+            configId: doc.configId
+          )
+        } else {
+          return nil
+        }
+      }.sorted(by: compare)
+      return .success(documents)
     } catch {
       return .failure(error)
     }
+
+    func compare(_ first: AddDocumentUIModel, _ second: AddDocumentUIModel) -> Bool {
+      return first.listItem.mainText.toString.lowercased() < second.listItem.mainText.toString.lowercased()
+    }
   }
 
-  public func issueDocument(docType: String) async -> IssueDocumentPartialState {
+  public func issueDocument(configId: String) async -> IssueResultPartialState {
     do {
-      let doc = try await walletController.issueDocument(docType: docType, format: .cbor)
+      let doc = try await walletController.issueDocument(identifier: configId)
       if doc.isDeferred {
         return .deferredSuccess
       } else if let authorizePresentationUrl = doc.authorizePresentationUrl {
@@ -117,7 +101,9 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
         webUrl: pendingData.url
       )
 
-      if doc.status != .pending {
+      if doc.status == .deferred {
+        return .deferredSuccess
+      } else if doc.status == .issued {
         return .success(doc.id)
       } else {
         return .failure(WalletCoreError.unableToIssueAndStore)
@@ -127,19 +113,50 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
       return .failure(WalletCoreError.unableToIssueAndStore)
     }
   }
+
+  func getScopedDocument(configId: String) async throws -> ScopedDocument {
+    try await walletController.getScopedDocuments().first {
+      $0.configId == configId
+    } ?? ScopedDocument.empty()
+  }
+
+  public func getHoldersName(for documentIdentifier: String) -> String? {
+    guard
+      let bearerName = walletController.fetchDocument(with: documentIdentifier)?.getBearersName()
+    else {
+      return nil
+    }
+    return  "\(bearerName.first) \(bearerName.last)"
+  }
+
+  public func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey? {
+    guard
+      let document = walletController.fetchDocument(with: documentIdentifier)
+    else {
+      return nil
+    }
+    return .issuanceSuccessCaption([document.displayName.orEmpty])
+  }
+
+  func fetchStoredDocuments(documentIds: [String]) async -> IssueDocumentsPartialState {
+    let documents = walletController.fetchDocuments(with: documentIds)
+    let documentsDetails = documents.compactMap {
+      $0.transformToDocumentDetailsUi(isSensitive: false)
+    }
+
+    if documentsDetails.isEmpty {
+      return .failure(WalletCoreError.unableFetchDocument)
+    }
+    return .success(documentsDetails)
+  }
 }
 
-public enum StoredDocumentsPartialState: Sendable {
+public enum ScopedDocumentsPartialState: Sendable {
   case success([AddDocumentUIModel])
   case failure(Error)
 }
 
-public enum LoadSampleDataPartialState: Sendable {
-  case success
-  case failure(Error)
-}
-
-public enum IssueDocumentPartialState: Sendable {
+public enum IssueResultPartialState: Sendable {
   case success(String)
   case deferredSuccess
   case dynamicIssuance(RemoteSessionCoordinator)
@@ -149,5 +166,11 @@ public enum IssueDocumentPartialState: Sendable {
 public enum IssueDynamicDocumentPartialState: Sendable {
   case success(String)
   case noPending
+  case deferredSuccess
+  case failure(Error)
+}
+
+public enum IssueDocumentsPartialState: Sendable {
+  case success([DocumentDetailsUIModel])
   case failure(Error)
 }

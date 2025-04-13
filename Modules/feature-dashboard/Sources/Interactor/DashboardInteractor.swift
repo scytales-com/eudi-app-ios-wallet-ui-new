@@ -15,142 +15,22 @@
  */
 import Foundation
 import logic_core
-import logic_business
-import logic_resources
-import Combine
-
-public enum DashboardPartialState: Sendable {
-  case success(BearerUIModel, [DocumentUIModel], Bool)
-  case failure(Error)
-}
-
-public enum DashboardDeleteDeferredPartialState: Sendable {
-  case success
-  case noDocuments
-  case failure(Error)
-}
-
-public enum DashboardDeferredPartialState: Sendable {
-  case completion(issued: [DocumentUIModel], failed: [String])
-  case cancelled
-}
 
 public protocol DashboardInteractor: Sendable {
-  func fetchDashboard(failedDocuments: [String]) async -> DashboardPartialState
-  func getBleAvailability() async -> Reachability.BleAvailibity
-  @MainActor func openBleSettings()
-  func getAppVersion() -> String
-  func hasIssuedDocuments() -> Bool
-  func hasDeferredDocuments() -> Bool
-  func deleteDeferredDocument(with id: String) async -> DashboardDeleteDeferredPartialState
-  func requestDeferredIssuance() async -> DashboardDeferredPartialState
-  func retrieveLogFileUrl() -> URL?
+  func getWalletKitController() -> WalletKitController
 }
 
 final class DashboardInteractorImpl: DashboardInteractor {
 
-  private let walletController: WalletKitController
-  private let reachabilityController: ReachabilityController
-  private let configLogic: ConfigLogic
-
-  private let sendableAnyCancellable: SendableAnyCancellable = .init()
+  private let walletKitController: WalletKitController
 
   init(
-    walletController: WalletKitController,
-    reachabilityController: ReachabilityController,
-    configLogic: ConfigLogic
+    walletKitController: WalletKitController
   ) {
-    self.walletController = walletController
-    self.reachabilityController = reachabilityController
-    self.configLogic = configLogic
+    self.walletKitController = walletKitController
   }
 
-  deinit {
-    sendableAnyCancellable.cancel()
-  }
-
-  func hasIssuedDocuments() -> Bool {
-    return !walletController.fetchIssuedDocuments().isEmpty
-  }
-
-  func hasDeferredDocuments() -> Bool {
-    return !walletController.fetchDeferredDocuments().isEmpty
-  }
-
-  public func fetchDashboard(failedDocuments: [String]) async -> DashboardPartialState {
-
-    let documents: [DocumentUIModel]? = fetchDocuments(failedDocuments: failedDocuments)
-    let bearer: BearerUIModel = fetchBearer()
-
-    guard let documents = documents else {
-      return .failure(WalletCoreError.unableFetchDocuments)
-    }
-
-    return .success(bearer, documents, hasIssuedDocuments())
-  }
-
-  public func getBleAvailability() async -> Reachability.BleAvailibity {
-    return await withCheckedContinuation { cont in
-      reachabilityController.getBleAvailibity()
-        .sink { cont.resume(returning: $0)}
-        .store(in: &sendableAnyCancellable.cancellables)
-    }
-  }
-
-  public func openBleSettings() {
-    reachabilityController.openBleSettings()
-  }
-
-  public func getAppVersion() -> String {
-    return configLogic.appVersion
-  }
-
-  func deleteDeferredDocument(with id: String) async -> DashboardDeleteDeferredPartialState {
-    do {
-      try await walletController.deleteDocument(with: id, status: .deferred)
-      return walletController.fetchAllDocuments().isEmpty ? .noDocuments : .success
-    } catch {
-      return .failure(error)
-    }
-  }
-
-  func requestDeferredIssuance() async -> DashboardDeferredPartialState {
-
-    var issued: [DocumentUIModel] = []
-    var failed: [String] = []
-
-    for deferred in walletController.fetchDeferredDocuments() {
-
-      if Task.isCancelled { return .cancelled }
-
-      do {
-        let document = try await walletController.requestDeferredIssuance(with: deferred)
-        if (document is DeferrredDocument) == false {
-          issued.append(document.transformToDocumentUi())
-        }
-      } catch {
-        failed.append(deferred.id)
-      }
-    }
-
-    return .completion(issued: issued, failed: failed)
-  }
-
-  func retrieveLogFileUrl() -> URL? {
-    return walletController.retrieveLogFileUrl()
-  }
-
-  private func fetchBearer() -> BearerUIModel {
-    return BearerUIModel.transformToBearerUi(
-      walletKitController: self.walletController
-    )
-  }
-
-  private func fetchDocuments(failedDocuments: [String]) -> [DocumentUIModel]? {
-    let documents = self.walletController.fetchAllDocuments()
-    guard !documents.isEmpty else {
-      return nil
-    }
-    return documents.transformToDocumentUi(with: failedDocuments)
+  func getWalletKitController() -> WalletKitController {
+    self.walletKitController
   }
 }

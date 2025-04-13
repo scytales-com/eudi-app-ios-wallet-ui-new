@@ -15,6 +15,7 @@
  */
 import logic_ui
 import logic_business
+import feature_common
 import logic_core
 
 @MainActor
@@ -24,8 +25,10 @@ public final class PresentationRouter {
     switch module {
     case .presentationLoader(
       let relyingParty,
+      let relyingPartyIsTrusted,
       presentationCoordinator: let presentationCoordinator,
-      originator: let originator
+      originator: let originator,
+      let uiModels
     ):
       PresentationLoadingView(
         with: .init(
@@ -35,7 +38,9 @@ public final class PresentationRouter {
             argument: presentationCoordinator as RemoteSessionCoordinator
           ),
           relyingParty: relyingParty,
-          originator: originator
+          relyingPartyIsTrusted: relyingPartyIsTrusted,
+          originator: originator,
+          requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
         )
       ).eraseToAnyView()
     case .presentationRequest(
@@ -50,6 +55,20 @@ public final class PresentationRouter {
             argument: presentationCoordinator as RemoteSessionCoordinator
           ),
           originator: originator
+        )
+      ).eraseToAnyView()
+    case .presentationSuccess(
+      let config,
+      let uiModels
+    ):
+      PresentationSuccessView(
+        with: .init(
+          router: host,
+          config: config,
+          deepLinkController: DIGraph.resolver.force(
+            DeepLinkController.self
+          ),
+          requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
         )
       ).eraseToAnyView()
     }

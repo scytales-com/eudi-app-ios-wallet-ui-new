@@ -29,8 +29,9 @@ struct DocumentOfferViewState: ViewState {
   let offerUri: String
   let allowIssue: Bool
   let initialized: Bool
+  let contentHeaderConfig: ContentHeaderConfig
 
-  var title: LocalizableString.Key {
+  var title: LocalizableStringKey {
     return .requestCredentialOfferTitle([documentOfferUiModel.issuerName])
   }
 
@@ -46,8 +47,6 @@ struct DocumentOfferViewState: ViewState {
 final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, DocumentOfferViewState> {
 
   private let interactor: DocumentOfferInteractor
-
-  @Published var isCancelModalShowing: Bool = false
 
   init(
     router: Router,
@@ -70,7 +69,13 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
         config: config,
         offerUri: offerUri,
         allowIssue: false,
-        initialized: false
+        initialized: false,
+        contentHeaderConfig: .init(
+          appIconAndTextData: AppIconAndTextData(
+            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+            appText: ThemeManager.shared.image.euditext
+          )
+        )
       )
     )
   }
@@ -91,27 +96,38 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
     switch state {
     case .success(let uiModel):
       setState {
-        $0
-          .copy(
-            isLoading: false,
-            documentOfferUiModel: uiModel,
-            allowIssue: !uiModel.uiOffers.isEmpty,
-            initialized: true
+        $0.copy(
+          isLoading: false,
+          documentOfferUiModel: uiModel,
+          allowIssue: !uiModel.uiOffers.isEmpty,
+          initialized: true,
+          contentHeaderConfig: .init(
+            appIconAndTextData: AppIconAndTextData(
+              appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+              appText: ThemeManager.shared.image.euditext
+            ),
+            description: .dataSharingTitle,
+            mainText: .issuanceRequest,
+            icon: .remoteImage(uiModel.issuerLogo, nil),
+            relyingPartyData: RelyingPartyData(
+              isVerified: false,
+              name: .custom(uiModel.issuerName),
+              description: .issuerWantWalletAddition
+            )
           )
-          .copy(error: nil)
+        ).copy(error: nil)
       }
     case .failure(let error):
       setState {
-        $0
-          .copy(
-            isLoading: false,
-            error: ContentErrorView.Config(
-              description: .custom(error.localizedDescription),
-              cancelAction: self.onPop()
-            ),
-            allowIssue: false,
-            initialized: true
-          )
+        $0.copy(
+          isLoading: false,
+          error: ContentErrorView.Config(
+            description: .custom(error.localizedDescription),
+            cancelAction: self.onPop()
+          ),
+          allowIssue: false,
+          initialized: true
+        )
       }
     }
   }
@@ -144,7 +160,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
       let docOffers = viewState.documentOfferUiModel.docOffers
       let successNavigation = viewState.successNavigation
 
-      let state = await Task.detached { () -> IssueOfferDocumentsPartialState in
+      let state = await Task.detached { () -> OfferResultPartialState in
         return await self.interactor.issueDocuments(
           with: offerUri,
           issuerName: issuerName,
@@ -189,12 +205,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
     }
   }
 
-  func onShowCancelModal() {
-    isCancelModalShowing = !isCancelModalShowing
-  }
-
   func onPop() {
-    isCancelModalShowing = false
     switch viewState.cancelNavigation {
     case .popTo(let route):
       router.popTo(with: route)
@@ -259,5 +270,24 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
         )
       }
     }
+  }
+
+  func toolbarContent() -> ToolBarContent {
+    .init(
+      trailingActions: [
+        Action(
+          title: .issueButton
+        ) {
+          self.onIssueDocuments()
+        }
+      ],
+      leadingActions: [
+        Action(
+          title: .cancelButton
+        ) {
+          self.onPop()
+        }
+      ]
+    )
   }
 }

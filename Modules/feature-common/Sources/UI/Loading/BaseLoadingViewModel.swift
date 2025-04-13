@@ -17,18 +17,43 @@
 @_exported import logic_resources
 
 @Copyable
-public struct BaseLoadingState: ViewState {
+public struct BaseLoadingState<T: Sendable>: ViewState {
   let error: ContentErrorView.Config?
   let originator: AppRoute
   let isCancellable: Bool
+  let contentHeaderConfig: ContentHeaderConfig
+  let requestItems: [ListItemSection<T>]
+  let relyingParty: String
+  let relyingPartyIsTrusted: Bool
 }
 
-open class BaseLoadingViewModel<Router: RouterHost>: ViewModel<Router, BaseLoadingState> {
+open class BaseLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: ViewModel<Router, BaseLoadingState<RequestItem>> {
 
-  public init(router: Router, originator: AppRoute, cancellationTimeout: Double = 0.0) {
+  public init(
+    router: Router,
+    originator: AppRoute,
+    requestItems: [ListItemSection<RequestItem>],
+    relyingParty: String,
+    relyingPartyIsTrusted: Bool,
+    cancellationTimeout: Double = 0.0
+  ) {
     super.init(
       router: router,
-      initialState: .init(error: nil, originator: originator, isCancellable: cancellationTimeout <= 0)
+      initialState: .init(
+        error: nil,
+        originator: originator,
+        isCancellable: cancellationTimeout <= 0,
+        contentHeaderConfig: .init(
+          appIconAndTextData: AppIconAndTextData(
+            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+            appText: ThemeManager.shared.image.euditext
+          ),
+          description: .pleaseWait
+        ),
+        requestItems: requestItems,
+        relyingParty: relyingParty,
+        relyingPartyIsTrusted: relyingPartyIsTrusted
+      )
     )
 
     if cancellationTimeout > 0 {
@@ -36,11 +61,11 @@ open class BaseLoadingViewModel<Router: RouterHost>: ViewModel<Router, BaseLoadi
     }
   }
 
-  open func getTitle() -> LocalizableString.Key {
+  open func getTitle() -> LocalizableStringKey {
     return .custom("")
   }
 
-  open func getCaption() -> LocalizableString.Key {
+  open func getCaption() -> LocalizableStringKey {
     return .custom("")
   }
 
@@ -52,6 +77,18 @@ open class BaseLoadingViewModel<Router: RouterHost>: ViewModel<Router, BaseLoadi
 
   public func getOriginator() -> AppRoute {
     return viewState.originator
+  }
+
+  public func getRequestItems() -> [ListItemSection<RequestItem>] {
+    viewState.requestItems
+  }
+
+  public func getRelyingParty() -> String {
+    viewState.relyingParty
+  }
+
+  public func isRelyingPartyIstrusted() -> Bool {
+    viewState.relyingPartyIsTrusted
   }
 
   public func onNavigate(type: UIConfig.ThreeWayNavigationType) {
@@ -77,6 +114,16 @@ open class BaseLoadingViewModel<Router: RouterHost>: ViewModel<Router, BaseLoadi
         )
       )
     }
+  }
+
+  public func toolbarContent() -> ToolBarContent {
+    .init(
+      leadingActions: [
+        Action(image: Theme.shared.image.xmark) {
+          self.viewState.isCancellable ? self.onNavigate(type: .pop) : nil
+        }
+      ]
+    )
   }
 
   private func setCancellationWithTimeout(_ timeout: Double) {

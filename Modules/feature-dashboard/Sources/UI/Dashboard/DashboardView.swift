@@ -23,7 +23,6 @@ import logic_core
 struct DashboardView<Router: RouterHost>: View {
 
   @ObservedObject private var viewModel: DashboardViewModel<Router>
-  @Environment(\.scenePhase) var scenePhase
 
   public init(with viewModel: DashboardViewModel<Router>) {
     self.viewModel = viewModel
@@ -33,182 +32,28 @@ struct DashboardView<Router: RouterHost>: View {
     ContentScreenView(
       padding: .zero,
       canScroll: false,
-      background: Theme.shared.color.secondary
+      navigationTitle: viewModel.viewState.navigationTitle,
+      toolbarContent: viewModel.viewState.toolBarContent
     ) {
       content(
-        viewState: viewModel.viewState,
-        onMore: viewModel.onMore,
-        onDocumentDetails: { id in
-          viewModel.onDocumentDetails(documentId: id)
+        tabView: { tab in
+          return switch tab {
+          case .documents:
+            viewModel.viewState.documentTab
+              .eraseToAnyView()
+          case .home:
+            viewModel.viewState.homeTab
+              .eraseToAnyView()
+          case .transactions:
+            viewModel.viewState.transactionTab
+              .eraseToAnyView()
+          }
         },
-        onDeleteDeferredDocument: { doc in
-          viewModel.onDeleteDeferredDocument(with: doc)
-        },
-        onAdd: viewModel.onAdd,
-        onShare: viewModel.onShare
+        selectedTab: $viewModel.selectedTab
       )
     }
-    .sheetDialog(isPresented: $viewModel.isMoreModalShowing) {
-      SheetContentView {
-        VStack(spacing: .zero) {
-
-          ContentTitleView(
-            title: .moreOptions
-          )
-
-          VSpacer.medium()
-
-          ForEach(viewModel.viewState.moreOptions, id: \.id) { option in
-
-            switch option {
-            case .changeQuickPin:
-              WrapButtonView(
-                title: .changeQuickPinOption,
-                backgroundColor: .clear,
-                icon: Theme.shared.image.pencil,
-                gravity: .start,
-                onAction: viewModel.onUpdatePin()
-              )
-            case .scanQrCode:
-              WrapButtonView(
-                title: .scanQrCode,
-                backgroundColor: .clear,
-                icon: Theme.shared.image.qrScan,
-                gravity: .start,
-                onAction: viewModel.onShowScanner()
-              )
-            case .signDocument:
-              WrapButtonView(
-                title: .signDocument,
-                backgroundColor: .clear,
-                icon: Theme.shared.image.signDocument,
-                gravity: .start,
-                onAction: viewModel.openSignDocument()
-              )
-            case .retrieveLogs(let url):
-              shareLogs(with: url)
-            }
-
-          }
-
-          HStack {
-            Spacer()
-            Text(viewModel.viewState.appVersion)
-              .typography(Theme.shared.font.bodyMedium)
-              .foregroundColor(Theme.shared.color.textSecondaryDark)
-            Spacer()
-          }
-        }
-      }
-    }
-    .sheetDialog(isPresented: $viewModel.isBleModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
-
-          ContentTitleView(
-            title: .bleDisabledModalTitle,
-            caption: .bleDisabledModalCaption
-          )
-
-          WrapButtonView(style: .primary, title: .bleDisabledModalButton, onAction: viewModel.onBleSettings())
-          WrapButtonView(style: .secondary, title: .cancelButton, onAction: viewModel.toggleBleModal())
-        }
-      }
-    }
-    .sheetDialog(isPresented: $viewModel.isDeleteDeferredModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
-
-          ContentTitleView(
-            title: .issuanceDetailsDeletionTitle([viewModel.viewState.pendingDocumentTitle]),
-            caption: .issuanceDetailsDeletionCaption([viewModel.viewState.pendingDocumentTitle])
-          )
-
-          WrapButtonView(
-            style: .primary,
-            title: .yes,
-            onAction: viewModel.deleteDeferredDocument()
-          )
-          WrapButtonView(
-            style: .secondary,
-            title: .no,
-            onAction: viewModel.toggleDeleteDeferredModal()
-          )
-        }
-      }
-    }
-    .sheetDialog(isPresented: $viewModel.isSuccededDocumentsModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
-
-          ContentTitleView(
-            title: .deferredDocumentsIssuedModalTitle,
-            caption: .defferedDocumentsIssuedModalCaption
-          )
-
-          deferredSuccessList()
-        }
-      }
-    }
     .task {
-      await viewModel.fetch()
-    }
-    .onChange(of: scenePhase) { phase in
-      self.viewModel.setPhase(with: phase)
-    }
-    .onDisappear {
-      self.viewModel.onPause()
-    }
-  }
-
-  @ViewBuilder
-  func deferredSuccessList() -> some View {
-    VStack(spacing: SPACING_SMALL) {
-      ForEach(viewModel.viewState.succededIssuedDocuments) { item in
-
-        HStack {
-          Text(.custom(item.value.title))
-            .typography(Theme.shared.font.bodyMedium)
-            .foregroundColor(Theme.shared.color.textPrimaryDark)
-
-          Spacer()
-
-          Theme.shared.image.chevronRight
-            .renderingMode(.template)
-            .foregroundStyle(Theme.shared.color.primary)
-        }
-        .padding()
-        .background(Theme.shared.color.backgroundDefault)
-        .clipShape(.rect(cornerRadius: 8))
-        .onTapGesture {
-          viewModel.onDocumentDetails(documentId: item.value.id)
-        }
-
-      }
-    }
-    .padding(.vertical)
-  }
-
-  @ViewBuilder
-  func shareLogs(with fileUrl: URL) -> some View {
-    ShareLink(item: fileUrl) {
-      HStack {
-
-        Theme.shared.image.share
-          .resizable()
-          .scaledToFit()
-          .frame(width: 25, height: 25)
-          .foregroundColor(Theme.shared.color.primary)
-
-        HSpacer.medium()
-
-        Text(.retrieveLogs)
-          .typography(Theme.shared.font.labelLarge)
-          .foregroundColor(Theme.shared.color.textPrimaryDark)
-
-        Spacer()
-      }
-      .padding()
+      await viewModel.handleDeepLink()
     }
   }
 }
@@ -216,77 +61,49 @@ struct DashboardView<Router: RouterHost>: View {
 @MainActor
 @ViewBuilder
 private func content(
-  viewState: DashboardState,
-  onMore: @escaping () -> Void,
-  onDocumentDetails: @escaping (String) -> Void,
-  onDeleteDeferredDocument: @escaping (DocumentUIModel) -> Void,
-  onAdd: @escaping () -> Void,
-  onShare: @escaping () -> Void
+  tabView: @escaping (SelectedTab) -> AnyView,
+  selectedTab: Binding<SelectedTab>
 ) -> some View {
-  BearerHeaderView(
-    item: viewState.bearer,
-    isLoading: viewState.isLoading,
-    isMoreOptionsEnabled: viewState.allowUserInteraction,
-    onMoreClicked: onMore()
-  )
+  TabView(selection: selectedTab) {
 
-  VStack(spacing: .zero) {
-
-    DocumentListView(
-      items: viewState.documents,
-      isLoading: viewState.isLoading
-    ) { document in
-      switch document.value.state {
-      case .issued:
-        onDocumentDetails(document.value.id)
-      case .pending, .failed:
-        onDeleteDeferredDocument(document)
-      }
-    }
-    .bottomFade()
-
-    if viewState.allowUserInteraction {
-
-      FloatingActionButtonBarView(
-        isLoading: viewState.isLoading,
-        addAction: onAdd(),
-        shareAction: onShare()
+    tabView(.home)
+    .tabItem {
+      Label(
+        LocalizableStringKey.home.toString,
+        systemImage: "house.fill"
       )
-
-      VSpacer.small()
-
     }
+    .tag(SelectedTab.home)
+
+    tabView(.documents)
+    .tabItem {
+      Label(
+        .documents,
+        systemImage: "doc.fill"
+      )
+    }
+    .tag(SelectedTab.documents)
+
+    tabView(.transactions)
+      .tabItem {
+        Label(
+          .transactions,
+          systemImage: "arrow.left.arrow.right"
+        )
+      }
+      //.tag(SelectedTab.transactions)
   }
-  .background(Theme.shared.color.backgroundPaper)
 }
 
 #Preview {
-  let viewState = DashboardState(
-    isLoading: false,
-    documents: DocumentUIModel.mocks(),
-    bearer: BearerUIModel.mock(),
-    phase: .active,
-    pendingBleModalAction: false,
-    appVersion: "App version",
-    allowUserInteraction: true,
-    pendingDeletionDocument: nil,
-    succededIssuedDocuments: [],
-    failedDocuments: [],
-    moreOptions: [.changeQuickPin, .scanQrCode]
-  )
-
   ContentScreenView(
     padding: .zero,
     canScroll: false,
-    background: Theme.shared.color.secondary
+    background: Theme.shared.color.surface
   ) {
     content(
-      viewState: viewState,
-      onMore: {},
-      onDocumentDetails: { _ in },
-      onDeleteDeferredDocument: { _ in },
-      onAdd: {},
-      onShare: {}
+      tabView: {_ in EmptyView().eraseToAnyView()},
+      selectedTab: .constant(.home)
     )
   }
 }

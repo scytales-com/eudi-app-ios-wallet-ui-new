@@ -20,16 +20,20 @@ import Foundation
 public extension UIConfig {
   struct Biometry: UIConfigType, Equatable {
 
-    public let title: LocalizableString.Key
-    public let caption: LocalizableString.Key
-    public let quickPinOnlyCaption: LocalizableString.Key
+    public let navigationTitle: LocalizableStringKey
+    public let displayLogo: Bool
+    public let title: LocalizableStringKey?
+    public let caption: LocalizableStringKey
+    public let quickPinOnlyCaption: LocalizableStringKey
     public let navigationSuccessType: ThreeWayNavigationType
     public let navigationBackType: ThreeWayNavigationType?
     public let isPreAuthorization: Bool
     public let shouldInitializeBiometricOnCreate: Bool
 
     public var log: String {
-      return "title: \(LocalizableString.shared.get(with: title))" +
+      return "navigationTitle: \(navigationTitle.toString)" +
+      "displayLogo: \(displayLogo)" +
+      "title: \(title?.toString ?? "none")" +
       " onSuccessNav: \(navigationSuccessType.key)" +
       " onBackNav: \(navigationBackType?.key ?? "none")" +
       " isPreAuthorization: \(isPreAuthorization)" +
@@ -37,14 +41,18 @@ public extension UIConfig {
     }
 
     public init(
-      title: LocalizableString.Key,
-      caption: LocalizableString.Key,
-      quickPinOnlyCaption: LocalizableString.Key,
+      navigationTitle: LocalizableStringKey,
+      displayLogo: Bool = true,
+      title: LocalizableStringKey? = nil,
+      caption: LocalizableStringKey,
+      quickPinOnlyCaption: LocalizableStringKey,
       navigationSuccessType: ThreeWayNavigationType,
       navigationBackType: ThreeWayNavigationType?,
       isPreAuthorization: Bool,
       shouldInitializeBiometricOnCreate: Bool
     ) {
+      self.navigationTitle = navigationTitle
+      self.displayLogo = displayLogo
       self.title = title
       self.caption = caption
       self.quickPinOnlyCaption = quickPinOnlyCaption

@@ -15,22 +15,32 @@
  */
 
 import feature_common
+import logic_core
 
-final class PresentationLoadingViewModel<Router: RouterHost>: BaseLoadingViewModel<Router> {
+final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: BaseLoadingViewModel<Router, RequestItem> {
 
   private let interactor: PresentationInteractor
-  private let relyingParty: String
   private var publisherTask: Task<Void, Error>?
 
   init(
     router: Router,
     interactor: PresentationInteractor,
     relyingParty: String,
-    originator: AppRoute
+    relyingPartyIsTrusted: Bool,
+    originator: AppRoute,
+    requestItems: [ListItemSection<RequestItem>]
   ) {
+
     self.interactor = interactor
-    self.relyingParty = relyingParty
-    super.init(router: router, originator: originator, cancellationTimeout: 5)
+
+    super.init(
+      router: router,
+      originator: originator,
+      requestItems: requestItems,
+      relyingParty: relyingParty,
+      relyingPartyIsTrusted: relyingPartyIsTrusted,
+      cancellationTimeout: 5
+    )
   }
 
   func subscribeToCoordinatorPublisher() async {
@@ -52,12 +62,12 @@ final class PresentationLoadingViewModel<Router: RouterHost>: BaseLoadingViewMod
     }
   }
 
-  override func getTitle() -> LocalizableString.Key {
-    .requestDataTitle([relyingParty])
+  override func getTitle() -> LocalizableStringKey {
+    .requestDataTitle([getRelyingParty()])
   }
 
-  override func getCaption() -> LocalizableString.Key {
-    .pleaseWait
+  override func getCaption() -> LocalizableStringKey {
+    .requestsTheFollowing
   }
 
   private func getOnSuccessRoute(with url: URL?) -> AppRoute {
@@ -72,23 +82,20 @@ final class PresentationLoadingViewModel<Router: RouterHost>: BaseLoadingViewMod
         interactor.storeDynamicIssuancePendingUrl(with: url)
         return .pop(screen: getOriginator())
       }
-      return .deepLink(link: url, popToScreen: .featureDashboardModule(.dashboard))
+      return .deepLink(
+        link: url,
+        popToScreen: .featureDashboardModule(.dashboard)
+      )
     }
 
-    return .featureCommonModule(
-      .success(
-        config: UIConfig.Success(
-          title: .init(value: .success),
-          subtitle: .requestDataShareSuccess([relyingParty]),
-          buttons: [
-            .init(
-              title: .requestDataShareButton,
-              style: .primary,
-              navigationType: navigationType
-            )
-          ],
-          visualKind: .defaultIcon
-        )
+    return .featurePresentationModule(
+      .presentationSuccess(
+        config: DocumentSuccessUIConfig(
+          successNavigation: navigationType,
+          relyingParty: getRelyingParty(),
+          relyingPartyIsTrusted: isRelyingPartyIstrusted()
+        ),
+        getRequestItems()
       )
     )
   }

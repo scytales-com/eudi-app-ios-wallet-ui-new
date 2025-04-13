@@ -17,94 +17,157 @@ import SwiftUI
 import logic_resources
 import logic_business
 import logic_core
+import logic_ui
+import Copyable
 
-public struct DocumentDetailsUIModel: Sendable {
+@Copyable
+public struct DocumentDetailsUIModel: Equatable, Identifiable, Routable {
 
   public let id: String
   public let type: DocumentTypeIdentifier
   public let documentName: String
-  public let holdersName: String
-  public let holdersImage: Image
+  public let issuer: IssuerField?
   public let createdAt: Date
   public let hasExpired: Bool
-  public let documentFields: [DocumentField]
+  public let documentFields: [GenericExpandableItem]
+
+  public var log: String {
+    "id: \(id), type: \(type.rawValue), name: \(documentName)"
+  }
 }
 
 public extension DocumentDetailsUIModel {
 
-  struct DocumentField: Identifiable, Sendable {
-
-    public indirect enum Value: Sendable {
-      case string(String)
-      case image(Data)
-    }
-
+  struct IssuerField: Identifiable, Sendable, Equatable {
     public let id: String
-    public let title: String
-    public let value: Value
+    public let name: String
+    public let logoUrl: URL?
+    public let isVerified: Bool
+
+    public init(
+      id: String = UUID().uuidString,
+      issuersName: String,
+      logoUrl: URL?,
+      isVerified: Bool
+    ) {
+      self.id = id
+      self.name = issuersName
+      self.logoUrl = logoUrl
+      self.isVerified = isVerified
+    }
   }
 
   static func mock() -> DocumentDetailsUIModel {
     DocumentDetailsUIModel(
       id: UUID().uuidString,
-      type: DocumentTypeIdentifier.PID,
+      type: DocumentTypeIdentifier.mDocPid,
       documentName: "Digital ID",
-      holdersName: "Jane Doe",
-      holdersImage: Theme.shared.image.user,
+      issuer: .init(
+        id: UUID().uuidString,
+        issuersName: "Digital Credential Service",
+        logoUrl: URL(string: "https://www.example.com")!,
+        isVerified: true
+      ),
       createdAt: Date(),
       hasExpired: false,
       documentFields:
         [
-          .init(
-            id: UUID().uuidString,
-            title: "ID no",
-            value: .string("AB12356")),
-          .init(
-            id: UUID().uuidString,
-            title: "Nationality",
-            value: .string("Hellenic")),
-          .init(
-            id: UUID().uuidString,
-            title: "Place of birth",
-            value: .string("21 Oct 1994")),
-          .init(
-            id: UUID().uuidString,
-            title: "Height",
-            value: .string("1,82"))
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom("AB12356"),
+                overlineText: .custom("ID no")
+              ),
+              domainModel: nil
+            )
+          ),
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom("Hellenic"),
+                overlineText: .custom("Nationality")
+              ),
+              domainModel: nil
+            )
+          ),
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom("21 Oct 1994"),
+                overlineText: .custom("Place of birth")
+              ),
+              domainModel: nil
+            )
+          ),
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom("1,82"),
+                overlineText: .custom("Height")
+              ),
+              domainModel: nil
+            )
+          )
         ]
       +
       Array(
         count: 6,
-        createElement: DocumentField(
-          id: UUID().uuidString,
-          title: "Placeholder Field Title".padded(padLength: 5),
-          value: .string("Placeholder Field Value".padded(padLength: 10))
+        createElement: .single(
+          .init(
+            collapsed: .init(
+              mainText: .custom("Placeholder Field Value".padded(padLength: 10)),
+              overlineText: .custom("Placeholder Field Title".padded(padLength: 5))
+            ),
+            domainModel: nil
+          )
         )
       )
     )
   }
+
+  func toggleVisibility(isVisible: Bool) -> [GenericExpandableItem] {
+
+    func toggleSelection(isVisible: Bool, fields: inout [GenericExpandableItem]) {
+      for index in fields.indices {
+        switch fields[index] {
+        case .single(let item):
+          fields[index] = .single(item.copy(collapsed: item.collapsed.copy(isBlur: isVisible)))
+        case .nested(let item):
+          var children = item.expanded
+          toggleSelection(isVisible: isVisible, fields: &children)
+          fields[index] = .nested(item.copy(expanded: children))
+        }
+      }
+    }
+
+    var documentFields = self.documentFields
+    toggleSelection(isVisible: isVisible, fields: &documentFields)
+    return documentFields
+
+  }
 }
 
-extension MdocDecodable {
-  func transformToDocumentDetailsUi() -> DocumentDetailsUIModel {
+extension DocClaimsDecodable {
+  func transformToDocumentDetailsUi(
+    isSensitive: Bool = true
+  ) -> DocumentDetailsUIModel {
 
-    let documentFields: [DocumentDetailsUIModel.DocumentField] =
-    flattenValues(
-      input: displayStrings
-        .compactMap({$0})
-        .sorted(by: {$0.order < $1.order})
-        .decodeGender()
-        .decodeUserPseudonym()
-        .mapTrueFalseToLocalizable()
-        .parseDates(
-          parser: {
-            Locale.current.localizedDateTime(
-              date: $0,
-              uiFormatter: "dd MMM yyyy"
-            )
-          }
-        ),
-      images: displayImages
+    var issuer: DocumentDetailsUIModel.IssuerField? {
+      guard !self.issuerName.isEmpty else {
+        return nil
+      }
+      return .init(
+        issuersName: self.issuerName,
+        logoUrl: self.issuerLogo,
+        isVerified: true
+      )
+    }
+
+    let documentFields: [GenericExpandableItem] =
+    parseClaim(
+      documentId: self.id,
+      isSensitive: isSensitive,
+      input: docClaims
     )
 
     var bearerName: String {
@@ -114,101 +177,88 @@ extension MdocDecodable {
       return "\(fullName.first) \(fullName.last)"
     }
 
-    let identifier = DocumentTypeIdentifier(rawValue: docType)
-
     return .init(
       id: id,
-      type: identifier,
-      documentName: identifier.isSupported
-      ? identifier.localizedTitle
-      : displayName ?? identifier.localizedTitle,
-      holdersName: bearerName,
-      holdersImage: getPortrait() ?? Theme.shared.image.user,
+      type: documentTypeIdentifier,
+      documentName: displayName.orEmpty,
+      issuer: issuer,
       createdAt: createdAt,
-      hasExpired: hasExpired(
-        parser: {
-          Locale.current.parseDate(
-            date: $0
-          )
-        }
-      ),
+      hasExpired: hasExpired,
       documentFields: documentFields
     )
   }
 
-  private func flattenValues(input: [NameValue], images: [NameImage]) -> [DocumentDetailsUIModel.DocumentField] {
-    input.reduce(into: []) { partialResult, nameValue in
-      let uuid = UUID().uuidString
-      let title: String = LocalizableString.shared.get(with: .dynamic(key: nameValue.name))
-      if let image = images.first(where: {$0.name == nameValue.name})?.image {
+  private func parseClaim(
+    documentId: String,
+    isSensitive: Bool,
+    input: [DocClaim]
+  ) -> [GenericExpandableItem] {
+    input.reduce(into: []) { partialResult, docClaim in
 
-        guard nameValue.name != "portrait" else {
+      let title = docClaim.displayName.ifNilOrEmpty { docClaim.name }
+
+      if let nested = docClaim.children {
+
+        var children = parseClaim(
+          documentId: documentId,
+          isSensitive: isSensitive,
+          input: nested
+        )
+
+        children = children.sortByName()
+
+        if title.isEmpty {
+          partialResult.append(contentsOf: children)
+        } else {
           partialResult.append(
-            .init(
-              id: uuid,
-              title: title,
-              value: .string(LocalizableString.shared.get(with: .shownAbove))
+            .nested(
+              .init(
+                collapsed: .init(mainText: .custom(title)),
+                expanded: children,
+                isExpanded: false
+              )
             )
           )
-          return
         }
-
+      } else if let uiImage = docClaim.dataValue.image {
         partialResult.append(
-          .init(
-            id: uuid,
-            title: title,
-            value: .image(image)
-          )
-        )
-      } else if let nested = nameValue.children {
-        partialResult.append(
-          .init(
-            id: uuid,
-            title: title,
-            value: .string(flattenNested(parent: nameValue, nested: nested).value)
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom(title),
+                leadingIcon: .init(image: Image(uiImage: uiImage)),
+                isBlur: isSensitive
+              ),
+              domainModel: nil
+            )
           )
         )
       } else {
+
+        let claim = docClaim
+          .parseDate(
+            parser: {
+              Locale.current.localizedDateTime(
+                date: $0,
+                uiFormatter: "dd MMM yyyy"
+              )
+            }
+          )
+          .parseUserPseudonym()
+
         partialResult.append(
-          .init(
-            id: uuid,
-            title: title,
-            value: .string(nameValue.value)
+          .single(
+            .init(
+              collapsed: .init(
+                mainText: .custom(claim.stringValue),
+                overlineText: .custom(title),
+                isBlur: isSensitive
+              ),
+              domainModel: nil
+            )
           )
         )
       }
-    }
-  }
-
-  private func flattenNested(parent: NameValue, nested: [NameValue]) -> NameValue {
-    let flat = nested
-      .decodeGender()
-      .decodeUserPseudonym()
-      .mapTrueFalseToLocalizable()
-      .parseDates(
-        parser: {
-          Locale.current.localizedDateTime(
-            date: $0,
-            uiFormatter: "dd MMM yyyy"
-          )
-        }
-      )
-      .reduce(into: "") { partialResult, nameValue in
-        if let nestedChildren = nameValue.children {
-          let deepNested = flattenNested(parent: nameValue, nested: nestedChildren.sorted(by: {$0.order < $1.order}))
-          partialResult += "\(deepNested.value)\n"
-        } else {
-          partialResult += "\(LocalizableString.shared.get(with: .dynamic(key: nameValue.name))): \(nameValue.value)\n"
-        }
-      }
-      .dropLast()
-
-    return .init(
-      name: parent.name,
-      value: String(flat),
-      ns: parent.ns,
-      order: parent.order,
-      children: nil
-    )
+    }.sortByName()
   }
 }

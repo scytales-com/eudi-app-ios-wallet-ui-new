@@ -20,14 +20,14 @@ import logic_resources
 
 public struct ExpandableTextView: View {
   @State private var isExpanded = false
-  var title: LocalizableString.Key
-  var content: LocalizableString.Key
+  var title: LocalizableStringKey
+  var content: LocalizableStringKey
   let isloading: Bool
 
   public init(
     isExpanded: Bool = false,
-    title: LocalizableString.Key,
-    content: LocalizableString.Key,
+    title: LocalizableStringKey,
+    content: LocalizableStringKey,
     isloading: Bool
   ) {
     self.isExpanded = isExpanded
@@ -53,7 +53,7 @@ public struct ExpandableTextView: View {
         HStack {
           Text(title)
             .typography(Theme.shared.font.titleSmall)
-            .foregroundColor(Theme.shared.color.textPrimaryDark)
+            .foregroundColor(Theme.shared.color.onSurface)
           Spacer()
           chevron
         }
@@ -63,7 +63,7 @@ public struct ExpandableTextView: View {
           HStack {
             Text(content)
               .typography(Theme.shared.font.bodyMedium)
-              .foregroundColor(Theme.shared.color.textSecondaryDark)
+              .foregroundColor(Theme.shared.color.secondary)
             Spacer()
           }
           .padding([.horizontal, .bottom])
@@ -71,7 +71,7 @@ public struct ExpandableTextView: View {
       }
     }
     .padding()
-    .background(Theme.shared.color.backgroundDefault)
+    .background(Theme.shared.color.background)
     .cornerRadius(10)
     .onTapGesture {
       withAnimation {
@@ -85,14 +85,14 @@ public struct ExpandableTextView: View {
 #Preview {
   VStack {
     ExpandableTextView(
-      title: LocalizableString.Key.addDocumentTitle,
-      content: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDocumentTitle,
+      content: LocalizableStringKey.addDoc,
       isloading: false
     )
 
     ExpandableTextView(
-      title: LocalizableString.Key.addDocumentTitle,
-      content: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDocumentTitle,
+      content: LocalizableStringKey.addDoc,
       isloading: true
     )
   }

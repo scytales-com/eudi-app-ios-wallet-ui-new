@@ -18,7 +18,7 @@ import logic_resources
 
 public struct WrapButtonView: View {
 
-  private let title: LocalizableString.Key
+  private let title: LocalizableStringKey
   private let onAction: () -> Void
   private let textColor: Color
   private let backgroundColor: Color
@@ -32,8 +32,8 @@ public struct WrapButtonView: View {
   private let isLoading: Bool
 
   public init(
-    title: LocalizableString.Key,
-    textColor: Color = Theme.shared.color.textPrimaryDark,
+    title: LocalizableStringKey,
+    textColor: Color = Theme.shared.color.onSurface,
     backgroundColor: Color = Theme.shared.color.primary,
     iconColor: Color = Theme.shared.color.primary,
     icon: Image? = nil,
@@ -61,13 +61,13 @@ public struct WrapButtonView: View {
 
   public init(
     style: ButtonViewStyle,
-    title: LocalizableString.Key,
+    title: LocalizableStringKey,
     iconColor: Color = Theme.shared.color.primary,
     icon: Image? = nil,
     gravity: Gravity = .center,
     isLoading: Bool = false,
     isEnabled: Bool = true,
-    cornerRadius: CGFloat = Theme.shared.shape.small,
+    cornerRadius: CGFloat = Theme.shared.shape.extraSmall,
     onAction: @autoclosure @escaping () -> Void
   ) {
     self.title = title
@@ -89,7 +89,6 @@ public struct WrapButtonView: View {
       action: { onAction() },
       label: {
         HStack {
-
           if gravity == .center || gravity == .end {
             Spacer()
           }
@@ -106,7 +105,8 @@ public struct WrapButtonView: View {
           }
 
           Text(title)
-            .typography(Theme.shared.font.labelLarge)
+            .typography(Theme.shared.font.bodyLarge)
+            .fontWeight(.semibold)
             .foregroundColor(textColor)
             .buttonStyle(OutlinePressedButtonStyle())
 
@@ -142,7 +142,7 @@ public extension WrapButtonView {
   VStack {
     WrapButtonView(
       style: .primary,
-      title: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDoc,
       icon: Image(systemName: "calendar"),
       gravity: .center,
       cornerRadius: 10,
@@ -150,7 +150,7 @@ public extension WrapButtonView {
     )
     WrapButtonView(
       style: .primary,
-      title: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDoc,
       icon: Image(systemName: "calendar"),
       gravity: .start,
       cornerRadius: 10,
@@ -158,7 +158,7 @@ public extension WrapButtonView {
     )
     WrapButtonView(
       style: .secondary,
-      title: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDoc,
       icon: Image(systemName: "calendar"),
       gravity: .end,
       cornerRadius: 10,
@@ -166,7 +166,7 @@ public extension WrapButtonView {
     )
     WrapButtonView(
       style: .primary,
-      title: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDoc,
       icon: Image(systemName: "calendar"),
       gravity: .center,
       isLoading: true,
@@ -175,11 +175,25 @@ public extension WrapButtonView {
     )
     WrapButtonView(
       style: .primary,
-      title: LocalizableString.Key.addDoc,
+      title: LocalizableStringKey.addDoc,
       icon: Image(systemName: "calendar"),
       gravity: .center,
       isEnabled: false,
       cornerRadius: 10,
+      onAction: {}()
+    )
+    WrapButtonView(
+      style: .error,
+      title: LocalizableStringKey.addDoc,
+      gravity: .center,
+      onAction: {}()
+    )
+
+    WrapButtonView(
+      style: .success,
+      title: LocalizableStringKey.addDoc,
+      icon: Image(systemName: "checkmark"),
+      gravity: .center,
       onAction: {}()
     )
   }

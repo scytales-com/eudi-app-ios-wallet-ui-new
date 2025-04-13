@@ -22,17 +22,17 @@ import logic_business
 struct ScannerState: ViewState {
 
   let config: ScannerUiConfig
-  let error: LocalizableString.Key?
+  let error: LocalizableStringKey?
   let showInformativeText: Bool
-  let informativeTest: LocalizableString.Key
+  let informativeTest: LocalizableStringKey
   let allowScanning: Bool
   let failedScanAttempts: Int
 
-  var title: LocalizableString.Key {
+  var title: LocalizableStringKey {
     return config.flow.title
   }
 
-  var caption: LocalizableString.Key {
+  var caption: LocalizableStringKey {
     return config.flow.caption
   }
 }
@@ -106,10 +106,6 @@ final class ScannerViewModel<Router: RouterHost>: ViewModel<Router, ScannerState
     }
   }
 
-  func onDismiss() {
-    router.pop()
-  }
-
   func onError() {
     setState {
       $0.copy(error: .cameraError)
@@ -131,28 +127,22 @@ final class ScannerViewModel<Router: RouterHost>: ViewModel<Router, ScannerState
           )
         )
       )
-    case .issuing(let config):
-      var successNavType: UIConfig.TwoWayNavigationType {
-        return switch config.flow {
-        case .noDocument: .push(.featureDashboardModule(.dashboard))
-        case .extraDocument: .popTo(.featureDashboardModule(.dashboard))
-        }
-      }
+    case .issuing(let successNav, let cancelNav):
       router.push(
         with: .featureIssuanceModule(
           .credentialOfferRequest(
             config: UIConfig.Generic(
               arguments: ["uri": scanResult],
-              navigationSuccessType: successNavType,
-              navigationCancelType: .popTo(
-                .featureIssuanceModule(
-                  .issuanceAddDocument(config: config)
-                )
-              )
+              navigationSuccessType: successNav,
+              navigationCancelType: cancelNav
             )
           )
         )
       )
     }
+  }
+
+  func pop() {
+    router.pop()
   }
 }

@@ -26,7 +26,7 @@ public enum RuntimeError: LocalizedError {
     case .customError(let message):
       message
     case .genericError:
-      LocalizableString.shared.get(with: .genericErrorDesc)
+      LocalizableStringKey.genericErrorDesc.toString
     }
   }
 }

@@ -35,27 +35,79 @@ extension Constants {
   
   static let euPidModelId = "pidId"
   static let isoMdlModelId = "mdlId"
+  static let euPidName = "National ID"
+  static let isoMdlName = "Driving Licence"
+  static let isoMdlDocType = "org.iso.18013.5.1.mDL"
+  static let claimFirstName = "John"
+  static let claimLastName = "Doe"
   static let documentCreatedAt = Date()
+  static let claimExpiredAt = Date()
   
   static let isoMdlModel = GenericMdocModel(
     id: isoMdlModelId,
     createdAt: documentCreatedAt,
-    issuerSigned: dr.documents!.first!.issuerSigned,
-    devicePrivateKey: Constants.pk,
     docType: dr.documents!.first!.issuerSigned.issuerAuth.mso.docType,
-    displayName: "Driving Licence",
-    statusDescription: DocumentStatus.issued.rawValue
-  )!
+    displayName: isoMdlName,
+    display: nil,
+    issuerDisplay: nil,
+    credentialIssuerIdentifier: nil,
+    configurationIdentifier: nil,
+    validFrom: nil,
+    validUntil: nil,
+    modifiedAt: nil,
+    docClaims: [
+      .init(
+        name: DocumentJsonKeys.EXPIRY_DATE,
+        dataValue: .date(claimExpiredAt.formatted()),
+        stringValue: claimExpiredAt.formatted()
+      ),
+      .init(
+        name: DocumentJsonKeys.FIRST_NAME,
+        dataValue: .string(claimFirstName),
+        stringValue: claimFirstName
+      ),
+      .init(
+        name: DocumentJsonKeys.LAST_NAME,
+        dataValue: .string(claimLastName),
+        stringValue: claimLastName
+      )
+    ],
+    docDataFormat: .cbor,
+    hashingAlg: nil
+  )
   
   static let euPidModel = GenericMdocModel(
     id: euPidModelId,
     createdAt: documentCreatedAt,
-    issuerSigned: dr.documents!.last!.issuerSigned,
-    devicePrivateKey: Constants.pk,
     docType: dr.documents!.last!.issuerSigned.issuerAuth.mso.docType,
-    displayName: "National ID",
-    statusDescription: DocumentStatus.issued.rawValue
-  )!
+    displayName: euPidName,
+    display: nil,
+    issuerDisplay: nil,
+    credentialIssuerIdentifier: nil,
+    configurationIdentifier: nil,
+    validFrom: nil,
+    validUntil: nil,
+    modifiedAt: nil,
+    docClaims: [
+      .init(
+        name: DocumentJsonKeys.EXPIRY_DATE,
+        dataValue: .date(claimExpiredAt.formatted()),
+        stringValue: claimExpiredAt.formatted()
+      ),
+      .init(
+        name: DocumentJsonKeys.FIRST_NAME,
+        dataValue: .string(claimFirstName),
+        stringValue: claimFirstName
+      ),
+      .init(
+        name: DocumentJsonKeys.LAST_NAME,
+        dataValue: .string(claimLastName),
+        stringValue: claimLastName
+      )
+    ],
+    docDataFormat: .cbor,
+    hashingAlg: nil
+  )
 }
 
 extension Constants {
@@ -70,7 +122,10 @@ extension Constants {
     }
     
     func receiveRequest() async throws -> MdocDataTransfer18013.UserRequestInfo {
-      .init(validItemsRequested: RequestItems())
+      .init(
+        docDataFormats: [DocumentTypeIdentifier.mDocPid.rawValue : .cbor],
+        itemsRequested: RequestItems()
+      )
     }
     
     var flow: EudiWalletKit.FlowType
@@ -84,7 +139,7 @@ extension Constants {
   
   static let mockPresentationSession = PresentationSession(
     presentationService: MockPresentationService(flow: .other),
-    docIdAndTypes: [:],
+    docIdToPresentInfo: [:],
     userAuthenticationRequired: false
   )
 }
@@ -92,20 +147,27 @@ extension Constants {
 extension Constants {
   static let mockPresentationRequest = PresentationRequest(
     items: [
-      DocElementsViewModel(
-        docId: Constants.isoMdlModelId,
-        docType: DocumentTypeIdentifier.MDL.rawValue,
-        displayName: "Driving License",
-        isEnabled: true,
-        elements: [
-          ElementViewModel(
-            nameSpace: "nameSpace",
-            elementIdentifier: "elementIdentifier",
-            isOptional: false,
-            intentToRetain: true,
-            isEnabled: true
-          )
-        ]
+      .msoMdoc(
+        .init(
+          docId: isoMdlModelId,
+          docType: isoMdlDocType,
+          displayName: isoMdlName,
+          nameSpacedElements: [
+            .init(
+              nameSpace: "nameSpace",
+              elements: [
+                .init(
+                  elementIdentifier: "elementIdentifier",
+                  displayName: "localizedName",
+                  isOptional: false,
+                  stringValue: "value",
+                  docClaim: .init(name: "elementIdentifier", dataValue: .string("value"), stringValue: "value"),
+                  isValid: true
+                )
+              ]
+            )
+          ]
+        )
       )
     ],
     relyingParty: "Relying Party",

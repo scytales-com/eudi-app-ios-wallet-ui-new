@@ -24,15 +24,38 @@ public final class FeatureDashboardAssembly: Assembly {
   public func assemble(container: Container) {
     container.register(DashboardInteractor.self) { r in
       DashboardInteractorImpl(
-        walletController: r.force(WalletKitController.self),
-        reachabilityController: r.force(ReachabilityController.self),
-        configLogic: r.force(ConfigLogic.self)
+        walletKitController: r.force(WalletKitController.self)
       )
     }
     .inObjectScope(ObjectScope.transient)
 
     container.register(DocumentSignInteractor.self) { r in
       DocumentSignInteractorImpl(configLogic: r.force(ConfigLogic.self))
+    }
+
+    container.register(SideMenuInteractor.self) { r in
+      SideMenuInteractorImpl(
+        walletController: r.force(WalletKitController.self),
+        configLogic: r.force(ConfigLogic.self)
+      )
+    }
+
+    container.register(TransactionTabInteractor.self) { _ in
+      TransactionTabInteractorImpl()
+    }
+
+    container.register(DocumentTabInteractor.self) { r in
+      DocumentTabInteractorImpl(
+        walletKitController: r.force(WalletKitController.self),
+        filterValidator: r.force(FilterValidator.self)
+      )
+    }
+
+    container.register(HomeTabInteractor.self) { r in
+      HomeTabInteractorImpl(
+        walletKitController: r.force(WalletKitController.self),
+        reachabilityController: r.force(ReachabilityController.self)
+      )
     }
   }
 }

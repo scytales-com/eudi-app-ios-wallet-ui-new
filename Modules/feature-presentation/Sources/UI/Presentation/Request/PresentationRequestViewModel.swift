@@ -41,10 +41,29 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
     case .success(let authenticationRequest):
       self.onReceivedItems(
         with: authenticationRequest.requestDataCells,
-        title: .requestDataTitle([authenticationRequest.relyingParty]),
-        relyingParty: authenticationRequest.relyingParty,
+        title: .requestDataTitle(
+          [authenticationRequest.relyingParty]
+        ),
+        relyingParty: .custom(authenticationRequest.relyingParty),
         isTrusted: authenticationRequest.isTrusted
       )
+      setState {
+        $0.copy(
+          contentHeaderConfig: .init(
+            appIconAndTextData: AppIconAndTextData(
+              appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+              appText: ThemeManager.shared.image.euditext
+            ),
+            description: .dataSharingTitle,
+            mainText: getTitle(),
+            relyingPartyData: RelyingPartyData(
+              isVerified: viewState.isTrusted,
+              name: getRelyingParty(),
+              description: getCaption()
+            )
+          )
+        )
+      }
     case .failure:
       self.onEmptyDocuments()
     }
@@ -64,7 +83,9 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
         if let route = self.getSuccessRoute() {
           self.router.push(with: route)
         } else {
-          self.router.popTo(with: self.getPopRoute() ?? .featureDashboardModule(.dashboard))
+          self.router.popTo(
+            with: self.getPopRoute() ?? .featureDashboardModule(.dashboard)
+          )
         }
       case .failure(let error):
         self.onError(with: error)
@@ -78,15 +99,17 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
         .featureCommonModule(
           .biometry(
             config: UIConfig.Biometry(
-              title: getTitle(),
+              navigationTitle: .biometryConfirmRequest,
               caption: .requestDataShareBiometryCaption,
               quickPinOnlyCaption: .requestDataShareQuickPinCaption,
               navigationSuccessType: .push(
                 .featurePresentationModule(
                   .presentationLoader(
-                    getRelyingParty(),
+                    relyingParty: getRelyingParty().toString,
+                    relyingPartyisTrusted: getRelyingPartyIsTrusted(),
                     presentationCoordinator: remoteSessionCoordinator,
-                    originator: getOriginator()
+                    originator: getOriginator(),
+                    items: viewState.items.filterSelectedRows()
                   )
                 )
               ),
@@ -104,31 +127,35 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
     return getOriginator()
   }
 
-  override func getTitle() -> LocalizableString.Key {
-    viewState.title
+  override func getTitle() -> LocalizableStringKey {
+    .dataSharingRequest
   }
 
-  override func getCaption() -> LocalizableString.Key {
-    .requestDataCaption
+  override func getCaption() -> LocalizableStringKey {
+    .requestsTheFollowing
   }
 
-  override func getDataRequestInfo() -> LocalizableString.Key {
+  override func getDataRequestInfo() -> LocalizableStringKey {
     .requestDataInfoNotice
   }
 
-  override func getRelyingParty() -> String {
+  override func getRelyingParty() -> LocalizableStringKey {
     viewState.relyingParty
   }
 
-  override func getTitleCaption() -> String {
-    LocalizableString.shared.get(with: .requestDataTitle([""]))
+  override func getRelyingPartyIsTrusted() -> Bool {
+    viewState.isTrusted
   }
 
-  override func getTrustedRelyingParty() -> LocalizableString.Key {
+  override func getTitleCaption() -> LocalizableStringKey {
+    .requestDataTitle([""])
+  }
+
+  override func getTrustedRelyingParty() -> LocalizableStringKey {
     .requestDataVerifiedEntity
   }
 
-  override func getTrustedRelyingPartyInfo() -> LocalizableString.Key {
+  override func getTrustedRelyingPartyInfo() -> LocalizableStringKey {
     .requestDataVerifiedEntityMessage
   }
 

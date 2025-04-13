@@ -16,13 +16,19 @@
 		F05E9F382AFABBC200891E8F /* feature-presentation in Resources */ = {isa = PBXBuildFile; fileRef = F05E9F372AFABBC200891E8F /* feature-presentation */; };
 		F06325102AC598370004601F /* logic-test in Resources */ = {isa = PBXBuildFile; fileRef = F063250F2AC598370004601F /* logic-test */; };
 		F06325122AC59AF50004601F /* feature-test in Resources */ = {isa = PBXBuildFile; fileRef = F06325112AC59AF50004601F /* feature-test */; };
-		F0635CA82B72431D00260E50 /* eudi_pid_issuer_ut.der in Resources */ = {isa = PBXBuildFile; fileRef = F0635CA72B72431D00260E50 /* eudi_pid_issuer_ut.der */; };
 		F069CC3F2AFAC0AD0033AAC5 /* feature-proximity in Resources */ = {isa = PBXBuildFile; fileRef = F069CC3D2AFAC0AD0033AAC5 /* feature-proximity */; };
 		F069CC402AFAC0AD0033AAC5 /* feature-issuance in Resources */ = {isa = PBXBuildFile; fileRef = F069CC3E2AFAC0AD0033AAC5 /* feature-issuance */; };
 		F0A013982AC35ECA00065EAD /* logic-business in Resources */ = {isa = PBXBuildFile; fileRef = F0A013922AC35ECA00065EAD /* logic-business */; };
 		F0A013992AC35ECA00065EAD /* logic-api in Resources */ = {isa = PBXBuildFile; fileRef = F0A013932AC35ECA00065EAD /* logic-api */; };
 		F0A0139A2AC35ECA00065EAD /* feature-startup in Resources */ = {isa = PBXBuildFile; fileRef = F0A013942AC35ECA00065EAD /* feature-startup */; };
 		F0A0139C2AC35ECA00065EAD /* logic-ui in Resources */ = {isa = PBXBuildFile; fileRef = F0A013962AC35ECA00065EAD /* logic-ui */; };
+		F0A984762DA917130051A4DB /* pidissuerca02_ut.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984752DA917130051A4DB /* pidissuerca02_ut.der */; };
+		F0A984772DA917130051A4DB /* pidissuerca02_nl.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984732DA917130051A4DB /* pidissuerca02_nl.der */; };
+		F0A984782DA917130051A4DB /* pidissuerca02_cz.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A9846F2DA917130051A4DB /* pidissuerca02_cz.der */; };
+		F0A984792DA917130051A4DB /* pidissuerca02_pt.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984742DA917130051A4DB /* pidissuerca02_pt.der */; };
+		F0A9847A2DA917130051A4DB /* pidissuerca02_ee.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984702DA917130051A4DB /* pidissuerca02_ee.der */; };
+		F0A9847B2DA917130051A4DB /* pidissuerca02_lu.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984722DA917130051A4DB /* pidissuerca02_lu.der */; };
+		F0A9847C2DA917130051A4DB /* pidissuerca02_eu.der in Resources */ = {isa = PBXBuildFile; fileRef = F0A984712DA917130051A4DB /* pidissuerca02_eu.der */; };
 		F0BFE9B72AD557290062826F /* feature-common in Resources */ = {isa = PBXBuildFile; fileRef = F0BFE9B62AD557290062826F /* feature-common */; };
 		F0C6207E2B6A6246007F903F /* logic-analytics in Resources */ = {isa = PBXBuildFile; fileRef = F0C6207D2B6A6246007F903F /* logic-analytics */; };
 		F12E940F2ABC6C000086EC93 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12E940E2ABC6C000086EC93 /* AppDelegate.swift */; };
@@ -34,16 +40,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1194D2302B06362900377213 /* EUDI_sample_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = EUDI_sample_data.json; sourceTree = "<group>"; };
 		1198ECD72AC453F200F4E71A /* logic-resources */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-resources"; path = "Modules/logic-resources"; sourceTree = "<group>"; };
 		B070C01D2C0A27400061295A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F018D9F32D087C410015876D /* logic-storage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-storage"; path = "Modules/logic-storage"; sourceTree = "<group>"; };
 		F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = WalletDemoRelease.xcconfig; sourceTree = "<group>"; };
 		F02921622B8E07870076A58B /* WalletDevRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = WalletDevRelease.xcconfig; sourceTree = "<group>"; };
 		F02AE38E2BA6E45F00C25C59 /* logic-assembly */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-assembly"; path = "Modules/logic-assembly"; sourceTree = "<group>"; };
 		F05E9F372AFABBC200891E8F /* feature-presentation */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-presentation"; path = "Modules/feature-presentation"; sourceTree = "<group>"; };
 		F063250F2AC598370004601F /* logic-test */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-test"; path = "Modules/logic-test"; sourceTree = "<group>"; };
 		F06325112AC59AF50004601F /* feature-test */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-test"; path = "Modules/feature-test"; sourceTree = "<group>"; };
-		F0635CA72B72431D00260E50 /* eudi_pid_issuer_ut.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eudi_pid_issuer_ut.der; sourceTree = "<group>"; };
 		F069CC3D2AFAC0AD0033AAC5 /* feature-proximity */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-proximity"; path = "Modules/feature-proximity"; sourceTree = "<group>"; };
 		F069CC3E2AFAC0AD0033AAC5 /* feature-issuance */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-issuance"; path = "Modules/feature-issuance"; sourceTree = "<group>"; };
 		F09E1EA22AC3443000779C25 /* Wallet.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Wallet.plist; sourceTree = "<group>"; };
@@ -52,6 +57,13 @@
 		F0A013942AC35ECA00065EAD /* feature-startup */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-startup"; path = "Modules/feature-startup"; sourceTree = "<group>"; };
 		F0A013962AC35ECA00065EAD /* logic-ui */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-ui"; path = "Modules/logic-ui"; sourceTree = "<group>"; };
 		F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = EudiWallet.xctestplan; sourceTree = "<group>"; };
+		F0A9846F2DA917130051A4DB /* pidissuerca02_cz.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_cz.der; sourceTree = "<group>"; };
+		F0A984702DA917130051A4DB /* pidissuerca02_ee.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_ee.der; sourceTree = "<group>"; };
+		F0A984712DA917130051A4DB /* pidissuerca02_eu.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_eu.der; sourceTree = "<group>"; };
+		F0A984722DA917130051A4DB /* pidissuerca02_lu.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_lu.der; sourceTree = "<group>"; };
+		F0A984732DA917130051A4DB /* pidissuerca02_nl.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_nl.der; sourceTree = "<group>"; };
+		F0A984742DA917130051A4DB /* pidissuerca02_pt.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_pt.der; sourceTree = "<group>"; };
+		F0A984752DA917130051A4DB /* pidissuerca02_ut.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = pidissuerca02_ut.der; sourceTree = "<group>"; };
 		F0B440782B9B42B600031137 /* logic-core */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-core"; path = "Modules/logic-core"; sourceTree = "<group>"; };
 		F0BFE9B62AD557290062826F /* feature-common */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-common"; path = "Modules/feature-common"; sourceTree = "<group>"; };
 		F0C6207D2B6A6246007F903F /* logic-analytics */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-analytics"; path = "Modules/logic-analytics"; sourceTree = "<group>"; };
@@ -64,7 +76,6 @@
 		F1596BB02AD40EE000552D1B /* feature-dashboard */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-dashboard"; path = "Modules/feature-dashboard"; sourceTree = "<group>"; };
 		F1CACADF2AC3097100B40DED /* WalletDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WalletDev.xcconfig; sourceTree = "<group>"; };
 		F1CACAE12AC3098C00B40DED /* WalletDemo.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WalletDemo.xcconfig; sourceTree = "<group>"; };
-		F1E83CFD2ACE91DD00FBC0E3 /* feature-login */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-login"; path = "Modules/feature-login"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,15 +90,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1194D22F2B06362900377213 /* Sample */ = {
-			isa = PBXGroup;
-			children = (
-				F0635CA72B72431D00260E50 /* eudi_pid_issuer_ut.der */,
-				1194D2302B06362900377213 /* EUDI_sample_data.json */,
-			);
-			path = Sample;
-			sourceTree = "<group>";
-		};
 		F09E1EA02AC33A6800779C25 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -97,6 +99,20 @@
 				F1CACAE12AC3098C00B40DED /* WalletDemo.xcconfig */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		F0FFD1DF2D82DB8C0044B5C1 /* Certificate */ = {
+			isa = PBXGroup;
+			children = (
+				F0A9846F2DA917130051A4DB /* pidissuerca02_cz.der */,
+				F0A984702DA917130051A4DB /* pidissuerca02_ee.der */,
+				F0A984712DA917130051A4DB /* pidissuerca02_eu.der */,
+				F0A984722DA917130051A4DB /* pidissuerca02_lu.der */,
+				F0A984732DA917130051A4DB /* pidissuerca02_nl.der */,
+				F0A984742DA917130051A4DB /* pidissuerca02_pt.der */,
+				F0A984752DA917130051A4DB /* pidissuerca02_ut.der */,
+			);
+			path = Certificate;
 			sourceTree = "<group>";
 		};
 		F14907AF2ABAF54B00DDFE56 = {
@@ -121,7 +137,7 @@
 		F14907BA2ABAF54B00DDFE56 /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
-				1194D22F2B06362900377213 /* Sample */,
+				F0FFD1DF2D82DB8C0044B5C1 /* Certificate */,
 				F09E1EA02AC33A6800779C25 /* Config */,
 				F14907BB2ABAF54B00DDFE56 /* Application.swift */,
 				F12E940E2ABC6C000086EC93 /* AppDelegate.swift */,
@@ -150,6 +166,7 @@
 		F14908692ABC467600DDFE56 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				F018D9F32D087C410015876D /* logic-storage */,
 				F02AE38E2BA6E45F00C25C59 /* logic-assembly */,
 				F0DF43F42BA083DF003498ED /* logic-authentication */,
 				F0B440782B9B42B600031137 /* logic-core */,
@@ -158,7 +175,6 @@
 				F069CC3D2AFAC0AD0033AAC5 /* feature-proximity */,
 				F05E9F372AFABBC200891E8F /* feature-presentation */,
 				F1596BB02AD40EE000552D1B /* feature-dashboard */,
-				F1E83CFD2ACE91DD00FBC0E3 /* feature-login */,
 				F0BFE9B62AD557290062826F /* feature-common */,
 				1198ECD72AC453F200F4E71A /* logic-resources */,
 				F06325112AC59AF50004601F /* feature-test */,
@@ -245,11 +261,17 @@
 				F0C6207E2B6A6246007F903F /* logic-analytics in Resources */,
 				F02921632B8E07870076A58B /* WalletDemoRelease.xcconfig in Resources */,
 				F1CACAE02AC3097100B40DED /* WalletDev.xcconfig in Resources */,
-				F0635CA82B72431D00260E50 /* eudi_pid_issuer_ut.der in Resources */,
 				F0A013992AC35ECA00065EAD /* logic-api in Resources */,
 				F0A0139A2AC35ECA00065EAD /* feature-startup in Resources */,
 				F1CACAE22AC3098C00B40DED /* WalletDemo.xcconfig in Resources */,
 				F0BFE9B72AD557290062826F /* feature-common in Resources */,
+				F0A984762DA917130051A4DB /* pidissuerca02_ut.der in Resources */,
+				F0A984772DA917130051A4DB /* pidissuerca02_nl.der in Resources */,
+				F0A984782DA917130051A4DB /* pidissuerca02_cz.der in Resources */,
+				F0A984792DA917130051A4DB /* pidissuerca02_pt.der in Resources */,
+				F0A9847A2DA917130051A4DB /* pidissuerca02_ee.der in Resources */,
+				F0A9847B2DA917130051A4DB /* pidissuerca02_lu.der in Resources */,
+				F0A9847C2DA917130051A4DB /* pidissuerca02_eu.der in Resources */,
 				F0A0139C2AC35ECA00065EAD /* logic-ui in Resources */,
 				F02921642B8E07870076A58B /* WalletDevRelease.xcconfig in Resources */,
 				F05E9F382AFABBC200891E8F /* feature-presentation in Resources */,

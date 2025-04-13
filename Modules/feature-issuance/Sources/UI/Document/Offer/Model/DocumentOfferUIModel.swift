@@ -17,21 +17,25 @@ import Foundation
 import logic_core
 import logic_business
 import logic_resources
+import logic_ui
 
 public struct DocumentOfferUIModel: Sendable {
 
   public let issuerName: String
+  public let issuerLogo: URL?
   public let txCode: TxCode?
   public let uiOffers: [UIOffer]
   public let docOffers: [OfferedDocModel]
 
   public init(
     issuerName: String,
+    issuerLogo: URL?,
     txCode: TxCode?,
     uiOffers: [UIOffer],
     docOffers: [OfferedDocModel]
   ) {
     self.issuerName = issuerName
+    self.issuerLogo = issuerLogo
     self.txCode = txCode
     self.uiOffers = uiOffers
     self.docOffers = docOffers
@@ -43,25 +47,17 @@ public extension DocumentOfferUIModel {
 
     @EquatableNoop
     public var id: String
-
+    public let listItem: ListItemData
     public let documentName: String
-    public let documentType: DocumentTypeIdentifier
-
-    var title: String {
-      if documentType.isSupported {
-        return documentType.localizedTitle
-      }
-      return documentName
-    }
 
     public init(
       id: String = UUID().uuidString,
-      documentName: String,
-      documentType: DocumentTypeIdentifier
+      listItem: ListItemData,
+      documentName: String
     ) {
       self.id = id
       self.documentName = documentName
-      self.documentType = documentType
+      self.listItem = listItem
     }
   }
 }
@@ -82,33 +78,34 @@ public extension DocumentOfferUIModel {
 public extension DocumentOfferUIModel {
   static func mock() -> DocumentOfferUIModel {
     return .init(
-      issuerName: LocalizableString.shared.get(with: .unknownIssuer),
+      issuerName: LocalizableStringKey.unknownIssuer.toString,
+      issuerLogo: nil,
       txCode: nil,
       uiOffers: [
         .init(
           id: UUID().uuidString,
-          documentName: "Document Name",
-          documentType: .GENERIC(docType: "")
+          listItem: .init(mainText: .custom("Document Name")),
+          documentName: "Document Name"
         ),
         .init(
           id: UUID().uuidString,
-          documentName: "Document Name",
-          documentType: .GENERIC(docType: "")
+          listItem: .init(mainText: .custom("Document Name")),
+          documentName: "Document Name"
         ),
         .init(
           id: UUID().uuidString,
-          documentName: "Document Name",
-          documentType: .GENERIC(docType: "")
+          listItem: .init(mainText: .custom("Document Name")),
+          documentName: "Document Name"
         ),
         .init(
           id: UUID().uuidString,
-          documentName: "Document Name",
-          documentType: .GENERIC(docType: "")
+          listItem: .init(mainText: .custom("Document Name")),
+          documentName: "Document Name"
         ),
         .init(
           id: UUID().uuidString,
-          documentName: "Document Name",
-          documentType: .GENERIC(docType: "")
+          listItem: .init(mainText: .custom("Document Name")),
+          documentName: "Document Name"
         )
       ],
       docOffers: []
@@ -119,7 +116,8 @@ public extension DocumentOfferUIModel {
 extension OfferedIssuanceModel {
   func transformToDocumentOfferUi() -> DocumentOfferUIModel {
     return self.docModels.transformToDocumentOfferUi(
-      with: self.issuerName,
+      issuerName: self.issuerName,
+      issuerLogo: self.issuerLogoUrl,
       codeRequired: self.isTxCodeRequired,
       codeLength: self.txCodeSpec?.length ?? 0
     )
@@ -128,7 +126,8 @@ extension OfferedIssuanceModel {
 
 private extension Array where Element == OfferedDocModel {
   func transformToDocumentOfferUi(
-    with issuerName: String,
+    issuerName: String,
+    issuerLogo: String?,
     codeRequired: Bool,
     codeLength: Int
   ) -> DocumentOfferUIModel {
@@ -138,14 +137,20 @@ private extension Array where Element == OfferedDocModel {
     self.forEach { doc in
       offers.append(
         .init(
-          documentName: doc.displayName,
-          documentType: DocumentTypeIdentifier(rawValue: doc.docType)
+          listItem: .init(mainText: .custom(doc.displayName)),
+          documentName: doc.displayName
         )
       )
     }
 
+    var issuerRemoteImage: URL? {
+      guard let issuerLogo = issuerLogo else { return nil }
+      return URL(string: issuerLogo)
+    }
+
     return .init(
       issuerName: issuerName,
+      issuerLogo: issuerRemoteImage,
       txCode: codeRequired ? .init(isRequired: codeRequired, codeLenght: codeLength): nil,
       uiOffers: offers,
       docOffers: self

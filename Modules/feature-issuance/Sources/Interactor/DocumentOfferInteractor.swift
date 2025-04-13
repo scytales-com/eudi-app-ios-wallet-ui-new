@@ -28,11 +28,15 @@ public protocol DocumentOfferInteractor: Sendable {
     docOffers: [OfferedDocModel],
     successNavigation: UIConfig.TwoWayNavigationType,
     txCodeValue: String?
-  ) async -> IssueOfferDocumentsPartialState
+  ) async -> OfferResultPartialState
   func resumeDynamicIssuance(
     issuerName: String,
     successNavigation: UIConfig.TwoWayNavigationType
   ) async -> OfferDynamicIssuancePartialState
+
+  func getHoldersName(for documentIdentifier: String) -> String?
+  func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey?
+  func fetchStoredDocuments(documentIds: [String]) async -> OfferDocumentsPartialState
 }
 
 final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
@@ -52,7 +56,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       let codeMaxLength = 6
 
       let offer = try await walletController.resolveOfferUrlDocTypes(uriOffer: uri)
-      let hasPidStored = !walletController.fetchIssuedDocuments(with: .PID).isEmpty
+      let hasPidStored = !walletController.fetchIssuedDocuments(with: [.mDocPid, .sdJwtPid]).isEmpty
 
       if let spec = offer.txCodeSpec,
          let codeLength = spec.length,
@@ -61,8 +65,11 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       }
 
       let hasPidInOffer = offer.docModels.first(
-        where: {
-          DocumentTypeIdentifier(rawValue: $0.docType) == .PID
+        where: { offer in
+          let identifier = DocumentTypeIdentifier(rawValue: offer.docType.ifNilOrEmpty { offer.credentialConfigurationIdentifier })
+          // MARK: - TODO Re-activate once SD-JWT PID Rule book is in place in ARF.
+          // return identifier == .mDocPid || identifier == .sdJwtPid
+          return identifier == .mDocPid
         }
       ) != nil
 
@@ -82,29 +89,34 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
     docOffers: [OfferedDocModel],
     successNavigation: UIConfig.TwoWayNavigationType,
     txCodeValue: String?
-  ) async -> IssueOfferDocumentsPartialState {
+  ) async -> OfferResultPartialState {
     do {
 
-      let documents = try await walletController.issueDocumentsByOfferUrl(
+      let issuedDocuments = try await walletController.issueDocumentsByOfferUrl(
         offerUri: uri,
         docTypes: docOffers,
-        format: .cbor,
         txCodeValue: txCodeValue
       )
 
-      if documents.isEmpty {
+      if issuedDocuments.isEmpty {
         return .failure(WalletCoreError.unableToIssueAndStore)
-      } else if documents.first(where: { $0.isDeferred }) != nil {
+      } else if issuedDocuments.first(where: { $0.isDeferred }) != nil {
         return .deferredSuccess(
-          retrieveSuccessRoute(
+          retrieveDeferredRoute(
             caption: .issuanceSuccessDeferredCaption([issuerName]),
             successNavigation: successNavigation,
-            title: .init(value: .inProgress, color: Theme.shared.color.warning),
+            title: .init(
+              value: .inProgress,
+              color: Theme.shared.color.pending
+            ),
             buttonTitle: .okButton,
-            visualKind: .customIcon(Theme.shared.image.clock, Theme.shared.color.warning)
+            visualKind: .customIcon(
+              Theme.shared.image.documentSuccessPending,
+              Color.clear
+            )
           )
         )
-      } else if let authorizePresentationUrl = documents.first?.authorizePresentationUrl {
+      } else if let authorizePresentationUrl = issuedDocuments.first?.authorizePresentationUrl {
         guard
           let presentationUrl = authorizePresentationUrl.toCompatibleUrl(),
           let presentationComponents = URLComponents(url: presentationUrl, resolvingAgainstBaseURL: true) else {
@@ -112,48 +124,24 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
         }
         let session = await walletController.startSameDevicePresentation(deepLink: presentationComponents)
         return .dynamicIssuance(session)
-      } else if documents.count == docOffers.count {
-        return .success(
-          retrieveSuccessRoute(
-            caption: .credentialOfferSuccessCaption([issuerName]),
-            successNavigation: successNavigation,
-            title: .init(value: .success),
-            buttonTitle: .credentialOfferSuccessButton,
-            visualKind: .defaultIcon
-          )
+      } else if issuedDocuments.count == docOffers.count {
+        let documentIdentifiers = issuedDocuments.compactMap { $0.id }
+        return await fetchAndHandleDocuments(
+          successNavigation: successNavigation,
+          documentIdentifiers: documentIdentifiers
         )
       } else {
 
-        let notIssued = docOffers.filter { offer in
-          documents.first(
-            where: { $0.docType == offer.docType }
-          ) == nil
-        }.map {
-          let identifier = DocumentTypeIdentifier(rawValue: $0.docType)
-          if identifier.isSupported {
-            return identifier.localizedTitle
-          } else {
-            return $0.displayName
-          }
-        }
-
-        return .partialSuccess(
-          retrieveSuccessRoute(
-            caption: .credentialOfferPartialSuccessCaption(
-              [
-                issuerName, notIssued.joined(separator: ", ")
-              ]
-            ),
-            successNavigation: successNavigation,
-            title: .init(value: .success),
-            buttonTitle: .credentialOfferSuccessButton,
-            visualKind: .defaultIcon
-          )
+        let documentIdentifiers = issuedDocuments.compactMap { $0.id }
+        return await fetchAndHandleDocuments(
+          successNavigation: successNavigation,
+          documentIdentifiers: documentIdentifiers,
+          isPartialState: true
         )
       }
 
     } catch {
-      return .failure(WalletCoreError.unableToIssueAndStore)
+      return .failure(error)
     }
   }
 
@@ -167,30 +155,42 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
     }
 
     do {
-
       let doc = try await walletController.resumePendingIssuance(
         pendingDoc: pendingData.pendingDoc,
         webUrl: pendingData.url
       )
 
       if doc.status == .issued {
-        return .success(
-          retrieveSuccessRoute(
-            caption: .credentialOfferSuccessCaption([issuerName]),
-            successNavigation: successNavigation,
-            title: .init(value: .success),
-            buttonTitle: .credentialOfferSuccessButton,
-            visualKind: .defaultIcon
+        let state = await Task.detached { () -> OfferDocumentsPartialState in
+          return await self.fetchStoredDocuments(
+            documentIds: [doc.id]
           )
-        )
+        }.value
+        switch state {
+        case .success(let documents):
+            return .success(
+              retrieveDocumentSuccessRoute(
+                successNavigation: successNavigation,
+                documents: documents
+              )
+            )
+        case .failure:
+          return .failure(WalletCoreError.unableToIssueAndStore)
+        }
       } else if doc.status == .deferred {
         return .success(
-          retrieveSuccessRoute(
+          retrieveDeferredRoute(
             caption: .issuanceSuccessDeferredCaption([issuerName]),
             successNavigation: successNavigation,
-            title: .init(value: .inProgress, color: Theme.shared.color.warning),
+            title: .init(
+              value: .inProgress,
+              color: Theme.shared.color.pending
+            ),
             buttonTitle: .okButton,
-            visualKind: .customIcon(Theme.shared.image.clock, Theme.shared.color.warning)
+            visualKind: .customIcon(
+              Theme.shared.image.documentSuccessPending,
+              Color.clear
+            )
           )
         )
       } else {
@@ -202,14 +202,75 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
     }
   }
 
-  private func retrieveSuccessRoute(
-    caption: LocalizableString.Key,
+  public func getHoldersName(for documentIdentifier: String) -> String? {
+    guard
+      let bearerName = walletController.fetchDocument(with: documentIdentifier)?.getBearersName()
+    else {
+      return nil
+    }
+    return  "\(bearerName.first) \(bearerName.last)"
+  }
+
+  public func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey? {
+    guard
+      let document = walletController.fetchDocument(with: documentIdentifier)
+    else {
+      return nil
+    }
+    return .issuanceSuccessCaption([document.displayName.orEmpty])
+  }
+
+  func fetchStoredDocuments(documentIds: [String]) async -> OfferDocumentsPartialState {
+    let documents = walletController.fetchDocuments(with: documentIds)
+    let documentsDetails = documents.compactMap {
+      $0.transformToDocumentDetailsUi(isSensitive: false)
+    }
+
+    if documentsDetails.isEmpty {
+      return .failure(WalletCoreError.unableFetchDocument)
+    }
+    return .success(documentsDetails)
+  }
+
+  private func fetchAndHandleDocuments(
+    successNavigation: UIConfig.TwoWayNavigationType,
+    documentIdentifiers: [String],
+    isPartialState: Bool = false
+  ) async -> OfferResultPartialState {
+    let state = await Task.detached { () -> OfferDocumentsPartialState in
+      return await self.fetchStoredDocuments(
+        documentIds: documentIdentifiers
+      )
+    }.value
+    switch state {
+    case .success(let documents):
+        if isPartialState {
+          return .partialSuccess(
+            retrieveDocumentSuccessRoute(
+              successNavigation: successNavigation,
+              documents: documents
+            )
+          )
+        } else {
+          return .success(
+            retrieveDocumentSuccessRoute(
+              successNavigation: successNavigation,
+              documents: documents
+            )
+          )
+        }
+    case .failure:
+      return .failure(WalletCoreError.unableToIssueAndStore)
+    }
+  }
+
+  private func retrieveDeferredRoute(
+    caption: LocalizableStringKey,
     successNavigation: UIConfig.TwoWayNavigationType,
     title: UIConfig.Success.Title,
-    buttonTitle: LocalizableString.Key,
+    buttonTitle: LocalizableStringKey,
     visualKind: UIConfig.Success.VisualKind
   ) -> AppRoute {
-
     var navigationType: UIConfig.DeepLinkNavigationType {
       return switch successNavigation {
       case .popTo(let route): .pop(screen: route)
@@ -218,7 +279,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
     }
 
     return .featureCommonModule(
-      .success(
+      .genericSuccess(
         config: UIConfig.Success(
           title: title,
           subtitle: caption,
@@ -234,6 +295,36 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       )
     )
   }
+
+  private func retrieveDocumentSuccessRoute(
+    successNavigation: UIConfig.TwoWayNavigationType,
+    documents: [DocumentDetailsUIModel]
+  ) -> AppRoute {
+    var navigationType: UIConfig.DeepLinkNavigationType {
+      return switch successNavigation {
+      case .popTo(let route): .pop(screen: route)
+      case .push(let route): .push(screen: route)
+      }
+    }
+
+    return .featureIssuanceModule(
+      .issuanceSuccess(
+        config: DocumentSuccessUIConfig(
+          successNavigation: navigationType,
+          relyingParty: documents.first?.issuer?.name,
+          issuerLogoUrl: documents.first?.issuer?.logoUrl,
+          relyingPartyIsTrusted: false
+        ),
+        requestItems: documents.map { item in
+          ListItemSection(
+            id: item.id,
+            title: item.documentName,
+            listItems: item.documentFields
+          )
+        }
+      )
+    )
+  }
 }
 
 public enum OfferRequestPartialState: Sendable {
@@ -241,7 +332,7 @@ public enum OfferRequestPartialState: Sendable {
   case failure(Error)
 }
 
-public enum IssueOfferDocumentsPartialState: Sendable {
+public enum OfferResultPartialState: Sendable {
   case success(AppRoute)
   case partialSuccess(AppRoute)
   case deferredSuccess(AppRoute)
@@ -252,5 +343,10 @@ public enum IssueOfferDocumentsPartialState: Sendable {
 public enum OfferDynamicIssuancePartialState: Sendable {
   case success(AppRoute)
   case noPending
+  case failure(Error)
+}
+
+public enum OfferDocumentsPartialState: Sendable {
+  case success([DocumentDetailsUIModel])
   case failure(Error)
 }

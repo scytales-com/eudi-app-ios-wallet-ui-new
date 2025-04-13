@@ -19,18 +19,18 @@ import logic_resources
 public struct KeyValueView: View {
 
   enum Value {
-    case string(LocalizableString.Key)
+    case string(LocalizableStringKey)
     case image(Image)
   }
 
-  let title: LocalizableString.Key
+  let title: LocalizableStringKey
   let value: Value
   let alignment: KeyValueView.Alignment
   let isLoading: Bool
 
   public init(
-    title: LocalizableString.Key,
-    subTitle: LocalizableString.Key,
+    title: LocalizableStringKey,
+    subTitle: LocalizableStringKey,
     alignment: KeyValueView.Alignment = .start,
     isLoading: Bool = false
   ) {
@@ -41,7 +41,7 @@ public struct KeyValueView: View {
   }
 
   public init(
-    title: LocalizableString.Key,
+    title: LocalizableStringKey,
     image: Image,
     alignment: KeyValueView.Alignment = .start,
     isLoading: Bool = false
@@ -62,7 +62,7 @@ public struct KeyValueView: View {
       VStack(alignment: .leading, spacing: SPACING_EXTRA_SMALL) {
 
         Text(title)
-          .foregroundColor(Theme.shared.color.textSecondaryDark)
+          .foregroundColor(Theme.shared.color.secondary)
           .typography(Theme.shared.font.bodyMedium)
           .if(isLoading) { view in
             view
@@ -87,7 +87,7 @@ public struct KeyValueView: View {
     switch value {
     case .string(let key):
       Text(key)
-        .foregroundColor(Theme.shared.color.textPrimaryDark)
+        .foregroundColor(Theme.shared.color.onSurface)
         .typography(Theme.shared.font.bodyLarge)
         .if(isLoading) { view in
           view

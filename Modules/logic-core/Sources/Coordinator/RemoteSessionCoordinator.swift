@@ -95,19 +95,19 @@ final class RemoteSessionCoordinatorImpl: RemoteSessionCoordinator {
   }
 
   public func getStream() -> AsyncStream<PresentationState> {
-    self.sendableCurrentValueSubject.getSubject().toAsyncStream()
+    self.sendableCurrentValueSubject.getAsyncStream()
   }
 
   public func stopPresentation() {
-    self.sendableCurrentValueSubject.getSubject().send(completion: .finished)
-    sendableAnyCancellable.cancel()
+    self.sendableCurrentValueSubject.complete()
+    self.sendableAnyCancellable.cancel()
   }
 
   private func createRequest() -> PresentationRequest {
     PresentationRequest(
       items: session.disclosedDocuments,
-      relyingParty: session.readerCertIssuer ?? LocalizableString.shared.get(with: .unknownVerifier),
-      dataRequestInfo: session.readerCertValidationMessage ?? LocalizableString.shared.get(with: .requestDataInfoNotice),
+      relyingParty: session.readerCertIssuer ?? LocalizableStringKey.unknownVerifier.toString,
+      dataRequestInfo: session.readerCertValidationMessage ?? LocalizableStringKey.requestDataInfoNotice.toString,
       isTrusted: session.readerCertIssuerValid == true
     )
   }

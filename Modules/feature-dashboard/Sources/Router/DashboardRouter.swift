@@ -26,14 +26,20 @@ public final class DashboardRouter {
       DashboardView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          dashboardInteractor: DIGraph.resolver.force(
             DashboardInteractor.self
+          ),
+          homeTabInteractor: DIGraph.resolver.force(
+            HomeTabInteractor.self
+          ),
+          documentTabInteractor: DIGraph.resolver.force(
+            DocumentTabInteractor.self
+          ),
+          transactionTabInteractor: DIGraph.resolver.force(
+            TransactionTabInteractor.self
           ),
           deepLinkController: DIGraph.resolver.force(
             DeepLinkController.self
-          ),
-          walletKit: DIGraph.resolver.force(
-            WalletKitController.self
           )
         )
       ).eraseToAnyView()
@@ -44,6 +50,24 @@ public final class DashboardRouter {
           interactor: DIGraph.resolver.force(
             DocumentSignInteractor.self
           )
+        )
+      ).eraseToAnyView()
+    case .sideMenu:
+      SideMenuView(
+        with: .init(
+          router: host,
+          interactor: DIGraph.resolver.force(
+            SideMenuInteractor.self
+          ),
+          walletKit: DIGraph.resolver.force(
+            WalletKitController.self
+          )
+        )
+      ).eraseToAnyView()
+    case .issuanceOption:
+      IssuanceOptionView(
+        with: .init(
+          router: host
         )
       ).eraseToAnyView()
     }

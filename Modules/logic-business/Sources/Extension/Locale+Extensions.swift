@@ -34,6 +34,10 @@ public extension Locale {
     return Locale(identifier: identifier)
   }
 
+  var systemLanguageCode: String? {
+    Locale.current.language.languageCode?.identifier
+  }
+
   func localizedDateTime(
     date: String,
     uiFormatter: String,
@@ -60,6 +64,15 @@ public extension Locale {
     dateFormatter.locale = userSelectedLocale
 
     return parseDate(date: date, uiFormatter: dateFormatter, formatters: formatters)
+  }
+
+  func localizedDateTime(
+    date: Date,
+    uiFormatter: String
+  ) -> String {
+    let parseDateFormatter = DateFormatter()
+    parseDateFormatter.dateFormat = uiFormatter
+    return parseDateFormatter.string(from: date)
   }
 
   private func parseDate(

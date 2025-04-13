@@ -16,8 +16,8 @@
 import XCTest
 import UIKit
 import logic_resources
-import feature_common
 import logic_business
+import feature_common
 @testable import logic_core
 @testable import feature_proximity
 @testable import logic_test
@@ -220,28 +220,39 @@ final class TestProximityInteractor: EudiTest {
   }
   
   func testOnRequestReceived_WhenCoordinatorRequestReceivedReturnsSuccess_ThenVerifySuccessState() async {
+    
     // Given
     let request = Self.mockPresentationRequest
     
-    let expectedUiModels = Self.mockUiModels
+    let expectedUiModels = Self.mockUiModels()
     
     stub(presentationSessionCoordinator) { mock in
       when(mock.requestReceived()).thenReturn(request)
     }
     
     stub(walletKitController) { mock in
-      when(mock.mandatoryFields(for: any())).thenReturn([])
-    }
-    
-    stub(walletKitController) { mock in
       when(
-        mock.valueForElementIdentifier(
-          for: any(),
-          with: any(),
-          elementIdentifier: any(),
+        mock.parseDocClaim(
+          docId: any(),
+          groupId: any(),
+          docClaim: any(),
+          type: any(),
           parser: any()
         )
-      ).thenReturn(.string("elementIdentifier"))
+      ).thenReturn(
+       [
+        .primitive(
+          id: Constants.randomIdentifier,
+          title: "elementIdentifier",
+          documentId: Constants.isoMdlModelId,
+          nameSpace: "nameSpace",
+          path: ["elementIdentifier"],
+          type: .mdoc,
+          value: .string("value"),
+          status: .available(isRequired: false)
+        )
+       ]
+      )
     }
     
     // When
@@ -291,7 +302,7 @@ final class TestProximityInteractor: EudiTest {
     }
     
     // When
-    let state = await interactor.onResponsePrepare(requestItems: Self.mockUiModels)
+    let state = await interactor.onResponsePrepare(requestItems: Self.mockUiModels())
     
     // Then
     switch state {
@@ -309,7 +320,7 @@ final class TestProximityInteractor: EudiTest {
     let expectedError = PresentationSessionError.conversionToRequestItemModel
     
     // When
-    let state = await interactor.onResponsePrepare(requestItems: Self.mockUiModels.dropLast())
+    let state = await interactor.onResponsePrepare(requestItems: Self.mockUiModels().dropLast())
     
     // Then
     switch state {
@@ -411,32 +422,48 @@ private extension TestProximityInteractor {
   
   static let mockPresentationRequest = Constants.mockPresentationRequest
   
-  static let mockUiModels: [RequestDataUIModel] = [
-    .requestDataSection(
-      .init(
-        id: Constants.isoMdlModelId,
-        type: .mdl,
-        title: DocumentTypeIdentifier.MDL.localizedTitle
-      )
-    ),
-    .requestDataRow(
-      .init(
-        id: Constants.randomIdentifier,
-        isSelected: true,
-        isVisible: false,
-        title: "elementIdentifier",
-        value: .string("elementIdentifier"),
-        elementKey: "elementIdentifier",
-        namespace: "nameSpace",
-        docType: DocumentTypeIdentifier.MDL.rawValue
-      )
+  static func mockUiModels() -> [RequestDataUiModel] {
+    let claim = DocumentElementClaim.primitive(
+      id: Constants.randomIdentifier,
+      title: "elementIdentifier",
+      documentId: Constants.isoMdlModelId,
+      nameSpace: "nameSpace",
+      path: ["nameSpace", "elementIdentifier"],
+      type: .mdoc,
+      value: .string("value"),
+      status: .available(isRequired: false)
     )
-  ]
+    return [
+      RequestDataUiModel(
+        section: .init(
+          id: Constants.isoMdlModelId,
+          title: Constants.isoMdlName,
+          listItems: [
+            .single(
+              .init(
+                collapsed: .init(
+                  mainText: .custom("value"),
+                  overlineText: .custom("elementIdentifier"),
+                  isEnable: true,
+                  trailingContent: .checkbox(
+                    true,
+                    true,
+                    { _ in }
+                  )
+                ),
+                domainModel: claim
+              )
+            )
+          ]
+        )
+      )
+    ]
+  }
   
   static let mockRequestItems = [
-    Constants.randomIdentifier : [
+    Constants.isoMdlModelId : [
       "nameSpace": [
-        RequestItem(elementIdentifier: "elementIdentifier")
+        RequestItem(elementPath: ["elementIdentifier"])
       ]
     ]
   ]

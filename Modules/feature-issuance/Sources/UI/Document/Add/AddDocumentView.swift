@@ -34,22 +34,25 @@ struct AddDocumentView<Router: RouterHost>: View {
     ContentScreenView(
       padding: .zero,
       canScroll: true,
-      errorConfig: viewModel.viewState.error
+      errorConfig: viewModel.viewState.error,
+      navigationTitle: .chooseFromList,
+      isLoading: viewModel.viewState.isLoading,
+      toolbarContent: viewModel.toolbarContent()
     ) {
-
-      if viewModel.viewState.isFlowCancellable {
-        ContentHeaderView(dismissIcon: Theme.shared.image.xmark) {
-          viewModel.pop()
-        }
-        .padding([.top, .horizontal], Theme.shared.dimension.padding)
-      }
 
       content(viewState: viewModel.viewState) { type in
         viewModel.onClick(for: type)
       }
 
-      scanFooter(viewState: viewModel.viewState, contentSize: contentSize) {
-        self.viewModel.onScanClick()
+      if viewModel.viewState.showFooterScanner {
+
+        VSpacer.extraSmall()
+
+        scanFooter(
+          viewState: viewModel.viewState,
+          contentSize: contentSize,
+          action: viewModel.onScanClick()
+        )
       }
     }
     .task {
@@ -62,32 +65,29 @@ struct AddDocumentView<Router: RouterHost>: View {
 @ViewBuilder
 private func content(
   viewState: AddDocumentViewState,
-  action: @escaping (DocumentTypeIdentifier) -> Void
+  action: @escaping (String) -> Void
 ) -> some View {
   ScrollView {
-    VStack(spacing: .zero) {
+    VStack(spacing: SPACING_LARGE_MEDIUM) {
 
-      ContentTitleView(
-        title: .addDocumentTitle,
-        caption: .addDocumentSubtitle,
-        titleColor: Theme.shared.color.textPrimaryDark,
-        topSpacing: viewState.isFlowCancellable ? .withToolbar : .withoutToolbar
-      )
+      Text(.chooseFromListTitle)
+        .typography(Theme.shared.font.bodyLarge)
+        .foregroundStyle(Theme.shared.color.onSurface)
 
-      VSpacer.large()
-
-      ForEach(viewState.addDocumentCellModels) { cell in
-        AddNewDocumentCellView(
-          isEnabled: cell.isEnabled,
-          icon: cell.image,
-          title: cell.documentName,
-          isLoading: cell.isLoading,
-          action: action(cell.type)
-        )
-        .padding(.bottom, Theme.shared.shape.small)
+      VStack(spacing: SPACING_MEDIUM_SMALL) {
+        ForEach(viewState.addDocumentCellModels) { cell in
+          WrapCardView {
+            WrapListItemView(
+              listItem: cell.listItem,
+              isLoading: cell.isLoading,
+              action: { action(cell.configId) }
+            )
+          }
+        }
       }
     }
     .padding(.horizontal, Theme.shared.dimension.padding)
+    .padding(.bottom)
   }
 }
 
@@ -96,71 +96,70 @@ private func content(
 private func scanFooter(
   viewState: AddDocumentViewState,
   contentSize: CGFloat,
-  action: @escaping () -> Void
+  action: @escaping @autoclosure () -> Void
 ) -> some View {
   VStack(spacing: SPACING_MEDIUM) {
 
     Spacer()
 
-    Text(.or)
-      .typography(Theme.shared.font.bodyMedium)
-      .foregroundColor(Theme.shared.color.textSecondaryDark )
-      .shimmer(isLoading: viewState.isLoading)
+    HStack {
 
-    Button(
-      action: { action() },
-      label: {
-        HStack {
-          Spacer()
+      Spacer()
 
-          VStack(alignment: .center) {
+      VStack(alignment: .center, spacing: SPACING_MEDIUM) {
 
-            Theme.shared.image.qrScan
-              .resizable()
-              .renderingMode(.template)
-              .scaledToFit()
-              .foregroundStyle(Theme.shared.color.primary)
-              .frame(height: contentSize / 6)
+        Text(.or)
+          .typography(Theme.shared.font.bodyMedium)
+          .foregroundColor(Theme.shared.color.onSurfaceVariant)
 
-            Text(.issuanceScanQr)
-              .typography(Theme.shared.font.titleSmall)
-              .foregroundColor(Theme.shared.color.textPrimaryDark )
-          }
-          .padding(.vertical)
-
-          Spacer()
-        }
+        Theme.shared.image.scanDocumentImage
       }
+
+      Spacer()
+    }
+
+    WrapButtonView(
+      style: .custom(
+        textColor: Theme.shared.color.primary,
+        backgroundColor: Theme.shared.color.surfaceContainerLowest,
+        borderColor: Theme.shared.color.primary,
+        useBorder: true
+      ),
+      title: .scanQrCode,
+      isLoading: viewState.isLoading,
+      onAction: action()
     )
-    .background(Theme.shared.color.backgroundDefault)
-    .roundedCorner(SPACING_MEDIUM_SMALL, corners: .allCorners)
-    .padding(.horizontal)
-    .disabled(viewState.isLoading)
-    .shimmer(isLoading: viewState.isLoading)
 
     Spacer()
+
   }
   .frame(maxWidth: .infinity, maxHeight: contentSize)
-  .background(Theme.shared.color.backgroundDefault.opacity(0.8))
+  .padding([.horizontal, .bottom])
+  .background(Theme.shared.color.surfaceContainer)
   .roundedCorner(SPACING_MEDIUM, corners: [.topLeft, .topRight])
 }
 
 #Preview {
   let viewState = AddDocumentViewState(
-    addDocumentCellModels: AddDocumentUIModel.items,
+    addDocumentCellModels: AddDocumentUIModel.mocks,
     error: nil,
-    config: IssuanceFlowUiConfig(flow: .noDocument)
+    config: IssuanceFlowUiConfig(flow: .noDocument),
+    showFooterScanner: true
   )
 
-  ContentScreenView(
-    padding: .zero,
-    canScroll: true
-  ) {
-    ContentHeaderView(dismissIcon: Theme.shared.image.xmark) {}
-      .padding([.top, .horizontal], Theme.shared.dimension.padding)
+  content(viewState: viewState) { _ in }
+}
 
-    content(viewState: viewState) { _ in }
-
-    scanFooter(viewState: viewState, contentSize: 300) {}
-  }
+#Preview {
+  let viewState = AddDocumentViewState(
+    addDocumentCellModels: AddDocumentUIModel.mocks,
+    error: nil,
+    config: IssuanceFlowUiConfig(flow: .noDocument),
+    showFooterScanner: true
+  )
+  scanFooter(
+    viewState: viewState,
+    contentSize: 500,
+    action: {}()
+  )
 }

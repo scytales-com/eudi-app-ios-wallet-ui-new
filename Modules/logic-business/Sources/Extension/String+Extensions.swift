@@ -16,6 +16,11 @@
 import Foundation
 
 public extension String {
+  func capitalizedFirst() -> String {
+    guard let firstCharacter = self.first else { return "" }
+    return firstCharacter.uppercased() + self.dropFirst().lowercased()
+  }
+
   func toJSON() -> Any? {
     guard let data = self.data(using: .utf8, allowLossyConversion: false) else { return nil }
     return try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)
@@ -118,13 +123,13 @@ public extension String? {
     }
     return self
   }
-  func ifNull(_ fallback: () -> String) -> String {
+  func ifNil(_ fallback: () -> String) -> String {
     guard let self = self else {
       return fallback()
     }
     return self
   }
-  func ifNullOrEmpty(_ fallback: () -> String) -> String {
+  func ifNilOrEmpty(_ fallback: () -> String) -> String {
     guard let self = self, !self.isEmpty else {
       return fallback()
     }
@@ -186,7 +191,7 @@ public extension String {
 
 public extension String? {
 
-  func isNullOrEmpty() -> Bool {
+  func isNilOrEmpty() -> Bool {
     return self == nil || self?.isEmpty == true
   }
 

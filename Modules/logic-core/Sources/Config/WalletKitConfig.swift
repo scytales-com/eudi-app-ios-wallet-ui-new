@@ -20,6 +20,8 @@ struct VciConfig: Sendable {
   public let issuerUrl: String
   public let clientId: String
   public let redirectUri: URL
+  public let usePAR: Bool
+  public let useDPoP: Bool
 }
 
 struct ReaderConfig: Sendable {
@@ -52,6 +54,11 @@ protocol WalletKitConfig: Sendable {
    * The name of the file to be created to store logs
    */
   var logFileName: String { get }
+
+  /**
+   * Document categories
+   */
+  var documentsCategories: DocumentCategories { get }
 }
 
 struct WalletKitConfigImpl: WalletKitConfig {
@@ -72,22 +79,35 @@ struct WalletKitConfigImpl: WalletKitConfig {
         .init(
           issuerUrl: "https://issuer.eudiw.dev",
           clientId: "wallet-dev",
-          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!
+          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!,
+          usePAR: true,
+          useDPoP: true
         )
     case .DEV:
         .init(
           issuerUrl: "https://dev.issuer.eudiw.dev",
           clientId: "wallet-dev",
-          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!
+          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!,
+          usePAR: true,
+          useDPoP: true
         )
     }
   }
 
   var readerConfig: ReaderConfig {
-    guard let cert = Data(name: "eudi_pid_issuer_ut", ext: "der") else {
-      return .init(trustedCerts: [])
+    let certificates = [
+      "pidissuerca02_cz",
+      "pidissuerca02_ee",
+      "pidissuerca02_eu",
+      "pidissuerca02_lu",
+      "pidissuerca02_nl",
+      "pidissuerca02_pt",
+      "pidissuerca02_ut"
+    ]
+    let certsData: [Data] = certificates.compactMap {
+      Data(name: $0, ext: "der")
     }
-    return .init(trustedCerts: [cert])
+    return .init(trustedCerts: certsData)
   }
 
   var documentStorageServiceName: String {
@@ -99,5 +119,50 @@ struct WalletKitConfigImpl: WalletKitConfig {
 
   var logFileName: String {
     return "eudi-ios-wallet-logs"
+  }
+
+  var documentsCategories: DocumentCategories {
+    [
+      .Government: [
+        .mDocPid,
+        .sdJwtPid,
+        .other(formatType: "org.iso.18013.5.1.mDL"),
+        .other(formatType: "eu.europa.ec.eudi.pseudonym.age_over_18.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:pseudonym_age_over_18:1"),
+        .other(formatType: "eu.europa.ec.eudi.tax.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:tax:1"),
+        .other(formatType: "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint"),
+        .other(formatType: "eu.europa.ec.eudi.cor.1")
+      ],
+      .Travel: [
+        .other(formatType: "org.iso.23220.2.photoid.1"),
+        .other(formatType: "org.iso.23220.photoID.1"),
+        .other(formatType: "org.iso.18013.5.1.reservation")
+      ],
+      .Finance: [
+        .other(formatType: "eu.europa.ec.eudi.iban.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:iban:1")
+      ],
+      .Education: [],
+      .Health: [
+        .other(formatType: "eu.europa.ec.eudi.hiid.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:hiid:1"),
+        .other(formatType: "eu.europa.ec.eudi.ehic.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:ehic:1")
+      ],
+      .SocialSecurity: [
+        .other(formatType: "eu.europa.ec.eudi.samplepda1.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:pda1:1")
+      ],
+      .Retail: [
+        .other(formatType: "eu.europa.ec.eudi.loyalty.1"),
+        .other(formatType: "eu.europa.ec.eudi.msisdn.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:msisdn:1")
+      ],
+      .Other: [
+        .other(formatType: "eu.europa.ec.eudi.por.1"),
+        .other(formatType: "urn:eu.europa.ec.eudi:por:1")
+      ]
+    ]
   }
 }

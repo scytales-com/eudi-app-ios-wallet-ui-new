@@ -61,9 +61,26 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
       self.onReceivedItems(
         with: items,
         title: .requestDataTitle([relyingParty]),
-        relyingParty: relyingParty,
+        relyingParty: .custom(relyingParty),
         isTrusted: isTrusted
       )
+      setState {
+        $0.copy(
+          contentHeaderConfig: .init(
+            appIconAndTextData: AppIconAndTextData(
+              appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+              appText: ThemeManager.shared.image.euditext
+            ),
+            description: .dataSharingTitle,
+            mainText: getTitle(),
+            relyingPartyData: RelyingPartyData(
+              isVerified: viewState.isTrusted,
+              name: getRelyingParty(),
+              description: getCaption()
+            )
+          )
+        )
+      }
     case .failure:
       self.onEmptyDocuments()
     }
@@ -98,15 +115,17 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
         .featureCommonModule(
           .biometry(
             config: UIConfig.Biometry(
-              title: getTitle(),
+              navigationTitle: .biometryConfirmRequest,
               caption: .requestDataShareBiometryCaption,
               quickPinOnlyCaption: .requestDataShareQuickPinCaption,
               navigationSuccessType: .push(
                 .featureProximityModule(
                   .proximityLoader(
-                    getRelyingParty(),
+                    relyingParty: getRelyingParty().toString,
+                    relyingPartyisTrusted: getRelyingPartyIsTrusted(),
                     presentationCoordinator: proximitySessionCoordinator,
-                    originator: getOriginator()
+                    originator: getOriginator(),
+                    items: viewState.items.filterSelectedRows()
                   )
                 )
               ),
@@ -125,31 +144,31 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
     return getOriginator()
   }
 
-  override func getTitle() -> LocalizableString.Key {
-    viewState.title
+  override func getTitle() -> LocalizableStringKey {
+    .dataSharingRequest
   }
 
-  override func getCaption() -> LocalizableString.Key {
-    .requestDataCaption
+  override func getCaption() -> LocalizableStringKey {
+    .requestsTheFollowing
   }
 
-  override func getDataRequestInfo() -> LocalizableString.Key {
+  override func getDataRequestInfo() -> LocalizableStringKey {
     .requestDataInfoNotice
   }
 
-  override func getRelyingParty() -> String {
+  override func getRelyingParty() -> LocalizableStringKey {
     viewState.relyingParty
   }
 
-  override func getTitleCaption() -> String {
-    LocalizableString.shared.get(with: .requestDataTitle([""]))
+  override func getTitleCaption() -> LocalizableStringKey {
+    .requestDataTitle([""])
   }
 
-  override func getTrustedRelyingParty() -> LocalizableString.Key {
+  override func getTrustedRelyingParty() -> LocalizableStringKey {
     .requestDataVerifiedEntity
   }
 
-  override func getTrustedRelyingPartyInfo() -> LocalizableString.Key {
+  override func getTrustedRelyingPartyInfo() -> LocalizableStringKey {
     .requestDataVerifiedEntityMessage
   }
 

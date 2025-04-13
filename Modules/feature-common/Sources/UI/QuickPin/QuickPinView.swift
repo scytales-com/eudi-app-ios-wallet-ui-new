@@ -26,7 +26,10 @@ struct QuickPinView<Router: RouterHost>: View {
   }
 
   var body: some View {
-    ContentScreenView {
+    ContentScreenView(
+      navigationTitle: viewModel.viewState.navigationTitle,
+      toolbarContent: viewModel.toolbarContent()
+    ) {
       content(
         viewState: viewModel.viewState,
         uiPinInputField: $viewModel.uiPinInputField,
@@ -34,29 +37,17 @@ struct QuickPinView<Router: RouterHost>: View {
         onButtonClick: { viewModel.onButtonClick() }
       )
     }
-    .sheetDialog(isPresented: $viewModel.isCancelModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
-
-          ContentTitleView(
-            title: .quickPinUpdateCancellationTitle,
-            caption: .quickPinUpdateCancellationCaption
-          )
-
-          WrapButtonView(
-            style: .primary,
-            title: .quickPinUpdateCancellationContinue,
-            onAction:
-              viewModel.onShowCancellationModal()
-          )
-          WrapButtonView(
-            style: .secondary,
-            title: .cancelButton,
-            onAction: viewModel.onPop()
-          )
-        }
-      }
-    }
+    .confirmationDialog(
+      title: .quickPinUpdateCancellationTitle,
+      message: .quickPinUpdateCancellationCaption,
+      destructiveText: .cancelButton,
+      baseText: .quickPinUpdateCancellationContinue,
+      isPresented: $viewModel.isCancelModalShowing,
+      destructiveAction: {
+        viewModel.onPop()
+      },
+      baseAction: viewModel.onShowCancellationModal()
+    )
   }
 }
 
@@ -68,17 +59,19 @@ private func content(
   onShowCancellationModal: @escaping () -> Void,
   onButtonClick: @escaping () -> Void
 ) -> some View {
-  if viewState.isCancellable {
-    ContentHeaderView(
-      dismissIcon: Theme.shared.image.xmark,
-      onBack: { onShowCancellationModal() }
+
+  ContentHeader(
+    config: ContentHeaderConfig(
+      appIconAndTextData: AppIconAndTextData(
+        appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+        appText: ThemeManager.shared.image.euditext
+      )
     )
-  }
+  )
 
   ContentTitleView(
     title: viewState.title,
-    caption: viewState.caption,
-    topSpacing: viewState.isCancellable ? .withToolbar : .withoutToolbar
+    caption: viewState.caption
   )
 
   VSpacer.large()
@@ -90,14 +83,6 @@ private func content(
   )
 
   Spacer()
-
-  WrapButtonView(
-    style: .primary,
-    title: viewState.button,
-    isLoading: false,
-    isEnabled: viewState.isButtonActive,
-    onAction: onButtonClick()
-  )
 }
 
 @MainActor
@@ -105,7 +90,7 @@ private func content(
 private func pinView(
   uiPinInputField: Binding<String>,
   quickPinSize: Int,
-  pinError: LocalizableString.Key?
+  pinError: LocalizableStringKey?
 ) -> some View {
   VStack(spacing: .zero) {
 
@@ -134,6 +119,7 @@ private func pinView(
 #Preview {
   let viewState = QuickPinState(
     config: QuickPinUiConfig(flow: .set),
+    navigationTitle: .quickPinEnterPin,
     title: .quickPinSetTitle,
     caption: .quickPinSetCaptionOne,
     button: .quickPinNextButton,

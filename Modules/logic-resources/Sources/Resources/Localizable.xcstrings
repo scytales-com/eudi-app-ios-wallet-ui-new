@@ -1,24 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "aamva_sex" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AAMVA Sex"
-          }
-        }
-      }
-    },
     "add_doc" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ADD DOC"
+            "value" : "Add doc"
+          }
+        }
+      }
+    },
+    "add_document_request" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add document request"
           }
         }
       }
@@ -45,134 +45,123 @@
         }
       }
     },
-    "administrative_number" : {
+    "add_documents_to_wallet" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Administrative number"
+            "value" : "Add documents to your wallet by choosing from the list below."
           }
         }
       }
     },
-    "age_birth_year" : {
+    "alert_access_online_services" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In what year were you born?"
+            "value" : "Access online services"
           }
         }
       }
     },
-    "age_in_years" : {
+    "alert_access_online_services_message" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How old are you (in years)?"
+            "value" : "Identify yourself to a wide range of public and private online services while protecting your privacy. Prove who you are with just a few taps — no need to manage countless passwords."
           }
         }
       }
     },
-    "age_over_13" : {
+    "alert_sign_documents_safely" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 13?"
+            "value" : "Sign documents safely"
           }
         }
       }
     },
-    "age_over_15" : {
+    "alert_sign_documents_safely_message" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 15?"
+            "value" : "Sign documents with just your wallet. Providing a legally binding e-signature will be faster and easier than ever, enabling you to conduct business wherever you are."
           }
         }
       }
     },
-    "age_over_16" : {
+    "ascending" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 16?"
+            "value" : "Ascending"
           }
         }
       }
     },
-    "age_over_18" : {
+    "authenticate" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 18?"
+            "value" : "Authenticate"
           }
         }
       }
     },
-    "age_over_21" : {
+    "authenticate_authorise_transactions" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 21?"
+            "value" : "Authenticate, authorise transactions and share your digital documents in person or online."
           }
         }
       }
     },
-    "age_over_60" : {
+    "before_today" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 60?"
+            "value" : "Before today"
           }
         }
       }
     },
-    "age_over_65" : {
+    "beyond_thirty_days" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 65?"
+            "value" : "Beyond 30 days"
           }
         }
       }
     },
-    "age_over_68" : {
+    "biometry_confirm_request" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Age over 68?"
-          }
-        }
-      }
-    },
-    "age_verification" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Age Verification"
+            "value" : "Confirm request"
           }
         }
       }
@@ -188,68 +177,13 @@
         }
       }
     },
-    "birth_city" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "City of birth"
-          }
-        }
-      }
-    },
-    "birth_country" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Country of birth"
-          }
-        }
-      }
-    },
-    "birth_date" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date of birth"
-          }
-        }
-      }
-    },
-    "birth_place" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place of birth"
-          }
-        }
-      }
-    },
-    "birth_state" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "State of birth"
-          }
-        }
-      }
-    },
     "ble_disabled_modal_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ENABLE"
+            "value" : "Enable"
           }
         }
       }
@@ -293,7 +227,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CANCEL"
+            "value" : "Cancel"
           }
         }
       }
@@ -315,7 +249,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE ISSUANCE"
+            "value" : "Continue issuance"
           }
         }
       }
@@ -331,35 +265,90 @@
         }
       }
     },
-    "cancel_share_sheet_caption" : {
+    "category_education" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel will redirect you back to the dashboard without sharing any information"
+            "value" : "EDUCATION"
           }
         }
       }
     },
-    "cancel_share_sheet_continue" : {
+    "category_finance" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE SHARING"
+            "value" : "FINANCE"
           }
         }
       }
     },
-    "cancel_share_sheet_title" : {
+    "category_government" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel information sharing?"
+            "value" : "GOVERNMENT"
+          }
+        }
+      }
+    },
+    "category_health" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEALTH"
+          }
+        }
+      }
+    },
+    "category_other" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTHER"
+          }
+        }
+      }
+    },
+    "category_retail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RETAIL"
+          }
+        }
+      }
+    },
+    "category_social_security" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SOCIAL SECURITY"
+          }
+        }
+      }
+    },
+    "category_travel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TRAVEL"
           }
         }
       }
@@ -370,7 +359,51 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change quick pin"
+            "value" : "Change pin"
+          }
+        }
+      }
+    },
+    "changelog" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changelog"
+          }
+        }
+      }
+    },
+    "choose_from_list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from list"
+          }
+        }
+      }
+    },
+    "choose_from_list_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a digital document from the list below to add to your wallet."
+          }
+        }
+      }
+    },
+    "close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
           }
         }
       }
@@ -392,7 +425,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE"
+            "value" : "Continue"
           }
         }
       }
@@ -408,24 +441,57 @@
         }
       }
     },
-    "date_of_expiry" : {
+    "data_shared" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date of expiry"
+            "value" : "Data shared"
           }
         }
       }
     },
-    "date_of_issue" : {
+    "data_sharing_request" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date of issue"
+            "value" : "Data sharing request"
+          }
+        }
+      }
+    },
+    "data_sharing_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The following transaction requires your permission and authentication."
+          }
+        }
+      }
+    },
+    "date_issued" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date Issued"
+          }
+        }
+      }
+    },
+    "default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
           }
         }
       }
@@ -452,13 +518,68 @@
         }
       }
     },
-    "DHS_compliance" : {
+    "delete_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "DHS Compliance"
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "delete_document" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete document"
+          }
+        }
+      }
+    },
+    "delete_document_confirm_dialog" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This document will be permanently deleted from your wallet and may affect access to services."
+          }
+        }
+      }
+    },
+    "descending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descending"
+          }
+        }
+      }
+    },
+    "details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
+    },
+    "document_added" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Document"
           }
         }
       }
@@ -474,24 +595,35 @@
         }
       }
     },
-    "driving_privileges" : {
+    "documents" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Categories of vehicles"
+            "value" : "Documents"
           }
         }
       }
     },
-    "EDL_credential" : {
+    "done_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "EDL Credential"
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "electronically_sign_digital_documents" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Electronically sign digital documents with your wallet by choosing a file from your device."
           }
         }
       }
@@ -529,6 +661,17 @@
         }
       }
     },
+    "expiration_period" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "expiry"
+          }
+        }
+      }
+    },
     "expired" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -540,101 +683,79 @@
         }
       }
     },
-    "expiry" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "expiry"
-          }
-        }
-      }
-    },
     "expiry_date" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date of expiry"
+            "value" : "Expiry Date"
           }
         }
       }
     },
-    "eye_colour" : {
+    "expiry_period" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eye colour"
+            "value" : "Filter by Expiry Period"
           }
         }
       }
     },
-    "family_name" : {
+    "filter_by_category" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Family Name"
+            "value" : "Filter by Category"
           }
         }
       }
     },
-    "family_name_birth" : {
+    "filter_by_issuer" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Family Name at Birth"
+            "value" : "Filter by Issuer"
           }
         }
       }
     },
-    "family_name_national_character" : {
+    "filter_by_state" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Family name in national characters"
+            "value" : "Filter by State"
           }
         }
       }
     },
-    "faq_title" : {
+    "filters" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "FAQ"
+            "value" : "Filters"
           }
         }
       }
     },
-    "first_name_birth" : {
+    "from_device" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "First Name at Birth"
-          }
-        }
-      }
-    },
-    "gender" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gender"
+            "value" : "From device"
           }
         }
       }
@@ -661,57 +782,35 @@
         }
       }
     },
-    "given_name" : {
+    "generic_issuer" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Given Name"
+            "value" : "Issuer"
           }
         }
       }
     },
-    "given_name_birth" : {
+    "home" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Given Name at Birth"
+            "value" : "Home"
           }
         }
       }
     },
-    "given_name_national_character" : {
+    "in_person" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Given name in national characters"
-          }
-        }
-      }
-    },
-    "hair_colour" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hair colour"
-          }
-        }
-      }
-    },
-    "height" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Height (cm)"
+            "value" : "In person"
           }
         }
       }
@@ -771,24 +870,13 @@
         }
       }
     },
-    "issuance_date" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date of issuance"
-          }
-        }
-      }
-    },
     "issuance_details_continue_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE"
+            "value" : "Continue"
           }
         }
       }
@@ -815,28 +903,6 @@
         }
       }
     },
-    "issuance_external_loading_caption" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use your “National System” credentials to add the document in your EUDI Wallet"
-          }
-        }
-      }
-    },
-    "issuance_external_loading_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add %@"
-          }
-        }
-      }
-    },
     "issuance_failed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -848,13 +914,13 @@
         }
       }
     },
-    "issuance_scan_qr" : {
+    "issuance_request" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SCAN QR"
+            "value" : "ISSUANCE REQUEST"
           }
         }
       }
@@ -881,24 +947,35 @@
         }
       }
     },
+    "issuance_success_header_description_when_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have successfully added the document(s) to your wallet"
+          }
+        }
+      }
+    },
     "issuance_success_next_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "NEXT"
+            "value" : "Next"
           }
         }
       }
     },
-    "issuance_success_title" : {
+    "issuance_success_title_punctuated" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Success"
+            "value" : "Success!"
           }
         }
       }
@@ -909,62 +986,51 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ISSUE"
+            "value" : "Issue"
           }
         }
       }
     },
-    "issue_date" : {
+    "issuer_want_wallet_addition" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date of issue"
+            "value" : "wants to add the following to your wallet:"
           }
         }
       }
     },
-    "issued_at" : {
+    "item_not_found_in_storage" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Issued at"
+            "value" : "Item not found in storage"
           }
         }
       }
     },
-    "issuing_authority" : {
+    "items_not_found_in_storage" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Issuing authority"
+            "value" : "Items not found in storage"
           }
         }
       }
     },
-    "issuing_country" : {
+    "learn_more" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Issuing country"
-          }
-        }
-      }
-    },
-    "issuing_jurisdiction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issuing jurisdiction"
+            "value" : "Learn more"
           }
         }
       }
@@ -976,17 +1042,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Load Sample Data"
-          }
-        }
-      }
-    },
-    "login_button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LOGIN"
           }
         }
       }
@@ -1024,17 +1079,6 @@
         }
       }
     },
-    "mdl" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Driving License"
-          }
-        }
-      }
-    },
     "missing_pid" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1057,19 +1101,63 @@
         }
       }
     },
-    "nationality" : {
+    "my_eu_wallet" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nationality"
+            "value" : "My EU Wallet"
+          }
+        }
+      }
+    },
+    "next_seven_days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next 7 days"
+          }
+        }
+      }
+    },
+    "next_thirty_days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next 30 days"
           }
         }
       }
     },
     "no" : {
       "extractionState" : "manual"
+    },
+    "no_results" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results"
+          }
+        }
+      }
+    },
+    "no_results_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No documents match your search. Try changing your search or filters."
+          }
+        }
+      }
     },
     "ok_button" : {
       "extractionState" : "manual",
@@ -1082,13 +1170,13 @@
         }
       }
     },
-    "on_expired" : {
+    "online" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "on\n%@"
+            "value" : "Online"
           }
         }
       }
@@ -1099,7 +1187,29 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Or"
+            "value" : "OR"
+          }
+        }
+      }
+    },
+    "or_share_via_nfc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or share via NFC"
+          }
+        }
+      }
+    },
+    "order_by" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ORDER BY"
           }
         }
       }
@@ -1115,28 +1225,6 @@
         }
       }
     },
-    "photo_id" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo ID"
-          }
-        }
-      }
-    },
-    "pid" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "National ID"
-          }
-        }
-      }
-    },
     "please_wait" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1148,35 +1236,13 @@
         }
       }
     },
-    "portrait" : {
+    "proximity_connection_nfc_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Portrait"
-          }
-        }
-      }
-    },
-    "portrait_capture_date" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Portrait image timestamp"
-          }
-        }
-      }
-    },
-    "proximity_connectivity_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show QR"
+            "value" : "Hold your phone near object to scan."
           }
         }
       }
@@ -1209,7 +1275,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONFIRM"
+            "value" : "Confirm"
+          }
+        }
+      }
+    },
+    "quick_pin_confirm_pin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm PIN"
           }
         }
       }
@@ -1225,13 +1302,24 @@
         }
       }
     },
+    "quick_pin_enter_a_pin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a PIN"
+          }
+        }
+      }
+    },
     "quick_pin_next_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "NEXT"
+            "value" : "Proceed"
           }
         }
       }
@@ -1242,7 +1330,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set a quick pin for future logins"
+            "value" : "Secure your wallet with a PIN code and connect to your National System."
           }
         }
       }
@@ -1264,7 +1352,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You successfully set the quick pin"
+            "value" : "To activate your wallet, connect to your National System to add your Digital ID."
           }
         }
       }
@@ -1275,7 +1363,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE"
+            "value" : "Add my Digital ID"
           }
         }
       }
@@ -1286,7 +1374,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Welcome to the EUDI Wallet"
+            "value" : "Welcome to your wallet"
           }
         }
       }
@@ -1308,7 +1396,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CONTINUE"
+            "value" : "Continue"
           }
         }
       }
@@ -1374,7 +1462,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "BACK TO HOME"
+            "value" : "Back to home"
           }
         }
       }
@@ -1385,29 +1473,29 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change quick pin"
+            "value" : "Change pin"
           }
         }
       }
     },
-    "read_faqs_button" : {
+    "removed_from_favorites" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "READ FAQS"
+            "value" : "Removed from favorites"
           }
         }
       }
     },
-    "registration_id" : {
+    "removed_from_favorites_messages" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registration ID"
+            "value" : "The document was successfully removed from your favorite list"
           }
         }
       }
@@ -1478,17 +1566,6 @@
         }
       }
     },
-    "request_data_share_button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CONTINUE"
-          }
-        }
-      }
-    },
     "request_data_share_caption" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1506,18 +1583,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Type your quick pin to share information"
-          }
-        }
-      }
-    },
-    "request_data_share_sucess_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You successfully shared information with %@"
+            "value" : "Enter your PIN to share data"
           }
         }
       }
@@ -1544,24 +1610,13 @@
         }
       }
     },
-    "request_data_verification" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification Data"
-          }
-        }
-      }
-    },
     "request_data_verified_entity" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trusted Relying Party"
+            "value" : "Relying Party"
           }
         }
       }
@@ -1577,79 +1632,24 @@
         }
       }
     },
-    "resident_address" : {
+    "requests_the_following" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permanent place of residence"
+            "value" : "requests the following"
           }
         }
       }
     },
-    "resident_city" : {
+    "reset" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Resident city"
-          }
-        }
-      }
-    },
-    "resident_country" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resident country"
-          }
-        }
-      }
-    },
-    "resident_house_number" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resident house number"
-          }
-        }
-      }
-    },
-    "resident_postal_code" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resident postal code"
-          }
-        }
-      }
-    },
-    "resident_state" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resident state"
-          }
-        }
-      }
-    },
-    "resident_street" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resident street"
+            "value" : "Reset"
           }
         }
       }
@@ -1665,13 +1665,24 @@
         }
       }
     },
-    "room_number" : {
+    "saved_to_favorites" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Room Number"
+            "value" : "Saved to favorites"
+          }
+        }
+      }
+    },
+    "saved_to_favorites_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document was successfully added from your favorite list"
           }
         }
       }
@@ -1682,29 +1693,51 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan a QR code"
-          }
-        }
-      }
-    },
-    "scanner_qr_caption" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place the QR code within the frame to start scanning"
-          }
-        }
-      }
-    },
-    "scanner_qr_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
             "value" : "Scan QR"
+          }
+        }
+      }
+    },
+    "scanner_qr_caption_issuing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan a QR code provided from an issuer to add a digital document to your wallet."
+          }
+        }
+      }
+    },
+    "scanner_qr_caption_presentation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan a QR code provided from a Relying Party to present a digital document online."
+          }
+        }
+      }
+    },
+    "scanner_qr_title_issuing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan QR to add"
+          }
+        }
+      }
+    },
+    "scanner_qr_title_presentation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Present a document"
           }
         }
       }
@@ -1720,13 +1753,24 @@
         }
       }
     },
-    "screen_recording_security_warning" : {
+    "scoped_issuance_success_deferred_caption_docname" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The screen is hidden to protect your personal information"
+            "value" : "Your document %@ has been requested. You will be notified when it has been issued to your wallet."
+          }
+        }
+      }
+    },
+    "scoped_issuance_success_deferred_caption_docname_and_issuer_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your document %@ from %@ has been requested. You will be notified when it has been issued to your wallet."
           }
         }
       }
@@ -1742,13 +1786,13 @@
         }
       }
     },
-    "seat_number" : {
+    "search_documents" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seat Number"
+            "value" : "Search Documents"
           }
         }
       }
@@ -1764,24 +1808,13 @@
         }
       }
     },
-    "sex" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sex"
-          }
-        }
-      }
-    },
     "share_button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SHARE"
+            "value" : "Share"
           }
         }
       }
@@ -1792,7 +1825,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please review carefully before sharing your data"
+            "value" : "Please review carefully before sharing your data."
           }
         }
       }
@@ -1808,13 +1841,13 @@
         }
       }
     },
-    "shown_above" : {
+    "show_results" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shown Above"
+            "value" : "Show Results"
           }
         }
       }
@@ -1841,13 +1874,35 @@
         }
       }
     },
-    "signature_usual_mark" : {
+    "sort_by" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Signature / usual mark"
+            "value" : "SORT BY"
+          }
+        }
+      }
+    },
+    "sort_by_issued_date" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORT BY ISSUED DATE"
+          }
+        }
+      }
+    },
+    "succesfully_added_following_to_wallet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have successfully added the following to your wallet"
           }
         }
       }
@@ -1863,6 +1918,17 @@
         }
       }
     },
+    "successfully_shared_following_information" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You successfully shared the following information with"
+          }
+        }
+      }
+    },
     "transaction_code_format_error" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1874,6 +1940,39 @@
         }
       }
     },
+    "transactions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions"
+          }
+        }
+      }
+    },
+    "trusted_relying_party" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trusted Relying Party"
+          }
+        }
+      }
+    },
+    "trusted_relying_party_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Relying Party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications."
+          }
+        }
+      }
+    },
     "try_again" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1881,17 +1980,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Try again"
-          }
-        }
-      }
-    },
-    "un_distinguishing_sign" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UN distinguishing sign"
           }
         }
       }
@@ -1940,13 +2028,13 @@
         }
       }
     },
-    "user_pseudonym" : {
+    "valid" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "User Pseudonym"
+            "value" : "Valid"
           }
         }
       }
@@ -1957,29 +2045,40 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valid until\n%@"
+            "value" : "Valid until %@"
           }
         }
       }
     },
-    "vehicle_category_code" : {
+    "view_details" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vehicle category code"
+            "value" : "View details"
           }
         }
       }
     },
-    "weight" : {
+    "view_document_details" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Weight (kg)"
+            "value" : "View details"
+          }
+        }
+      }
+    },
+    "wallet_is_secured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your wallet is secured!"
           }
         }
       }
@@ -1990,7 +2089,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Welcome back"
+            "value" : "Welcome back, %@"
           }
         }
       }

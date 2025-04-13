@@ -15,6 +15,7 @@
  */
 import logic_ui
 import logic_business
+import feature_common
 import logic_core
 
 @MainActor
@@ -52,8 +53,10 @@ public final class ProximityRouter {
       ).eraseToAnyView()
     case .proximityLoader(
       let relyingParty,
+      let relyingPartyIsTrusted,
       presentationCoordinator: let presentationCoordinator,
-      originator: let originator
+      originator: let originator,
+      let uiModels
     ):
       ProximityLoadingView(
         with: .init(
@@ -63,7 +66,23 @@ public final class ProximityRouter {
             argument: presentationCoordinator as ProximitySessionCoordinator
           ),
           relyingParty: relyingParty,
-          originator: originator
+          relyingPartyIsTrusted: relyingPartyIsTrusted,
+          originator: originator,
+          requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
+        )
+      ).eraseToAnyView()
+    case .proximitySuccess(
+      let config,
+      let uiModels
+    ):
+      ProximitySuccessView(
+        with: .init(
+          router: host,
+          config: config,
+          deepLinkController: DIGraph.resolver.force(
+            DeepLinkController.self
+          ),
+          requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
         )
       ).eraseToAnyView()
     }

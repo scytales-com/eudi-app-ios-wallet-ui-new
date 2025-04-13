@@ -15,22 +15,31 @@
  */
 
 import feature_common
+import logic_core
 
-final class ProximityLoadingViewModel<Router: RouterHost>: BaseLoadingViewModel<Router> {
+final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: BaseLoadingViewModel<Router, RequestItem> {
 
   private let interactor: ProximityInteractor
-  private let relyingParty: String
   private var publisherTask: Task<Void, Error>?
 
   init(
     router: Router,
     interactor: ProximityInteractor,
     relyingParty: String,
-    originator: AppRoute
+    relyingPartyIsTrusted: Bool,
+    originator: AppRoute,
+    requestItems: [ListItemSection<RequestItem>]
   ) {
+
     self.interactor = interactor
-    self.relyingParty = relyingParty
-    super.init(router: router, originator: originator, cancellationTimeout: 5)
+    super.init(
+      router: router,
+      originator: originator,
+      requestItems: requestItems,
+      relyingParty: relyingParty,
+      relyingPartyIsTrusted: relyingPartyIsTrusted,
+      cancellationTimeout: 5
+    )
   }
 
   func subscribeToCoordinatorPublisher() async {
@@ -42,7 +51,11 @@ final class ProximityLoadingViewModel<Router: RouterHost>: BaseLoadingViewModel<
           self.onError(with: error)
         case .responseSent:
           self.interactor.stopPresentation()
-          self.onNavigate(type: .push(getOnSuccessRoute()))
+          self.onNavigate(
+            type: .push(
+              getOnSuccessRoute()
+            )
+          )
         default:
           ()
         }
@@ -52,30 +65,24 @@ final class ProximityLoadingViewModel<Router: RouterHost>: BaseLoadingViewModel<
     }
   }
 
-  override func getTitle() -> LocalizableString.Key {
-    .requestDataTitle([relyingParty])
+  override func getTitle() -> LocalizableStringKey {
+    .requestDataTitle([getRelyingParty()])
   }
 
-  override func getCaption() -> LocalizableString.Key {
-    .pleaseWait
+  override func getCaption() -> LocalizableStringKey {
+    .requestsTheFollowing
   }
 
   private func getOnSuccessRoute() -> AppRoute {
     publisherTask?.cancel()
-    return .featureCommonModule(
-      .success(
-        config: UIConfig.Success(
-          title: .init(value: .success),
-          subtitle: .requestDataShareSuccess([relyingParty]),
-          buttons: [
-            .init(
-              title: .okButton,
-              style: .primary,
-              navigationType: .pop(screen: getOriginator())
-            )
-          ],
-          visualKind: .defaultIcon
-        )
+    return .featureProximityModule(
+      .proximitySuccess(
+        config: DocumentSuccessUIConfig(
+          successNavigation: .pop(screen: getOriginator()),
+          relyingParty: getRelyingParty(),
+          relyingPartyIsTrusted: isRelyingPartyIstrusted()
+        ),
+        getRequestItems()
       )
     )
   }

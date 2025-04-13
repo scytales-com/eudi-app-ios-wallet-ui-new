@@ -39,6 +39,14 @@ Run tests
 
 Build EUDI Wallet Demo version and upload it to AppCenter
 
+### ios github_release
+
+```sh
+[bundle exec] fastlane ios github_release
+```
+
+Release to github
+
 ### ios upload_tag
 
 ```sh
@@ -47,10 +55,10 @@ Build EUDI Wallet Demo version and upload it to AppCenter
 
 Upload tag to remote repo
 
-### ios upload_upstore
+### ios upload_appstore
 
 ```sh
-[bundle exec] fastlane ios upload_upstore
+[bundle exec] fastlane ios upload_appstore
 ```
 
 Reset version and build number to default
