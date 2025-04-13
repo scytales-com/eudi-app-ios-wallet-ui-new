@@ -2089,7 +2089,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Welcome back, %@"
+            "value" : "Welcome back — TEST ONLY —, %@"
           }
         }
       }

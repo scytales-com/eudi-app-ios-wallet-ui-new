@@ -1,5 +1,5 @@
 {
-  "originHash" : "d3b70237fb92b08b1e72a8ea6bc4c85574a38cf833f31c24a5775387c40b9729",
+  "originHash" : "7b91634f223635921cc7926acbf53a68c78c8b8085498cacccc6f07e0249c062",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -103,19 +103,19 @@
     {
       "identity" : "eudi-lib-ios-iso18013-data-model",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-model.git",
+      "location" : "https://github.com/scytales-com/eudi-lib-ios-iso18013-data-model.git",
       "state" : {
-        "revision" : "a32a6c07542c5ea2055e619b0f1f09d9b4d70c7e",
-        "version" : "0.5.8"
+        "branch" : "test_fixed_de",
+        "revision" : "e33b5959eb11ae2d6b813f6f958d35418b20171c"
       }
     },
     {
       "identity" : "eudi-lib-ios-iso18013-data-transfer",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-transfer.git",
+      "location" : "https://github.com/scytales-com/eudi-lib-ios-iso18013-data-transfer.git",
       "state" : {
-        "revision" : "4fcf227cbc80f4bc0e35e12d0e4be44dfd218a47",
-        "version" : "0.6.0"
+        "branch" : "test_fixed_de",
+        "revision" : "aaa5eee3db6026b5538c92715e635b8f228309ee"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-security.git",
       "state" : {
-        "revision" : "9035e447e9a0b3107ac11613ef81472202b9adf0",
-        "version" : "0.4.8"
+        "revision" : "5eb0ddde311bbe10008829aea468fa8e53b18342",
+        "version" : "0.5.2"
       }
     },
     {
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
-        "revision" : "751f66133efceb0662a3d6acfdd644d2627aa655",
-        "version" : "0.12.3"
+        "revision" : "e2f3ab9a4cea1b0369c8aa5bc15cbe9482a355b0",
+        "version" : "0.13.0"
       }
     },
     {
@@ -182,12 +182,21 @@
       }
     },
     {
+      "identity" : "eudi-lib-ios-statium-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-statium-swift.git",
+      "state" : {
+        "revision" : "1eb17d2ce09012464fa8d9d5968e11a9ea2b4113",
+        "version" : "0.1.1"
+      }
+    },
+    {
       "identity" : "eudi-lib-ios-wallet-kit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "e8e1c081f196bfb85130ce2a2bbf11b020b5d0f9",
-        "version" : "0.10.5"
+        "revision" : "aed8b7310c58a442a76c24d01201d1e04ac6f806",
+        "version" : "0.10.7"
       }
     },
     {
@@ -195,8 +204,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-storage.git",
       "state" : {
-        "revision" : "2bccbe11d65de8954e881da1b6de578509f6e16a",
-        "version" : "0.4.8"
+        "revision" : "b24347d93f4646d224c463c47646ace25c680f2d",
+        "version" : "0.5.2"
       }
     },
     {

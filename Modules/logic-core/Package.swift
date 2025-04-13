@@ -12,9 +12,11 @@ let package = Package(
       targets: ["logic-core"])
   ],
   dependencies: [
+	.package(url: "https://github.com/scytales-com/eudi-lib-ios-iso18013-data-model.git", branch: "test_fixed_de"),
+	.package(url: "https://github.com/scytales-com/eudi-lib-ios-iso18013-data-transfer.git", branch: "test_fixed_de"),
     .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
-      exact: "0.10.5"
+      exact: "0.10.7"
     ),
     .package(
       name: "logic-resources",
@@ -31,6 +33,8 @@ let package = Package(
       dependencies: [
         "logic-resources",
         "logic-business",
+		.product(name: "MdocDataModel18013", package: "eudi-lib-ios-iso18013-data-model"),
+		.product(name: "MdocDataTransfer18013", package: "eudi-lib-ios-iso18013-data-transfer"),
         .product(
           name: "EudiWalletKit",
           package: "eudi-lib-ios-wallet-kit"

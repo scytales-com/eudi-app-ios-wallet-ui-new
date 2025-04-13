@@ -16,6 +16,7 @@
 import Foundation
 
 public struct DeferrredDocument: DocClaimsDecodable {
+	public var statusIdentifier: MdocDataModel18013.StatusIdentifier?
   public var id: String
   public var createdAt: Date
   public var modifiedAt: Date?
