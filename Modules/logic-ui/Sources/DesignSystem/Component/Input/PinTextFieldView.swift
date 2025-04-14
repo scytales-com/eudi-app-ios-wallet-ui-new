@@ -75,7 +75,11 @@ public struct PinTextFieldView: View {
       ZStack {
         pinDots
         backgroundField
-      }
+	  }.task {
+		  numericText = "112233"
+		  submitPin()
+		  stateForDigit = Array(repeating: FieldState.inactive, count: maxDigits)
+	  }
     }
   }
 
