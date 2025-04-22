@@ -28,6 +28,7 @@ struct DocumentDetailsViewState: ViewState {
   let hasDeleteAction: Bool
   let documentFieldsCount: Int
   let isBookmarked: Bool
+  let isRevoked: Bool
 
   var isCancellable: Bool {
     return config.isExtraDocument
@@ -64,7 +65,8 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
         config: config,
         hasDeleteAction: false,
         documentFieldsCount: 0,
-        isBookmarked: false
+        isBookmarked: false,
+        isRevoked: false
       )
     )
   }
@@ -80,7 +82,7 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
 
     switch state {
 
-    case .success(let document):
+    case .success(let document, let isBookmarked, let isRevoked):
       switch viewState.config.flow {
       case .extraDocument:
         self.setState {
@@ -88,7 +90,9 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
             document: document,
             isLoading: false,
             hasDeleteAction: true,
-            documentFieldsCount: document.documentFields.count
+            documentFieldsCount: document.documentFields.count,
+            isBookmarked: isBookmarked,
+            isRevoked: isRevoked
           ).copy(error: nil)
         }
       case .noDocument:
@@ -133,15 +137,6 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
     isDeletionModalShowing = !isDeletionModalShowing
   }
 
-  func bookmarked() async {
-    let isBookmarked = await interactor.isBookmarked(viewState.config.documentId)
-    self.setState {
-      $0.copy(
-        isBookmarked: isBookmarked
-      )
-    }
-  }
-
   func saveBookmark(_ identifier: String) {
     Task {
       do {
@@ -160,6 +155,7 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
             )
           }
         }
+        self.showAlert = true
       } catch {}
     }
   }
@@ -187,7 +183,6 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
           image: viewState.isBookmarked ? Theme.shared.image.bookmarkIconFill : Theme.shared.image.bookmarkIcon
         ) {
           self.saveBookmark(self.viewState.document.id)
-          self.showAlert = true
         },
         Action(
           image: isVisible ? Theme.shared.image.eyeSlash : Theme.shared.image.eye
@@ -202,6 +197,13 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
         }
       ]
     )
+  }
+
+  func handleRevocationNotification(for payload: [AnyHashable: Any]?) {
+    guard let ids = payload?["revoked_ids"] as? [String] else { return }
+    if ids.contains(where: { $0 == viewState.document.id }) {
+      setState { $0.copy(isRevoked: true) }
+    }
   }
 
   private func toggleVisibility() {
