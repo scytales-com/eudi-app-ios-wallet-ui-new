@@ -81,6 +81,10 @@ public protocol WalletKitController: Sendable {
 
   func isDocumentRevoked(with id: String) async -> Bool
   func fetchRevokedDocuments() async throws -> [String]
+  func storeRevokedDocuments(with ids: [String]) async throws
+  func removeRevokedDocument(with id: String) async throws
+
+  func getDocumentStatus(for statusIdentifier: StatusIdentifier) async throws -> CredentialStatus
 }
 
 final class WalletKitControllerImpl: WalletKitController {
@@ -146,7 +150,6 @@ final class WalletKitControllerImpl: WalletKitController {
 
   func clearAllDocuments() async {
     try? await wallet.deleteAllDocuments()
-    try? await revokedDocumentStorageController.deleteAll()
   }
 
   func deleteDocument(with id: String, status: DocumentStatus) async throws {
@@ -350,8 +353,20 @@ final class WalletKitControllerImpl: WalletKitController {
     }
   }
 
+  func storeRevokedDocuments(with ids: [String]) async throws {
+    try await revokedDocumentStorageController.store(ids.map { .init(identifier: $0) })
+  }
+
+  func removeRevokedDocument(with id: String) async throws {
+    try await revokedDocumentStorageController.delete(id)
+  }
+
   func isDocumentRevoked(with id: String) async -> Bool {
     return (try? await revokedDocumentStorageController.retrieve(id)) != nil
+  }
+
+  func getDocumentStatus(for statusIdentifier: StatusIdentifier) async throws -> CredentialStatus {
+    return try await wallet.getDocumentStatus(for: statusIdentifier)
   }
 }
 

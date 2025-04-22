@@ -13,6 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 public protocol StorageController: Sendable {
 
   associatedtype Value: StoredObject
@@ -24,12 +25,4 @@ public protocol StorageController: Sendable {
   func retrieveAll() async throws -> [Value]
   func delete(_ identifier: String) async throws
   func deleteAll() async throws
-}
-
-extension StorageController {
-  func dbAsync<T: Sendable>(_ block: @Sendable @escaping () async throws -> T) async throws -> T {
-    return try await Task.detached(priority: .background) { () -> T in
-      return try await block()
-    }.value
-  }
 }
