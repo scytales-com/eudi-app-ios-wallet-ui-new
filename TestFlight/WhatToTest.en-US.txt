@@ -1,5 +1,7 @@
 - Nested field support for presentation
-- OpenID4VP draft 23 support
+- Transactions
+- OpenID4VCI draft 15 support
+- OpenID4VP draft 24 support
 
 - SD-JWT support
 - Localisation metadata support
