@@ -13,24 +13,12 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import SwiftUI
-import logic_resources
+import OpenID4VCI
 
-public struct WrapText: View {
-  private let text: LocalizableStringKey
-  private let textConfig: TextConfig
-
-  public init(text: LocalizableStringKey, textConfig: TextConfig) {
-    self.text = text
-    self.textConfig = textConfig
-  }
-
-  public var body: some View {
-    Text(text)
-      .font(textConfig.font)
-      .foregroundColor(textConfig.color)
-      .multilineTextAlignment(textConfig.textAlign)
-      .lineLimit(textConfig.maxLines)
-      .fontWeight(textConfig.fontWeight)
+extension TxCode: @retroactive Equatable {
+  public static func == (lhs: TxCode, rhs: TxCode) -> Bool {
+    return lhs.inputMode == rhs.inputMode
+    && lhs.length == rhs.length
+    && lhs.inputMode == rhs.inputMode
   }
 }

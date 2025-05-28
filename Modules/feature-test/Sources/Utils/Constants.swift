@@ -110,6 +110,56 @@ extension Constants {
     docDataFormat: .cbor,
     hashingAlg: nil
   )
+  
+  static let scopedDocument = ScopedDocument(
+    name: "Test Document",
+    issuer: "Test Issuer",
+    configId: "test-config-id",
+    isPid: true
+  )
+
+  static let scopedDocumentNotPid = ScopedDocument(
+    name: "Test Document",
+    issuer: "Test Issuer",
+    configId: "test-config-id",
+    isPid: false
+  )
+
+  static let defferedPendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    secureAreaName: nil,
+    createdAt: Date(),
+    metadata: nil,
+    displayName: "My Document",
+    status: .deferred
+  )
+  
+  static let issuedPendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    secureAreaName: nil,
+    createdAt: Date(),
+    metadata: nil,
+    displayName: "My Document",
+    status: .issued
+  )
+
+  static let pendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    secureAreaName: nil,
+    createdAt: Date(),
+    metadata: nil,
+    displayName: "My Document",
+    status: .pending
+  )
 }
 
 extension Constants {
@@ -146,6 +196,58 @@ extension Constants {
     status: .completed,
     type: .presentation,
     dataFormat: .cbor
+  )
+  
+  static let eudiRemoteVerifierMock: TransactionLogItem = .init(
+    id: "transactionId1",
+    transactionLogData: .presentation(
+      log: .init(
+        TransactionLog(
+          timestamp: Int64(Date().timeIntervalSince1970),
+          status: .completed,
+          errorMessage: nil,
+          rawRequest: nil,
+          rawResponse: nil,
+          relyingParty: TransactionLog.RelyingParty(
+            name: "EUDI Remote Verifier",
+            isVerified: true,
+            certificateChain: [],
+            readerAuth: nil
+          ),
+          type: .presentation,
+          dataFormat: .json,
+          sessionTranscript: nil,
+          docMetadata: nil
+        ),
+        uiCulture: Locale.current.systemLanguageCode
+      )
+    )
+  )
+  
+  static let otherRelPartyMock: TransactionLogItem = .init(
+    id: "transactionId2",
+    transactionLogData: .presentation(
+      log: .init(
+        TransactionLog(
+          timestamp: Int64(Date().addingTimeInterval(-3600).timeIntervalSince1970),
+          status: .failed,
+          errorMessage: "Some Error",
+          rawRequest: nil,
+          rawResponse: nil,
+          relyingParty: TransactionLog.RelyingParty(
+            name: "Other Relaying Party",
+            isVerified: false,
+            certificateChain: [],
+            readerAuth: nil
+          ),
+          type: .presentation,
+          dataFormat: .json,
+          sessionTranscript: nil,
+          docMetadata: nil
+        ),
+        uiCulture: Locale.current.systemLanguageCode
+      )
+    )
   )
   
   static let mockPresentationSession = PresentationSession(
