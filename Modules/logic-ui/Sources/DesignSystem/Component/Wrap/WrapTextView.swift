@@ -13,38 +13,24 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import logic_business
-import EudiRQESUi
+import SwiftUI
+import logic_resources
 
-public protocol DocumentSignInteractor: Sendable {
-  func initiateSigning(url: URL) async
-}
+public struct WrapTextView: View {
+  private let text: LocalizableStringKey
+  private let textConfig: TextConfig
 
-final class DocumentSignInteractorImpl: DocumentSignInteractor {
-
-  private let configLogic: ConfigLogic
-
-  init(configLogic: ConfigLogic) {
-    self.configLogic = configLogic
+  public init(text: LocalizableStringKey, textConfig: TextConfig) {
+    self.text = text
+    self.textConfig = textConfig
   }
 
-  func initiateSigning(url: URL) async {
-
-    let eudiRQESUi: EudiRQESUi
-
-    do {
-      eudiRQESUi = try .instance()
-    } catch {
-      eudiRQESUi = .init(config: configLogic.rqesConfig)
-    }
-
-    guard let controller = await UIApplication.shared.topViewController() else {
-      return
-    }
-
-    try? await eudiRQESUi.initiate(
-      on: controller,
-      fileUrl: url
-    )
+  public var body: some View {
+    Text(text)
+      .font(textConfig.font)
+      .foregroundColor(textConfig.color)
+      .multilineTextAlignment(textConfig.textAlign)
+      .lineLimit(textConfig.maxLines)
+      .fontWeight(textConfig.fontWeight)
   }
 }
