@@ -19,21 +19,22 @@ import logic_resources
 
 struct StartupView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: StartupViewModel<Router>
+  @StateObject private var viewModel: StartupViewModel<Router>
 
   init(with viewModel: StartupViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = StateObject(wrappedValue: viewModel)
   }
 
   var body: some View {
     ContentScreenView(
       padding: .zero,
       canScroll: false,
-      background: Theme.shared.color.primary
+      background: Theme.shared.color.surface
     ) {
-      content(viewState: viewModel.viewState) {
-        viewModel.startAnimatingSplash()
-      }
+      content(
+        viewState: viewModel.viewState,
+        screenWidth: getScreenRect().width
+      )
     }
     .task {
       await viewModel.initialize()
@@ -43,23 +44,23 @@ struct StartupView<Router: RouterHost>: View {
 
 @MainActor
 @ViewBuilder
-private func content(viewState: StartupState, action: @escaping () -> Void) -> some View {
+private func content(
+  viewState: StartupState,
+  screenWidth: CGFloat
+) -> some View {
   ZStack {
-    SplashBackgroundView(
-      isAnimating: viewState.isAnimating
-    )
-    .onAppear {
-      withAnimation(Animation.easeInOut(duration: viewState.splashDuration)) {
-        action()
-      }
-    }
+    Theme.shared.image.logo
+      .resizable()
+      .aspectRatio(contentMode: .fit)
+      .frame(width: screenWidth / 2.5)
   }
+  .frame(maxWidth: .infinity, maxHeight: .infinity)
+  .ignoresSafeArea(.all)
 }
 
 #Preview {
   let viewState = StartupState(
     splashDuration: 10,
-    isAnimating: true,
     setupError: nil
   )
 
@@ -68,6 +69,6 @@ private func content(viewState: StartupState, action: @escaping () -> Void) -> s
     canScroll: false,
     background: Theme.shared.color.primary
   ) {
-    content(viewState: viewState) {}
+    content(viewState: viewState, screenWidth: 1080)
   }
 }
