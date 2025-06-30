@@ -1063,9 +1063,9 @@ public class MockProximityInteractor: ProximityInteractor, Cuckoo.ProtocolMock, 
         )
     }
     
-    public func onDeviceEngagement() async {
+    public func onDeviceEngagement() async -> ProximityDeviceEngagementPartialState {
         return await cuckoo_manager.call(
-            "onDeviceEngagement() async",
+            "onDeviceEngagement() async -> ProximityDeviceEngagementPartialState",
             parameters: (),
             escapingParameters: (),
             superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
@@ -1146,10 +1146,10 @@ public class MockProximityInteractor: ProximityInteractor, Cuckoo.ProtocolMock, 
             ))
         }
         
-        func onDeviceEngagement() -> Cuckoo.ProtocolStubNoReturnFunction<()> {
+        func onDeviceEngagement() -> Cuckoo.ProtocolStubFunction<(), ProximityDeviceEngagementPartialState> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return .init(stub: cuckoo_manager.createStub(for: MockProximityInteractor.self,
-                method: "onDeviceEngagement() async",
+                method: "onDeviceEngagement() async -> ProximityDeviceEngagementPartialState",
                 parameterMatchers: matchers
             ))
         }
@@ -1232,10 +1232,10 @@ public class MockProximityInteractor: ProximityInteractor, Cuckoo.ProtocolMock, 
         
         
         @discardableResult
-        func onDeviceEngagement() -> Cuckoo.__DoNotUse<(), Void> {
+        func onDeviceEngagement() -> Cuckoo.__DoNotUse<(), ProximityDeviceEngagementPartialState> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return cuckoo_manager.verify(
-                "onDeviceEngagement() async",
+                "onDeviceEngagement() async -> ProximityDeviceEngagementPartialState",
                 callMatcher: callMatcher,
                 parameterMatchers: matchers,
                 sourceLocation: sourceLocation
@@ -1316,8 +1316,8 @@ public class ProximityInteractorStub:ProximityInteractor, @unchecked Sendable {
         return DefaultValueRegistry.defaultValue(for: (ProximityCoordinatorPartialState).self)
     }
     
-    public func onDeviceEngagement() async {
-        return DefaultValueRegistry.defaultValue(for: (Void).self)
+    public func onDeviceEngagement() async -> ProximityDeviceEngagementPartialState {
+        return DefaultValueRegistry.defaultValue(for: (ProximityDeviceEngagementPartialState).self)
     }
     
     public func onQRGeneration() async -> ProximityQrCodePartialState {
@@ -7127,12 +7127,12 @@ public class MockProximitySessionCoordinator: ProximitySessionCoordinator, Cucko
 
     public required init(session p0: PresentationSession) {}
     
-    public func initialize() async {
-        return await cuckoo_manager.call(
-            "initialize() async",
+    public func initialize() async throws {
+        return try await cuckoo_manager.callThrows(
+            "initialize() async throws",
             parameters: (),
             escapingParameters: (),
-            superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+errorType: Error.self,            superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
             defaultCall: await __defaultImplStub!.initialize()
         )
     }
@@ -7218,10 +7218,10 @@ errorType: Error.self,            superclassCall: Cuckoo.MockManager.crashOnProt
             return .init(manager: cuckoo_manager, name: "sendableCurrentValueSubject")
         }
         
-        func initialize() -> Cuckoo.ProtocolStubNoReturnFunction<()> {
+        func initialize() -> Cuckoo.ProtocolStubNoReturnThrowingFunction<(),Error> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return .init(stub: cuckoo_manager.createStub(for: MockProximitySessionCoordinator.self,
-                method: "initialize() async",
+                method: "initialize() async throws",
                 parameterMatchers: matchers
             ))
         }
@@ -7303,7 +7303,7 @@ errorType: Error.self,            superclassCall: Cuckoo.MockManager.crashOnProt
         func initialize() -> Cuckoo.__DoNotUse<(), Void> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return cuckoo_manager.verify(
-                "initialize() async",
+                "initialize() async throws",
                 callMatcher: callMatcher,
                 parameterMatchers: matchers,
                 sourceLocation: sourceLocation
@@ -7408,7 +7408,7 @@ public class ProximitySessionCoordinatorStub:ProximitySessionCoordinator, @unche
     public required init(session p0: PresentationSession) {}
 
     
-    public func initialize() async {
+    public func initialize() async throws {
         return DefaultValueRegistry.defaultValue(for: (Void).self)
     }
     
@@ -9166,22 +9166,6 @@ import logic_resources
 
 
 
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Button/FloatingActionButtonView.swift'
-
-import Cuckoo
-import SwiftUI
-import logic_resources
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Alert/AlertView.swift'
 
 import Cuckoo
@@ -9404,12 +9388,42 @@ import logic_resources
 
 
 
+// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Image/LeftImageModifier.swift'
+
+import Cuckoo
+import SwiftUI
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_proximity
+
+
+
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Image/RemoteImageView.swift'
 
 import Cuckoo
 import SwiftUI
 import CachedAsyncImage
 import logic_resources
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_proximity
+
+
+
+// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Image/RightImageModifier.swift'
+
+import Cuckoo
+import SwiftUI
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -9533,22 +9547,6 @@ import Copyable
 
 
 
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/List/PlainWithLogoView.swift'
-
-import Cuckoo
-import SwiftUI
-import logic_resources
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/List/TappableCellView.swift'
 
 import Cuckoo
@@ -9618,52 +9616,6 @@ import logic_resources
 import Cuckoo
 import SwiftUI
 import logic_resources
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/List/WrapListView.swift'
-
-import Cuckoo
-import SwiftUI
-import logic_resources
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Progress/BlurProgressView.swift'
-
-import Cuckoo
-import SwiftUI
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Progress/NormalProgressView.swift'
-
-import Cuckoo
-import SwiftUI
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -9842,36 +9794,6 @@ public class LocatorTypeStub:LocatorType, @unchecked Sendable {
 
 
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Type/FastenedDynamicModifier.swift'
-
-import Cuckoo
-import SwiftUI
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Type/LeftImageModifier.swift'
-
-import Cuckoo
-import SwiftUI
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_proximity
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Type/RightImageModifier.swift'
 
 import Cuckoo
 import SwiftUI
