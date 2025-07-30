@@ -1,5 +1,5 @@
 {
-  "originHash" : "e5854d267b4f71dc8bc9168529ef2d8744641b3d13a3b1096d5e8068a587e9a5",
+  "originHash" : "9e3542761594ffb611b01b8c877694d8bf39b08bcb4f696b5b29fc6a997bf926",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-model.git",
       "state" : {
-        "revision" : "5a26035bcf96f7aad2855e10fc35f109fde2d151",
-        "version" : "0.7.3"
+        "revision" : "2eabc58231614e6a509053c8411239b1cd47244a",
+        "version" : "0.7.5"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-transfer.git",
       "state" : {
-        "revision" : "4db02899e6a52affd33296440c5d766f6889d690",
-        "version" : "0.7.3"
+        "revision" : "277e3a80014e8c2acf47a1a9e076d98610080b70",
+        "version" : "0.7.5"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-security.git",
       "state" : {
-        "revision" : "2f21c70295ed1569963f5eb7f4a45f3c4ec0b9ba",
-        "version" : "0.6.4"
+        "revision" : "c8db844ce7d3330c3096b3794fb1a1ae9d2dbaa0",
+        "version" : "0.6.5"
       }
     },
     {
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
-        "revision" : "c4bd0181ce27a9b22bf271bb3f89933f0355c608",
-        "version" : "0.15.2"
+        "revision" : "508556bdd1cf517735a0e6405c9dbd2704e6a892",
+        "version" : "0.15.4"
       }
     },
     {
@@ -150,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-csc-swift.git",
       "state" : {
-        "revision" : "9e192796a8df9b11d3b463b56289a1220bbeb010",
-        "version" : "0.2.1"
+        "revision" : "c65496732d64d7bbb72f9f4934b7a091770a2478",
+        "version" : "0.3.1"
       }
     },
     {
@@ -159,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-kit.git",
       "state" : {
-        "revision" : "9072a99034e725524aa895b9cabc5bf36c987c61",
-        "version" : "0.2.0"
+        "revision" : "9df56fb15eb3a14f4cbae42ae4d6bb139990efd4",
+        "version" : "0.3.2"
       }
     },
     {
@@ -168,8 +168,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-ui.git",
       "state" : {
-        "revision" : "1cd316800fe468c0c63a27b6e2be023c171ec3d2",
-        "version" : "0.2.3"
+        "revision" : "97b2c8671802d367be471734186a223536bd8d3c",
+        "version" : "0.3.1"
       }
     },
     {
@@ -177,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git",
       "state" : {
-        "revision" : "631346f6d0731c21cdd8542dcdbc30b9fec465ee",
-        "version" : "0.15.0"
+        "revision" : "b322b0d7c910614c31a1ce2513b1529b8485b515",
+        "version" : "0.15.1"
       }
     },
     {
@@ -195,8 +195,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "0b51feaf808284c341238fc8f2316b6d88f3404a",
-        "version" : "0.13.3"
+        "revision" : "c48a518a800203d9628b898fcd7350eca2fcacb6",
+        "version" : "0.13.5"
       }
     },
     {
@@ -206,6 +206,15 @@
       "state" : {
         "revision" : "f307c885c7f033318c9024b08d53c4537761fd12",
         "version" : "0.6.1"
+      }
+    },
+    {
+      "identity" : "eudi-lib-podofo",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-podofo",
+      "state" : {
+        "revision" : "8e2575abb9f393cae43ae5fd9a8f2e8dd962f12a",
+        "version" : "0.1.2"
       }
     },
     {
