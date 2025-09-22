@@ -1,5 +1,5 @@
 {
-  "originHash" : "51e351d16733633a2cd5494b64a33cd02c4b8394d1575cb4a5be107128115ecf",
+  "originHash" : "5b8b01869e09f91fa5a2f51e974de19bef61e84db789930bf81d5a289509d3c0",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-csc-swift.git",
       "state" : {
-        "revision" : "1bcf7f8470f03a3c2aa8e9b05b9f272eae49be18",
-        "version" : "0.6.2"
+        "revision" : "64581853e64b604676a00a122f104d63968fa2ca",
+        "version" : "0.6.3"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-kit.git",
       "state" : {
-        "revision" : "03d4d5238215aeb43698b117127e42ca70a356fd",
-        "version" : "0.6.2"
+        "revision" : "7eb84df1fe85067e509afe29de0ddf66b3d195ec",
+        "version" : "0.6.4"
       }
     },
     {
@@ -150,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-ui.git",
       "state" : {
-        "revision" : "9444c5404491106f89f0173e7b3d289647542e3d",
-        "version" : "0.3.5"
+        "revision" : "c3b03952bdb8aa40696a37d7a2e972396876a3be",
+        "version" : "0.3.6"
       }
     },
     {
@@ -177,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "c7b67459c3a648e9170fcae80d8f9097b3aefcd9",
-        "version" : "0.14.0"
+        "revision" : "74eb009c57ded73a17e7f418a94d519c567918e0",
+        "version" : "0.14.1"
       }
     },
     {
@@ -195,8 +195,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-podofo",
       "state" : {
-        "revision" : "fe0269ba1ed58789cad865d87f759f4ba3658c67",
-        "version" : "0.3.7"
+        "revision" : "726147530e544a8ca57b5f633a1aa8568f2bb93b",
+        "version" : "0.3.8"
       }
     },
     {
@@ -204,8 +204,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
       "state" : {
-        "revision" : "5d33ca40db259729d9473dd7c71f1bb214ec1755",
-        "version" : "0.7.2"
+        "revision" : "aaf68f574b194a121490a6f1bffc2ddbbdbce4a2",
+        "version" : "0.8.0"
       }
     },
     {
@@ -305,6 +305,33 @@
       "state" : {
         "revision" : "54eebd2b5e7a4a8055a7a8b55ac859a48462d722",
         "version" : "10.54.5"
+      }
+    },
+    {
+      "identity" : "sdwebimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SDWebImage/SDWebImage.git",
+      "state" : {
+        "revision" : "34cf2423a2c4088d06a3b08655603b5bc3eeeb3a",
+        "version" : "5.21.2"
+      }
+    },
+    {
+      "identity" : "sdwebimagesvgcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SDWebImage/SDWebImageSVGCoder",
+      "state" : {
+        "revision" : "85b5d58ad02c207c496fa34426dc6560d6ae32f0",
+        "version" : "1.8.0"
+      }
+    },
+    {
+      "identity" : "sdwebimageswiftui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SDWebImage/SDWebImageSwiftUI",
+      "state" : {
+        "revision" : "451c6dfd5ecec2cf626d1d9ca81c2d4a60355172",
+        "version" : "3.1.3"
       }
     },
     {
@@ -420,8 +447,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/niscy-eudiw/SwiftCBOR.git",
       "state" : {
-        "revision" : "2c8c55273d4c4aae21bb46c2afbae79ee072eff4",
-        "version" : "0.6.2"
+        "revision" : "7d6271345212f3864309666b6eb9f9941be6873d",
+        "version" : "0.6.3"
       }
     },
     {
@@ -431,15 +458,6 @@
       "state" : {
         "revision" : "d535b0836be52c846d87605adad1205445e4dc35",
         "version" : "0.0.4"
-      }
-    },
-    {
-      "identity" : "swiftui-cached-async-image",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git",
-      "state" : {
-        "revision" : "467a3d17479887943ab917a379e62bbaff60ac8a",
-        "version" : "2.1.1"
       }
     },
     {
