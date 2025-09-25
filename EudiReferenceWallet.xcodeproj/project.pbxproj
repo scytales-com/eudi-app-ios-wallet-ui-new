@@ -42,7 +42,6 @@
 		B070C01D2C0A27400061295A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B0AD6D6C2CC1117F007C0793 /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
 		B0FA80BE2E85C27D0012A071 /* CodeScanner */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CodeScanner; sourceTree = "<group>"; };
-		B0FA80BF2E85C79E0012A071 /* eudi-lib-ios-wallet-kit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "eudi-lib-ios-wallet-kit"; path = "/Users/ffeli/Source/mDL/niscy-eudiw/eudi-lib-ios-wallet-kit"; sourceTree = "<absolute>"; };
 		F018D9F32D087C410015876D /* logic-storage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-storage"; path = "Modules/logic-storage"; sourceTree = "<group>"; };
 		F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = WalletDemoRelease.xcconfig; sourceTree = "<group>"; };
 		F02921622B8E07870076A58B /* WalletDevRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = WalletDevRelease.xcconfig; sourceTree = "<group>"; };
@@ -135,7 +134,6 @@
 		F14907AF2ABAF54B00DDFE56 = {
 			isa = PBXGroup;
 			children = (
-				B0FA80BF2E85C79E0012A071 /* eudi-lib-ios-wallet-kit */,
 				B0AD6D6B2CC11159007C0793 /* ci_scripts */,
 				F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */,
 				F14907BA2ABAF54B00DDFE56 /* Wallet */,
