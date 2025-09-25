@@ -1,5 +1,4 @@
 {
-  "originHash" : "d9209fc8c9883087b30ba4f2c2e138cf8a3c20af3286146e788013df38c180ae",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -53,15 +52,6 @@
       "state" : {
         "branch" : "master",
         "revision" : "d6ab93cb3f98d9c4033bd37413d9fe90a4647cb4"
-      }
-    },
-    {
-      "identity" : "codescanner",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/twostraws/CodeScanner",
-      "state" : {
-        "revision" : "5e886430238944c7200fc9e10dbf2d9550dba865",
-        "version" : "2.5.2"
       }
     },
     {
@@ -170,15 +160,6 @@
       "state" : {
         "revision" : "25427865918ea07119264c8e1f4caab3d97e3e70",
         "version" : "0.2.0"
-      }
-    },
-    {
-      "identity" : "eudi-lib-ios-wallet-kit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
-      "state" : {
-        "revision" : "2363acd9ba261a46f0aeae62c6f1fb9fb525239f",
-        "version" : "0.14.4"
       }
     },
     {
@@ -497,5 +478,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
