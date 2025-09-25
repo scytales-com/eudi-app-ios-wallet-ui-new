@@ -52,18 +52,19 @@ struct DocumentTabView<Router: RouterHost>: View {
         viewModel.updateFilters(sectionID: sectionID, filterID: filterID)
       }
     }
-    .confirmationDialog(
+    .dialogCompat(
       .issuanceDetailsDeletionTitle([viewModel.viewState.pendingDocumentTitle]),
       isPresented: $viewModel.isDeleteDeferredModalShowing,
-      titleVisibility: .visible
-    ) {
-      Button(.no, role: .cancel) {}
-      Button(.yes) {
-        viewModel.deleteDeferredDocument()
+      actions: {
+        Button(.no, role: .cancel) {}
+        Button(.yes, role: .destructive) {
+          viewModel.deleteDeferredDocument()
+        }
+      },
+      message: {
+        Text(.issuanceDetailsDeletionCaption([viewModel.viewState.pendingDocumentTitle]))
       }
-    } message: {
-      Text(.issuanceDetailsDeletionCaption([viewModel.viewState.pendingDocumentTitle]))
-    }
+    )
     .sheetDialog(isPresented: $viewModel.isSuccededDocumentsModalShowing) {
       SheetContentView {
         VStack(spacing: SPACING_MEDIUM) {
@@ -82,8 +83,8 @@ struct DocumentTabView<Router: RouterHost>: View {
         }
       }
     }
-    .onChange(of: scenePhase) { phase in
-      viewModel.setPhase(with: phase)
+    .onChange(of: scenePhase) {
+      viewModel.setPhase(with: scenePhase)
     }
     .onAppear {
       viewModel.onCreate()

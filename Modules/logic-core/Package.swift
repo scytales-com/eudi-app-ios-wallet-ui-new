@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
   name: "logic-core",
-  platforms: [.iOS(.v16)],
+  platforms: [.iOS(.v17)],
   products: [
     .library(
       name: "logic-core",
@@ -14,7 +14,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
-      exact: "0.14.2"
+      exact: "0.14.4"
     ),
     .package(
       name: "logic-resources",

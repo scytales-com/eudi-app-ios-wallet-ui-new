@@ -42,30 +42,31 @@ struct HomeTabView<Router: RouterHost>: View {
       isPresented: $viewModel.isAuthenticateModalShowing,
       titleVisibility: .visible
     ) {
-      Button(.cancelButton, role: .cancel) {}
       Button(.inPerson) {
         viewModel.onShare()
       }
       Button(.online) {
         viewModel.onShowScanner()
       }
+      Button(.cancelButton, role: .destructive) {}
     } message: {
       Text(.authenticateAuthoriseTransactions)
     }
-    .confirmationDialog(
+    .dialogCompat(
       .bleDisabledModalTitle,
       isPresented: $viewModel.isBleModalShowing,
-      titleVisibility: .visible
-    ) {
-      Button(.cancelButton, role: .cancel) {}
-      Button(.bleDisabledModalButton) {
-        viewModel.onBleSettings()
+      actions: {
+        Button(.bleDisabledModalButton) {
+          viewModel.onBleSettings()
+        }
+        Button(.cancelButton, role: .cancel) {}
+      },
+      message: {
+        Text(.bleDisabledModalCaption)
       }
-    } message: {
-      Text(.bleDisabledModalCaption)
-    }
-    .onChange(of: scenePhase) { phase in
-      self.viewModel.setPhase(with: phase)
+    )
+    .onChange(of: scenePhase) {
+      self.viewModel.setPhase(with: scenePhase)
     }
     .onAppear {
       viewModel.onCreate()
