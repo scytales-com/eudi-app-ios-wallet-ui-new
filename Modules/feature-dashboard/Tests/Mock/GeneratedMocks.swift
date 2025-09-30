@@ -5906,6 +5906,16 @@ public class MockDIGraphType: DIGraphType, Cuckoo.ProtocolMock, @unchecked Senda
         cuckoo_manager.enableDefaultStubImplementation()
     }
     
+    public var resolver: Resolver {
+        get {
+            return cuckoo_manager.getter(
+                "resolver",
+                superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
+                defaultCall: __defaultImplStub!.resolver
+            )
+        }
+    }
+    
     public var assembler: Assembler {
         get {
             return cuckoo_manager.getter(
@@ -5934,6 +5944,10 @@ public class MockDIGraphType: DIGraphType, Cuckoo.ProtocolMock, @unchecked Senda
             self.cuckoo_manager = manager
         }
         
+        var resolver: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockDIGraphType,Resolver> {
+            return .init(manager: cuckoo_manager, name: "resolver")
+        }
+        
         var assembler: Cuckoo.ProtocolToBeStubbedReadOnlyProperty<MockDIGraphType,Assembler> {
             return .init(manager: cuckoo_manager, name: "assembler")
         }
@@ -5958,6 +5972,10 @@ public class MockDIGraphType: DIGraphType, Cuckoo.ProtocolMock, @unchecked Senda
             self.sourceLocation = sourceLocation
         }
         
+        var resolver: Cuckoo.VerifyReadOnlyProperty<Resolver> {
+            return .init(manager: cuckoo_manager, name: "resolver", callMatcher: callMatcher, sourceLocation: sourceLocation)
+        }
+        
         var assembler: Cuckoo.VerifyReadOnlyProperty<Assembler> {
             return .init(manager: cuckoo_manager, name: "assembler", callMatcher: callMatcher, sourceLocation: sourceLocation)
         }
@@ -5977,6 +5995,12 @@ public class MockDIGraphType: DIGraphType, Cuckoo.ProtocolMock, @unchecked Senda
 }
 
 public class DIGraphTypeStub:DIGraphType, @unchecked Sendable {
+    
+    public var resolver: Resolver {
+        get {
+            return DefaultValueRegistry.defaultValue(for: (Resolver).self)
+        }
+    }
     
     public var assembler: Assembler {
         get {
@@ -6150,6 +6174,21 @@ import Foundation
 import Cuckoo
 import Foundation
 import Combine
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+
+
+// MARK: - Mocks generated from file: '../Modules/logic-business/Sources/Extension/Resolver+Extensions.swift'
+
+import Cuckoo
+import Swinject
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -11140,22 +11179,6 @@ import SwiftUI
 
 
 
-// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/ConfirmationDialog/ConfirmationDialogModifier.swift'
-
-import Cuckoo
-import SwiftUI
-import logic_resources
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-@testable import logic_api
-@testable import logic_authentication
-@testable import feature_common
-@testable import feature_dashboard
-
-
-
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Content/ContentCaptionView.swift'
 
 import Cuckoo
@@ -11331,6 +11354,22 @@ import logic_resources
 
 
 
+// MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Dialog/DialogCompat.swift'
+
+import Cuckoo
+import SwiftUI
+import logic_resources
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+@testable import logic_api
+@testable import logic_authentication
+@testable import feature_common
+@testable import feature_dashboard
+
+
+
 // MARK: - Mocks generated from file: '../Modules/logic-ui/Sources/DesignSystem/Component/Image/LeftImageModifier.swift'
 
 import Cuckoo
@@ -11350,8 +11389,8 @@ import SwiftUI
 
 import Cuckoo
 import SwiftUI
-import CachedAsyncImage
 import logic_resources
+import SDWebImageSwiftUI
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics

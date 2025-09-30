@@ -25,7 +25,7 @@ public final class StartupRouter {
       StartupView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             StartupInteractor.self
           )
         )

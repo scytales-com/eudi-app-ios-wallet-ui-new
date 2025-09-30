@@ -20,7 +20,7 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 ## Overview
 
 The EUDI Wallet Reference Implementation is built based on the [Architecture Reference Framework](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/blob/main/docs/architecture-and-reference-framework-main.md) and aims to showcase a robust and interoperable platform for digital identification, authentication, and electronic signatures based on common standards across the European Union.
-The EUDI Wallet Reference Implementation is based on a modular architecture composed of business-agnostic, reusable components that will evolve in incremental steps and can be re-used across multiple projects.
+The EUDI Wallet Reference Implementation is based on a modular architecture composed of business-agnostic, reusable components that will evolve in incremental steps and can be reused across multiple projects.
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
@@ -35,9 +35,9 @@ The EUDIW project provides an iOS app through this repository. Please refer to t
 
 The app consumes the SDK called EUDIW Wallet core [Wallet kit](https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
  
-- OpenID4VP - draft 24 (remote presentation), presentation exchange v2.0, DCQL
+- OpenID4VP - v1 (remote presentation), DCQL
  
-- ISO18013-5 (proximity presentation),
+- ISO18013-5 (proximity presentation)
  
 - OpenID4VCI draft 15 (issuing)
  
@@ -59,7 +59,7 @@ To support development and testing, one can access a test/demo service for remot
 
   - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
  
-To support proximity, an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](wiki/verifier_proximity.md)
+To support proximity, the EUDI Verifier App is available [here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui) and can request PID and mDL, with reader authentication enabled.
 
 The issuer, verifier service, and verifier app authentication are based on the EUDIW development [IACA](https://github.com/niscy-eudiw/eudi-app-ios-wallet-ui/tree/main/Wallet/Sample)
 
@@ -69,7 +69,7 @@ The main purpose of the reference implementation is to showcase the ecosystem an
 
 If you're planning to use this application in production, we recommend reviewing the following steps:
 - Configure the application properly by following the guide [here](wiki/configuration.md)
-- The Pin storage configuration matches your security requirements or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
+- The Pin storage configuration matches your security requirements, or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
 - The application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
 
@@ -77,13 +77,13 @@ If you're planning to use this application in production, we recommend reviewing
 
 Minimum device requirements
 
-- Any device that supports iOS 16.0
+- Any device that supports iOS 17.0
 
 ### Prerequisites
 
 To complete the flows described below, you must build and run the application with Xcode. Alternatively, you can download the Android app [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases).
 
-You will also need to download the Android Verifier app. More information can be found [here](wiki/verifier_proximity.md)
+You will also need to download the EUDI Verifier app. More information can be found [here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui)
 
 ### App launch
 
@@ -99,7 +99,7 @@ You will also need to download the Android Verifier app. More information can be
 5. After submission, a success screen will appear. Tap "Close".
 6. You will be redirected to the "Dashboard" screen. If this was your first document added to the Wallet, you will land on the "Home" tab; otherwise, you will be on the "Documents" tab. The flow is now complete.
 
-### Issuance flow (Credential Offer - Issuer initiated)
+### Issuance flow (Credential Offer - Issuer-initiated)
 
 1. Go to the "Dashboard" screen, navigate to the "Documents" tab, and tap the "+" icon (top-right of the screen). Select "Scan a QR".
 2. Scan the QR code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice)
@@ -237,31 +237,29 @@ graph TD;
 
 ## Demo videos
 
-_(NOTE: These videos are from the Android version)_
-
 Issuance
 
-[Issuance](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/assets/129499766/9e9fb151-38ca-48f7-a0d7-669ce816513b)
+[Issuance](https://github.com/user-attachments/assets/3c7d29fe-27b9-409c-b470-07bce1537e75)
 
 Presentation
 
-[Presentation](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/assets/129499766/76953733-4841-4581-9c7e-f53499f408f3)
+[Presentation](https://github.com/user-attachments/assets/e23fc563-5650-4a83-a05b-53a54f6dd209)
 
 Proximity
 
-[Proximity](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/assets/129499766/68c975e1-1f99-441e-acef-e4a42572ab4d)
+[Proximity](https://github.com/user-attachments/assets/d60c57bb-809a-437b-a76f-3c6c20e0bd16)
 
 ## Disclaimer
 
 The released software is an initial development release version: 
--  The initial development release is an early endeavor reflecting the efforts of a short time-boxed period, and by no means can it be considered as the final product.  
--  The initial development release may be changed substantially over time and might introduce new features but also may change or remove existing ones, potentially breaking compatibility with your existing code.
+-  The initial development release is an early endeavor reflecting the efforts of a short time-boxed period, and by no means can it be considered the final product.  
+-  The initial development release may be changed substantially over time and might introduce new features, but also may change or remove existing ones, potentially breaking compatibility with your existing code.
 -  The initial development release is limited in functional scope.
 -  The initial development release may contain errors or design flaws and other problems that could cause system or other failures and data loss.
 -  The initial development release has reduced security, privacy, availability, and reliability standards relative to future releases. This could make the software slower, less reliable, or more vulnerable to attacks than mature software.
 -  The initial development release is not yet comprehensively documented. 
--  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components is suitable for use in that application.
--  We strongly recommend not to put this version of the software into production use.
+-  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components are suitable for use in that application.
+-  We strongly recommend not putting this version of the software into production use.
 -  Only the latest version of the software will be supported.
 -  This project is tested with BrowserStack.
 

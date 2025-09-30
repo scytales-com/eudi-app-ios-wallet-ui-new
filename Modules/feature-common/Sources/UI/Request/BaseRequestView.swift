@@ -44,18 +44,26 @@ public struct BaseRequestView<Router: RouterHost>: View {
       )
     }
     .confirmationDialog(
-      title: .requestDataInfoNotice,
-      message: .requestDataSheetCaption,
-      baseText: .okButton,
+      .requestDataInfoNotice,
       isPresented: $viewModel.isRequestInfoModalShowing,
-      baseAction: viewModel.onShowRequestInfoModal()
+      actions: {
+        Button(.okButton) {
+          viewModel.onShowRequestInfoModal()
+        }
+      }, message: {
+        Text(.requestDataSheetCaption)
+      }
     )
     .confirmationDialog(
-      title: viewModel.getTrustedRelyingParty(),
-      message: viewModel.getTrustedRelyingPartyInfo(),
-      baseText: .okButton,
+      viewModel.getTrustedRelyingParty(),
       isPresented: $viewModel.isVerifiedEntityModalShowing,
-      baseAction: viewModel.onVerifiedEntityModal()
+      actions: {
+        Button(.okButton) {
+          viewModel.onVerifiedEntityModal()
+        }
+      }, message: {
+        Text(viewModel.getTrustedRelyingPartyInfo())
+      }
     )
     .task {
       if !viewModel.viewState.initialized {
@@ -75,7 +83,7 @@ public struct BaseRequestView<Router: RouterHost>: View {
 private func content(
   viewState: RequestViewState,
   onShare: @escaping () -> Void,
-  onSelectionChanged: @escaping @Sendable (String) -> Void
+  onSelectionChanged: @escaping (String) -> Void
 ) -> some View {
   if viewState.items.isEmpty {
     noDocumentsFound(viewState: viewState)
@@ -93,7 +101,7 @@ private func content(
 private func scrollableContent(
   viewState: RequestViewState,
   onShare: @escaping () -> Void,
-  onSelectionChanged: @escaping @Sendable (String) -> Void
+  onSelectionChanged: @escaping (String) -> Void
 ) -> some View {
   ScrollView {
     VStack(spacing: .zero) {
@@ -106,7 +114,7 @@ private func scrollableContent(
           ForEach(viewState.items, id: \.id) { section in
             WrapExpandableListView(
               header: .init(
-                mainText: .custom(section.section.title),
+                mainContent: .text(.custom(section.section.title)),
                 supportingText: .viewDetails
               ),
               items: section.section.listItems,
