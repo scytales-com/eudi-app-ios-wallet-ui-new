@@ -1,9 +1,10 @@
+- OpenID4VCI v1 support
+- OpenID4VP v1 support
+
 - Batch issuing integration
 - SD-JWT PID ARF 1.8 Wallet Activation
 - Nested field support for presentation
 - Transactions
-- OpenID4VCI draft 15 support
-- OpenID4VP draft 24 support
 
 - SD-JWT support
 - Localisation metadata support
