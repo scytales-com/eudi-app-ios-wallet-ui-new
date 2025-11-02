@@ -1,3 +1,4 @@
+- Multi-issuer support
 - OpenID4VCI v1 support
 - OpenID4VP v1 support
 
