@@ -42,8 +42,14 @@ struct AddDocumentView<Router: RouterHost>: View {
       if viewModel.viewState.addDocumentCellModels.isEmpty {
         noDocumentsFound()
       } else {
-        content(viewState: viewModel.viewState) { configId, identifier in
-          viewModel.onClick(configId: configId, docTypeIdentifier: identifier)
+        content(
+          viewState: viewModel.viewState
+        ) { issuerId, configId, identifier in
+          viewModel.onClick(
+            issuerId: issuerId,
+            configId: configId,
+            docTypeIdentifier: identifier
+          )
         }
       }
 
@@ -68,23 +74,38 @@ struct AddDocumentView<Router: RouterHost>: View {
 @ViewBuilder
 private func content(
   viewState: AddDocumentViewState,
-  action: @escaping (String, DocumentTypeIdentifier) -> Void
+  action: @escaping (String, String, DocumentTypeIdentifier) -> Void
 ) -> some View {
+
   ScrollView {
-    VStack(spacing: SPACING_LARGE_MEDIUM) {
+    LazyVStack(spacing: SPACING_MEDIUM_SMALL) {
 
       Text(.chooseFromListTitle)
         .typography(Theme.shared.font.bodyLarge)
         .foregroundStyle(Theme.shared.color.onSurface)
 
-      VStack(spacing: SPACING_MEDIUM_SMALL) {
-        ForEach(viewState.addDocumentCellModels) { cell in
-          WrapCardView {
-            WrapListItemView(
-              listItem: cell.listItem,
-              isLoading: cell.isLoading,
-              action: { action(cell.configId, cell.docTypeIdentifier) }
-            )
+      ForEach(viewState.addDocumentCellModels.elements, id: \.key) { pair in
+
+        let issuer = pair.key
+        let models = pair.value
+
+        Section(
+          header:
+            VStack(alignment: .leading) {
+              VSpacer.mediumSmall()
+              Text(issuer)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .shimmer(isLoading: viewState.isLoading)
+            }
+        ) {
+          ForEach(models, id: \.id) { cell in
+            WrapCardView {
+              WrapListItemView(
+                listItem: cell.listItem,
+                isLoading: cell.isLoading,
+                action: { action(cell.issuerId, cell.configId, cell.docTypeIdentifier) }
+              )
+            }
           }
         }
       }
@@ -92,7 +113,7 @@ private func content(
     .padding(.horizontal, Theme.shared.dimension.padding)
     .padding(.bottom)
   }
-  .disabled(viewState.addDocumentCellModels.isEmpty)
+  .disabled(viewState.addDocumentCellModels.allSatisfy { $0.value.isEmpty })
 }
 
 @MainActor
@@ -168,7 +189,9 @@ private func scanFooter(
     showFooterScanner: true
   )
 
-  content(viewState: viewState) { _, _ in }
+  content(
+    viewState: viewState
+  ) { _, _, _ in }
 }
 
 #Preview {

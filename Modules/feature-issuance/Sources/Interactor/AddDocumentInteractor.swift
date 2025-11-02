@@ -16,10 +16,15 @@
 import logic_resources
 import feature_common
 import logic_core
+import OrderedCollections
 
 public protocol AddDocumentInteractor: Sendable {
   func fetchScopedDocuments(with flow: IssuanceFlowUiConfig.Flow) async -> ScopedDocumentsPartialState
-  func issueDocument(configId: String, docTypeIdentifier: DocumentTypeIdentifier) async -> IssueResultPartialState
+  func issueDocument(
+    issuerId: String,
+    configId: String,
+    docTypeIdentifier: DocumentTypeIdentifier
+  ) async -> IssueResultPartialState
   func resumeDynamicIssuance() async -> IssueDynamicDocumentPartialState
   func getScopedDocument(configId: String) async throws -> ScopedDocument
   func fetchStoredDocuments(documentIds: [String]) async -> IssueDocumentsPartialState
@@ -55,10 +60,25 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
           ),
           isEnabled: true,
           configId: doc.configId,
+          issuerId: doc.issuer,
           docTypeIdentifier: doc.docTypeIdentifier
         )
-      }.sorted(by: compare)
-      return .success(documents)
+      }
+
+      let grouped: [String: [AddDocumentUIModel]] = Dictionary(
+        grouping: documents,
+        by: { $0.issuerId }
+      ).mapValues { section in
+        section.sorted(by: compare)
+      }
+
+      let ordered = OrderedDictionary<String, [AddDocumentUIModel]>(
+        uniqueKeysWithValues: Array(grouped).sorted {
+          $0.key.localizedCompare($1.key) == .orderedAscending
+        }
+      )
+
+      return .success(ordered)
     } catch {
       return .failure(error)
     }
@@ -69,11 +89,16 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
   }
 
   public func issueDocument(
+    issuerId: String,
     configId: String,
     docTypeIdentifier: DocumentTypeIdentifier
   ) async -> IssueResultPartialState {
     do {
-      let doc = try await walletController.issueDocument(identifier: configId, docTypeIdentifier: docTypeIdentifier)
+      let doc = try await walletController.issueDocument(
+        issuerId: issuerId,
+        identifier: configId,
+        docTypeIdentifier: docTypeIdentifier
+      )
       if doc.isDeferred {
         return .deferredSuccess
       } else if let authorizePresentationUrl = doc.authorizePresentationUrl {
@@ -138,7 +163,7 @@ final class AddDocumentInteractorImpl: AddDocumentInteractor {
 }
 
 public enum ScopedDocumentsPartialState: Sendable {
-  case success([AddDocumentUIModel])
+  case success(OrderedDictionary<String, [AddDocumentUIModel]>)
   case failure(Error)
 }
 
