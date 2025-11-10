@@ -65,21 +65,13 @@ Using this parsed information, instances such as `WalletKitConfig` and `RQESConf
 For instance, here's how `WalletKitConfig` resolves its configuration for OpenID4VCI remote services based on the build variant:
 
 ```swift
-  var issuerUrl: String {
-    return switch configLogic.appBuildVariant {
+var vciConfig: [String: OpenId4VciConfiguration] {
+  let openId4VciConfigurations: [OpenId4VciConfiguration] = {
+    switch configLogic.appBuildVariant {
     case .DEMO:
-      "https://issuer.eudiw.dev"
-    case .DEV:
-      "https://dev.issuer.eudiw.dev"
-    }
-  }
-```
-
-```swift
-  var vciConfig: OpenId4VCIConfiguration {
-    return switch configLogic.appBuildVariant {
-    case .DEMO:
+      return [
         .init(
+          credentialIssuerURL: "https://ec.issuer.eudiw.dev",
           client: .public(id: "wallet-dev"),
           authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
           usePAR: true,
@@ -87,18 +79,24 @@ For instance, here's how `WalletKitConfig` resolves its configuration for OpenID
           cacheIssuerMetadata: true
         )
     case .DEV:
+      return [
         .init(
+          credentialIssuerURL: "https://ec.dev.issuer.eudiw.dev",
           client: .public(id: "wallet-dev"),
           authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
           usePAR: true,
           useDpopIfSupported: true,
           cacheIssuerMetadata: true
         )
+      ]
     }
-  }
+  }()
+
+  // ...
+}
 ```
 
-In this example, the `vciConfig` and `issuerUrl` properties dynamically assign configurations, such as `issuerUrl`, `clientId`, `redirectUri`, `usePAR`, and `useDPoP`, based on the current `appBuildVariant`. This ensures that the appropriate settings are applied for each variant (e.g., `.DEMO` or `.DEV`).
+In this example, the `vciConfig` property dynamically assigns configurations, such as `issuerUrl`, `clientId`, `redirectUri`, `usePAR`, `useDPoP`, and `metadataCache`, based on the current `appBuildVariant`. This ensures that the appropriate settings are applied for each variant (e.g., `.DEMO` or `.DEV`).
 
 ### Running with local services
 

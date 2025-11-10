@@ -26,17 +26,12 @@ protocol WalletKitConfig: Sendable {
   /**
    * VCI Configuration
    */
-  var vciConfig: OpenId4VCIConfiguration { get }
+  var vciConfig: [String: OpenId4VciConfiguration] { get }
 
   /**
    * VP Configuration
    */
   var vpConfig: OpenId4VpConfiguration { get }
-
-  /**
-   * Issuer URL
-   */
-  var issuerUrl: String { get }
 
   /**
    * Reader Configuration
@@ -96,38 +91,67 @@ struct WalletKitConfigImpl: WalletKitConfig {
     false
   }
 
-  var vciConfig: OpenId4VCIConfiguration {
-    return switch configLogic.appBuildVariant {
-    case .DEMO:
-        .init(
-          client: .public(id: "wallet-dev"),
-          authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-          usePAR: true,
-          useDpopIfSupported: true,
-          cacheIssuerMetadata: true
-        )
-    case .DEV:
-        .init(
-          client: .public(id: "wallet-dev"),
-          authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-          usePAR: true,
-          useDpopIfSupported: true,
-          cacheIssuerMetadata: true
-        )
+  var vciConfig: [String: OpenId4VciConfiguration] {
+
+    let openId4VciConfigurations: [OpenId4VciConfiguration] = {
+      switch configLogic.appBuildVariant {
+      case .DEMO:
+        return [
+          .init(
+            credentialIssuerURL: "https://issuer.eudiw.dev",
+            client: .public(id: "wallet-dev"),
+            authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+            usePAR: true,
+            useDpopIfSupported: true,
+            cacheIssuerMetadata: true
+          ),
+          .init(
+            credentialIssuerURL: "https://issuer-backend.eudiw.dev",
+            client: .public(id: "wallet-dev"),
+            authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+            usePAR: true,
+            useDpopIfSupported: true,
+            cacheIssuerMetadata: true
+          )
+        ]
+      case .DEV:
+        return [
+          .init(
+            credentialIssuerURL: "https://ec.dev.issuer.eudiw.dev",
+            client: .public(id: "wallet-dev"),
+            authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+            usePAR: true,
+            useDpopIfSupported: true,
+            cacheIssuerMetadata: true
+          ),
+          .init(
+            credentialIssuerURL: "https://dev.issuer-backend.eudiw.dev",
+            client: .public(id: "wallet-dev"),
+            authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+            usePAR: true,
+            useDpopIfSupported: true,
+            cacheIssuerMetadata: true
+          )
+        ]
+      }
+    }()
+
+    return openId4VciConfigurations.reduce(
+      into: [String: OpenId4VciConfiguration]()
+    ) { dict, config in
+      guard
+        let issuer = config.credentialIssuerURL,
+        let url = URL(string: issuer),
+        let host = url.host
+      else {
+        return
+      }
+      dict[host] = config
     }
   }
 
   var vpConfig: OpenId4VpConfiguration {
     .init(clientIdSchemes: [.x509SanDns, .x509Hash])
-  }
-
-  var issuerUrl: String {
-    return switch configLogic.appBuildVariant {
-    case .DEMO:
-      "https://issuer.eudiw.dev"
-    case .DEV:
-      "https://dev.issuer.eudiw.dev"
-    }
   }
 
   var readerConfig: ReaderConfig {
