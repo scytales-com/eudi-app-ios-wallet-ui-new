@@ -173,7 +173,9 @@ private extension RouterHostImpl {
     NotificationCenter.default.post(name: .shouldChangeBackgroundColor, object: nil)
   }
 
-  @MainActor func resolveView(_ route: AppRoute) -> AnyView {
+  @MainActor
+  @ViewBuilder
+  func resolveView(_ route: AppRoute) -> some View {
     switch route {
     case .featureStartupModule(let module):
       StartupRouter.resolve(module: module, host: self)
