@@ -44,37 +44,32 @@ struct DashboardView<Router: RouterHost>: View {
     ) {
       content(
         tabView: { tab in
-          return switch tab {
+          switch tab {
           case .documents:
             viewModel.viewState.documentTab
-              .eraseToAnyView()
           case .home:
             viewModel.viewState.homeTab
-              .eraseToAnyView()
           case .transactions:
             viewModel.viewState.transactionTab
-              .eraseToAnyView()
           }
         },
         selectedTab: $viewModel.selectedTab
       )
     }
     .sheetDialog(isPresented: $viewModel.isRevokedModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
+      VStack(spacing: .zero) {
 
-          ContentTitleView(
-            title: .revokedModalTitle,
-            caption: .revokedModalDescription
-          )
+        ContentTitleView(
+          title: .revokedModalTitle,
+          caption: .revokedModalDescription
+        )
 
-          revokedNotificationList(
-            state: viewModel.viewState,
-            onDocumentDetails: {
-              viewModel.onDocumentDetails(documentId: $0)
-            }
-          )
-        }
+        revokedNotificationList(
+          state: viewModel.viewState,
+          onDocumentDetails: {
+            viewModel.onDocumentDetails(documentId: $0)
+          }
+        )
       }
     }
     .onChange(of: scenePhase) {
@@ -92,7 +87,7 @@ struct DashboardView<Router: RouterHost>: View {
 @MainActor
 @ViewBuilder
 private func content(
-  tabView: @escaping (SelectedTab) -> AnyView,
+  @ViewBuilder tabView: @escaping (SelectedTab) -> some View,
   selectedTab: Binding<SelectedTab>
 ) -> some View {
   TabView(selection: selectedTab) {
@@ -116,13 +111,13 @@ private func content(
       .tag(SelectedTab.documents)
 
     tabView(.transactions)
-    .tabItem {
-      Label(
-        .transactions,
-        systemImage: "arrow.left.arrow.right"
-      )
-    }
-    .tag(SelectedTab.transactions)
+      .tabItem {
+        Label(
+          .transactions,
+          systemImage: "arrow.left.arrow.right"
+        )
+      }
+      .tag(SelectedTab.transactions)
   }
 }
 
