@@ -106,12 +106,14 @@ private func scrollableContent(
   ScrollView {
     VStack(spacing: .zero) {
       ContentHeaderView(
-        config: viewState.contentHeaderConfig
+        config: viewState.contentHeaderConfig,
+        accessibilityDescription: BaseRequestLocators.description
       )
       ZStack {
         VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
 
-          ForEach(viewState.items, id: \.id) { section in
+          ForEach(viewState.items.indices, id: \.self) { index in
+            let section = viewState.items[index]
             WrapExpandableListView(
               header: .init(
                 mainContent: .text(.custom(section.section.title)),
@@ -121,6 +123,9 @@ private func scrollableContent(
               hideSensitiveContent: false,
               isLoading: viewState.isLoading,
               onItemClick: { onSelectionChanged($0.groupId) }
+            )
+            .ignoreChilrenAccessibility(
+              locator: BaseRequestLocators.requestedDocument(index.string)
             )
           }
 
@@ -146,7 +151,8 @@ private func noDocumentsFound(
 ) -> some View {
   VStack(spacing: .zero) {
     ContentHeaderView(
-      config: viewState.contentHeaderConfig
+      config: viewState.contentHeaderConfig,
+      accessibilityDescription: BaseRequestLocators.description
     )
     VStack(spacing: .zero) {
       Spacer()

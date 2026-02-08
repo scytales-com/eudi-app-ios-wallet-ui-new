@@ -1,5 +1,5 @@
 {
-  "originHash" : "ede6fde63b27e1063f2a06876398f0c70d17863a70345dfcf8bb32b827321042",
+  "originHash" : "9a107b861c4f33fc03283b9a233fb08edc425c6fcee2ee0a7aeac1507fadcb5e",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -150,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-statium-swift.git",
       "state" : {
-        "revision" : "25427865918ea07119264c8e1f4caab3d97e3e70",
-        "version" : "0.2.0"
+        "revision" : "822d0dd96255a226ce52ab3ce79bad2eb1f1a251",
+        "version" : "0.3.1"
       }
     },
     {
@@ -159,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "29f0c42787635dbf79c4cede12bfe719cb68a38e",
-        "version" : "0.19.2"
+        "revision" : "8b9b387fc483af6504d97c2ae83880fb7457d60a",
+        "version" : "0.19.4"
       }
     },
     {
@@ -186,8 +186,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
       "state" : {
-        "revision" : "99a017068518a33fc6011056f27361391875c434",
-        "version" : "0.10.1"
+        "revision" : "77b21c50fdc5aa2abe9fa13c5c1bb4028694b338",
+        "version" : "0.12.1"
       }
     },
     {
@@ -204,8 +204,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/beatt83/jose-swift.git",
       "state" : {
-        "revision" : "f25da1bf75b9a2b803bb7c40bdd6ace85f4df3ce",
-        "version" : "6.0.1"
+        "revision" : "13e5ae6f23ef1487b0dad72540eff414272bd7ca",
+        "version" : "6.0.2"
       }
     },
     {
@@ -222,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kishikawakatsumi/KeychainAccess.git",
       "state" : {
-        "revision" : "8d33ffd6f74b3bcfc99af759d4204c6395a3f918",
-        "version" : "3.2.1"
+        "revision" : "84e546727d66f1adc5439debad16270d0fdd04e7",
+        "version" : "4.2.2"
       }
     },
     {
@@ -249,8 +249,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/marmelroy/PhoneNumberKit",
       "state" : {
-        "revision" : "f158939f66f4ef94512b7e6cd1e56057070a05e4",
-        "version" : "4.2.1"
+        "revision" : "16bb5d46b82540280c5aab8976a94d8a9cda8135",
+        "version" : "4.2.2"
       }
     },
     {
@@ -258,8 +258,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Rainbow",
       "state" : {
-        "revision" : "16da5c62dd737258c6df2e8c430f8a3202f655a7",
-        "version" : "4.2.0"
+        "revision" : "cdf146ae671b2624917648b61c908d1244b98ca1",
+        "version" : "4.2.1"
       }
     },
     {
@@ -321,8 +321,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "cdd0ef3755280949551dc26dee5de9ddeda89f54",
-        "version" : "1.6.2"
+        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
+        "version" : "1.7.0"
       }
     },
     {
@@ -359,15 +359,6 @@
       "state" : {
         "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
         "version" : "3.15.1"
-      }
-    },
-    {
-      "identity" : "swift-json-schema",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/niscy-eudiw/swift-json-schema",
-      "state" : {
-        "revision" : "105cfcd41cf83f264f23ed36dc11191dea45b65f",
-        "version" : "0.0.4"
       }
     },
     {
