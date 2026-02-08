@@ -72,10 +72,12 @@ private func content(
 
   ContentTitleView(
     title: viewState.config.title,
+    accessibilityTitle: BiometryLocators.biometryScreenTitle,
     titleWeight: .bold,
     caption: viewState.areBiometricsEnabled
     ? viewState.config.caption
     : viewState.config.quickPinOnlyCaption,
+    accessibilityCaption: BiometryLocators.biometryScreenPinText,
     titleColor: Theme.shared.color.onSurface,
     topSpacing: viewState.isCancellable ? .withToolbar : .withoutToolbar
   )

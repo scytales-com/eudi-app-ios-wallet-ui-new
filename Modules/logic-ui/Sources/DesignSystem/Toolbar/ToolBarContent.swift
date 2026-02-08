@@ -20,6 +20,7 @@ public extension ToolBarContent {
   struct Action: Identifiable {
     public let id = UUID()
     public let title: LocalizableStringKey?
+    public let accessibilityLocator: LocatorType
     public let image: Image?
     public let hasIndicator: Bool?
     public let disabled: Bool
@@ -28,11 +29,13 @@ public extension ToolBarContent {
     public init(
       title: LocalizableStringKey? = nil,
       image: Image? = nil,
+      accessibilityLocator: LocatorType,
       hasIndicator: Bool? = nil,
       disabled: Bool = false,
       callback: (() -> Void)? = nil
     ) {
       self.title = title
+      self.accessibilityLocator = accessibilityLocator
       self.image = image
       self.hasIndicator = hasIndicator
       self.disabled = disabled
@@ -62,6 +65,9 @@ public struct ToolBarContent: ToolbarContent {
             action: action,
             disabled: action.disabled
           )
+          .ignoreChilrenAccessibility(
+            locator: action.accessibilityLocator
+          )
         }
       }
     }
@@ -71,6 +77,9 @@ public struct ToolBarContent: ToolbarContent {
           ActionView(
             action: action,
             disabled: action.disabled
+          )
+          .ignoreChilrenAccessibility(
+            locator: action.accessibilityLocator
           )
         }
       }
@@ -127,11 +136,13 @@ private struct ActionView: View {
           trailingActions: [
             .init(
               title: .custom("State"),
+              accessibilityLocator: ToolbarLocators.chevronLeft,
               disabled: false,
               callback: {}
             ),
             .init(
               title: .custom("Proceed"),
+              accessibilityLocator: ToolbarLocators.chevronLeft,
               disabled: false,
               callback: {}
             )
@@ -139,6 +150,7 @@ private struct ActionView: View {
           leadingActions: [
             .init(
               image: Image(systemName: "plus"),
+              accessibilityLocator: ToolbarLocators.chevronLeft,
               disabled: false,
               callback: {}
             )
