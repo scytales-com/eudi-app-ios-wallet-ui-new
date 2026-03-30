@@ -13,29 +13,30 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+import Swinject
 
 public extension DIGraph {
 
-  static func assembleDependenciesGraph() {
-    DIGraph.shared.lazyLoad(
-      with: [
-        // Logic Modules
-        LogicBusinessAssembly(),
-        LogicAnalyticsAssembly(),
-        LogicCoreAssembly(),
-        LogicUiAssembly(),
-        LogicApiAssembly(),
-        LogicAuthAssembly(),
-        LogicAssemblyModule(),
-        LogicStorageAssembly(),
-        // Feature Modules
-        FeatureCommonAssembly(),
-        FeatureStartupAssembly(),
-        FeatureDashboardAssembly(),
-        FeaturePresentationAssembly(),
-        FeatureProximityAssembly(),
-        FeatureIssuanceAssembly()
-      ]
-    )
+  static func assembleDependenciesGraph(withExtras: [Assembly] = []) {
+    let defaultAssembly: [Assembly] = [
+      // Logic Modules
+      LogicBusinessAssembly(),
+      LogicAnalyticsAssembly(),
+      LogicCoreAssembly(),
+      LogicUiAssembly(),
+      LogicApiAssembly(),
+      LogicAuthAssembly(),
+      LogicAssemblyModule(),
+      LogicStorageAssembly(),
+      // Feature Modules
+      FeatureCommonAssembly(),
+      FeatureStartupAssembly(),
+      FeatureDashboardAssembly(),
+      FeaturePresentationAssembly(),
+      FeatureProximityAssembly(),
+      FeatureIssuanceAssembly()
+    ]
+
+    DIGraph.shared.lazyLoad(with: defaultAssembly + withExtras)
   }
 }
