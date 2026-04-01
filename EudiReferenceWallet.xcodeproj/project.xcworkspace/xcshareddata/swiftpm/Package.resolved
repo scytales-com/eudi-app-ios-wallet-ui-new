@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/av-lib-ios-w3c-dc-api.git",
       "state" : {
-        "revision" : "6f204a17fa661c8a44f069fb3618216b0ecf8482",
-        "version" : "0.11.0"
+        "revision" : "6103acc6a3a2f3a22359e4ac371d443588d4a69f",
+        "version" : "0.11.3"
       }
     },
     {
@@ -62,6 +62,15 @@
       "state" : {
         "branch" : "master",
         "revision" : "d6ab93cb3f98d9c4033bd37413d9fe90a4647cb4"
+      }
+    },
+    {
+      "identity" : "codescanner",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twostraws/CodeScanner",
+      "state" : {
+        "revision" : "5e886430238944c7200fc9e10dbf2d9550dba865",
+        "version" : "2.5.2"
       }
     },
     {
@@ -488,5 +497,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
