@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9F8701D02F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9F8701DE2F6BE79B00A865A9 /* DcApi18013AnnexC in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8701DD2F6BE79B00A865A9 /* DcApi18013AnnexC */; };
 		9F8702012F6C41ED00A865A9 /* logic-business in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702002F6C41ED00A865A9 /* logic-business */; };
 		9F8702242F6D41F400A865A9 /* logic-ui in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702232F6D41F400A865A9 /* logic-ui */; };
@@ -18,6 +17,7 @@
 		B0D7EA342F7D20A900410220 /* WalletDemoWalletIDProvider.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B0D7EA332F7D20A900410220 /* WalletDemoWalletIDProvider.xcconfig */; };
 		B0D7EA362F7D20BA00410220 /* WalletDevReleaseWalletIDProvider.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B0D7EA352F7D20BA00410220 /* WalletDevReleaseWalletIDProvider.xcconfig */; };
 		B0D7EA382F7D20D000410220 /* WalletDemoReleaseWalletIDProvider.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B0D7EA372F7D20D000410220 /* WalletDemoReleaseWalletIDProvider.xcconfig */; };
+		B0E869F62F7D8FD4008A7DB5 /* EudiReferenceWalletIDProvider.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F02921632B8E07870076A58B /* WalletDemoRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */; };
 		F02921642B8E07870076A58B /* WalletDevRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = F02921622B8E07870076A58B /* WalletDevRelease.xcconfig */; };
 		F02AE38F2BA6E45F00C25C59 /* logic-assembly in Resources */ = {isa = PBXBuildFile; fileRef = F02AE38E2BA6E45F00C25C59 /* logic-assembly */; };
@@ -50,7 +50,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9F8701CE2F6BE5BC00A865A9 /* PBXContainerItemProxy */ = {
+		B0E869F72F7D8FD4008A7DB5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F14907B02ABAF54B00DDFE56 /* Project object */;
 			proxyType = 1;
@@ -60,13 +60,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9F8701D12F6BE5BC00A865A9 /* Embed ExtensionKit Extensions */ = {
+		B0E869F92F7D8FD4008A7DB5 /* Embed ExtensionKit Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
-				9F8701D02F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex in Embed ExtensionKit Extensions */,
+				B0E869F62F7D8FD4008A7DB5 /* EudiReferenceWalletIDProvider.appex in Embed ExtensionKit Extensions */,
 			);
 			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -301,12 +301,12 @@
 				F14907B52ABAF54B00DDFE56 /* Frameworks */,
 				F14907B62ABAF54B00DDFE56 /* Resources */,
 				F09E1EA52AC3468300779C25 /* Swift Lint */,
-				9F8701D12F6BE5BC00A865A9 /* Embed ExtensionKit Extensions */,
+				B0E869F92F7D8FD4008A7DB5 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				9F8701CF2F6BE5BC00A865A9 /* PBXTargetDependency */,
+				B0E869F82F7D8FD4008A7DB5 /* PBXTargetDependency */,
 			);
 			name = EudiWallet;
 			packageProductDependencies = (
@@ -445,10 +445,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9F8701CF2F6BE5BC00A865A9 /* PBXTargetDependency */ = {
+		B0E869F82F7D8FD4008A7DB5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9F8701C82F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */;
-			targetProxy = 9F8701CE2F6BE5BC00A865A9 /* PBXContainerItemProxy */;
+			targetProxy = B0E869F72F7D8FD4008A7DB5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
