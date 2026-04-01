@@ -4,3 +4,4 @@ CODE_SIGN_ENTITLEMENTS = EudiReferenceWalletIDProvider/EudiReferenceWalletIDProv
 // CODE_SIGN_IDENTITY = "Apple Development"
 CODE_SIGN_STYLE = Automatic
 DEVELOPMENT_TEAM = QS5HDV4ZS9
+MARKETING_VERSION = 2.0
