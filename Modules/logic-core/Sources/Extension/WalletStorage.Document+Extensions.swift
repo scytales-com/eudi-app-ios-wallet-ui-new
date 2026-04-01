@@ -31,6 +31,7 @@ extension WalletStorage.Document {
       statusIdentifier: nil,
       createdAt: self.createdAt,
       displayName: metadata?.getDisplayName(Locale.current.systemLanguageCode),
+      docType: "",
       docClaims: [],
       docDataFormat: self.docDataFormat,
       ageOverXX: [:],
@@ -48,6 +49,6 @@ extension WalletStorage.Document {
 
 extension WalletStorage.Document {
   var documentTypeIdentifier: DocumentTypeIdentifier {
-    DocumentTypeIdentifier(rawValue: docType ?? "")
+    DocumentTypeIdentifier(rawValue: docType)
   }
 }

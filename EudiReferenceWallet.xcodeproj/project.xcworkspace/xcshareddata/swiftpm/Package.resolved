@@ -1,5 +1,5 @@
 {
-  "originHash" : "1aa5edd169ab96040e840f40b6ea5687d50a1d07fb91c4ea8aebc5bcf432e07f",
+  "originHash" : "8421577457462e04d1fbe0d8f96829e9c424a11b2f76a420c1e2e8deaef87359",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -29,12 +29,30 @@
       }
     },
     {
-      "identity" : "blueecc",
+      "identity" : "asn1",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/niscy-eudiw/BlueECC.git",
+      "location" : "https://github.com/leif-ibsen/ASN1",
       "state" : {
-        "revision" : "15e525cfff2da9b7429285346248e2c67ba0bd12",
-        "version" : "1.2.4"
+        "revision" : "e38d1b8b43d8b53ffadde9836f34289176bb7a0c",
+        "version" : "2.7.0"
+      }
+    },
+    {
+      "identity" : "av-lib-ios-w3c-dc-api",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/eu-digital-identity-wallet/av-lib-ios-w3c-dc-api.git",
+      "state" : {
+        "revision" : "6f204a17fa661c8a44f069fb3618216b0ecf8482",
+        "version" : "0.11.0"
+      }
+    },
+    {
+      "identity" : "bigint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/BigInt",
+      "state" : {
+        "revision" : "c2f49bee454760e433bafff17bfdc5b96f75d7c8",
+        "version" : "1.23.0"
       }
     },
     {
@@ -74,12 +92,21 @@
       }
     },
     {
+      "identity" : "digest",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/Digest",
+      "state" : {
+        "revision" : "95ba89b494aaff5f3cd2933c03b9a890323dbf2c",
+        "version" : "1.13.0"
+      }
+    },
+    {
       "identity" : "eudi-lib-ios-iso18013-data-model",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-model.git",
       "state" : {
-        "revision" : "876fcb791e894d8ac8320dc171fcd967874e0346",
-        "version" : "0.10.0"
+        "revision" : "46891644987328066ad6a047bf46959db2462c61",
+        "version" : "0.11.3"
       }
     },
     {
@@ -87,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-transfer.git",
       "state" : {
-        "revision" : "e3be5b6e0bd3d792153690b4b98209bcf98d7c5c",
-        "version" : "0.10.1"
+        "revision" : "25b4dbc2fd59f9db115f9cd95085589db4ad2925",
+        "version" : "0.11.3"
       }
     },
     {
@@ -96,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-security.git",
       "state" : {
-        "revision" : "64c6216056e8c4a146d966cbf793a1f9f46b391c",
-        "version" : "0.10.1"
+        "revision" : "dcff5f72e3642a5571ac8b5b9c42edb002f9ac7e",
+        "version" : "0.11.3"
       }
     },
     {
@@ -105,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
-        "revision" : "76e5af4b62fd1c1a579e529cc3e8f51fc5da2fd5",
-        "version" : "0.30.0"
+        "revision" : "49dd0074e6471509e73ca05b616170d90e233342",
+        "version" : "0.32.0"
       }
     },
     {
@@ -141,8 +168,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git",
       "state" : {
-        "revision" : "55a61bf74a6f1745e0e97455dc8eae974a07db0b",
-        "version" : "0.30.0"
+        "revision" : "1009cb7029fa2b22a04cae7ca029b646429df9f1",
+        "version" : "0.30.2"
       }
     },
     {
@@ -150,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-statium-swift.git",
       "state" : {
-        "revision" : "822d0dd96255a226ce52ab3ce79bad2eb1f1a251",
-        "version" : "0.3.1"
+        "revision" : "bcb54c2c2730a8cb83f34e64ba41ed6f8323670a",
+        "version" : "0.4.0"
       }
     },
     {
@@ -159,8 +186,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "0b19b1505e226ee71c76a948eda05c10cd63c1fc",
-        "version" : "0.21.1"
+        "revision" : "bd93658a0eeed1ac8a8831769c7f5c8ac8803a14",
+        "version" : "0.23.3"
       }
     },
     {
@@ -168,8 +195,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-storage.git",
       "state" : {
-        "revision" : "2cfcbd43544fdc51d0b1ea33c2045203563815be",
-        "version" : "0.10.0"
+        "revision" : "e8ffd56c63fcbef8249d89f64bac8ad891348343",
+        "version" : "0.11.1"
       }
     },
     {
@@ -186,8 +213,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
       "state" : {
-        "revision" : "a55fbaa6417881e9409306d0d9405ca20bf64147",
-        "version" : "0.13.0"
+        "revision" : "7bcae6b2ec0f8b9ce3c34a9b78a50be131419514",
+        "version" : "0.14.1"
       }
     },
     {
@@ -204,8 +231,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/beatt83/jose-swift.git",
       "state" : {
-        "revision" : "13e5ae6f23ef1487b0dad72540eff414272bd7ca",
-        "version" : "6.0.2"
+        "revision" : "4a99bf40b4026778c0df4888b69eaa9df1f7eff7",
+        "version" : "6.0.3"
       }
     },
     {
@@ -249,8 +276,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/marmelroy/PhoneNumberKit",
       "state" : {
-        "revision" : "ad20aba8db84a6ba373abfcffe38b1c8e6f8258b",
-        "version" : "4.2.7"
+        "revision" : "54f678c2fb115e68bb173face494954c1de9df10",
+        "version" : "4.2.8"
       }
     },
     {
@@ -321,8 +348,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
-        "version" : "1.7.0"
+        "revision" : "626b5b7b2f45e1b0b1c6f4a309296d1d21d7311b",
+        "version" : "1.7.1"
       }
     },
     {
@@ -330,8 +357,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
-        "version" : "1.5.1"
+        "revision" : "9f542610331815e29cc3821d3b6f488db8715517",
+        "version" : "1.6.0"
       }
     },
     {
@@ -366,17 +393,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "bbd81b6725ae874c69e9b8c8804d462356b55523",
-        "version" : "1.10.1"
-      }
-    },
-    {
-      "identity" : "swift-log-file",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/crspybits/swift-log-file",
-      "state" : {
-        "revision" : "aa94b38bf88c7d9cbc87ceafcdffadaffbc2bffa",
-        "version" : "0.1.0"
+        "revision" : "8c0f217f01000dd30f60d6e536569ad4e74291f9",
+        "version" : "1.11.0"
       }
     },
     {
@@ -404,6 +422,15 @@
       "state" : {
         "revision" : "d535b0836be52c846d87605adad1205445e4dc35",
         "version" : "0.0.4"
+      }
+    },
+    {
+      "identity" : "swifthpke",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/SwiftHPKE",
+      "state" : {
+        "revision" : "38742b7ac47912d156f57957cc9ccb9d6b3ad3a7",
+        "version" : "2.8.0"
       }
     },
     {
@@ -440,15 +467,6 @@
       "state" : {
         "revision" : "ec6198d37d495efc6acd4dffbd262cdca7ff9b3f",
         "version" : "0.6.0"
-      }
-    },
-    {
-      "identity" : "xcglogger",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DaveWoodCom/XCGLogger.git",
-      "state" : {
-        "revision" : "4def3c1c772ca90ad5e7bfc8ac437c3b0b4276cf",
-        "version" : "7.1.5"
       }
     },
     {

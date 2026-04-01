@@ -73,7 +73,10 @@ public struct BaseRequestView<Router: RouterHost>: View {
     .alertView(
       isPresented: $viewModel.itemsChanged,
       title: .custom(""),
-      message: .incompleteRequestDataSelection
+      message: .incompleteRequestDataSelection,
+      actions: {
+        Button(.okButton) {}
+      }
     )
   }
 }
@@ -91,8 +94,8 @@ private func content(
 
   if let errorTitle {
     noDocumentsFound(
-        contentHeaderConfig: viewState.contentHeaderConfig,
-        errorTitle: errorTitle
+      contentHeaderConfig: viewState.contentHeaderConfig,
+      errorTitle: errorTitle
     )
   } else {
     scrollableContent(
