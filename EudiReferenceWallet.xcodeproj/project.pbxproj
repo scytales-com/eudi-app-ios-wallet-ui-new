@@ -119,7 +119,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9F8701D62F6BE5BC00A865A9 /* Exceptions for "EudiReferenceWalletIDProvider" folder in "EudiReferenceWalletIDProvider" target */ = {
+		9F8701D62F6BE5BC00A865A9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				WalletIdProvider.plist,
@@ -129,18 +129,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9F8701CA2F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9F8701D62F6BE5BC00A865A9 /* Exceptions for "EudiReferenceWalletIDProvider" folder in "EudiReferenceWalletIDProvider" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = EudiReferenceWalletIDProvider;
-			sourceTree = "<group>";
-		};
+		9F8701CA2F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9F8701D62F6BE5BC00A865A9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = EudiReferenceWalletIDProvider; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -502,6 +491,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 5T7UHW36CL;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -678,6 +668,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 5T7UHW36CL;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1135,6 +1126,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
+				DEVELOPMENT_TEAM = 5T7UHW36CL;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1178,6 +1170,7 @@
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
+				DEVELOPMENT_TEAM = 5T7UHW36CL;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
