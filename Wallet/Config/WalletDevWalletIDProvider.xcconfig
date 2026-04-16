@@ -1,5 +1,5 @@
 #include "WalletDev.xcconfig"
-PRODUCT_BUNDLE_IDENTIFIER = gr.scytales.eudi.dev.EudiReferenceWalletIDProvider
+PRODUCT_BUNDLE_IDENTIFIER = com.scytales.euidi.dev.EudiReferenceWalletIDProvider
 CODE_SIGN_ENTITLEMENTS = EudiReferenceWalletIDProvider/EudiReferenceWalletIDProvider.entitlements
 // CODE_SIGN_IDENTITY = "Apple Development"
 CODE_SIGN_STYLE = Automatic
