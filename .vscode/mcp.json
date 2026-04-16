@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"XcodeBuildMCP-local": {
+			"type": "stdio",
+			"command": "xcodebuildmcp",
+			"args": [
+				"mcp"
+			]
+		}
+	},
+	"inputs": []
+}
