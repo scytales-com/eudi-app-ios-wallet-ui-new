@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,36 +16,12 @@
 import SwiftUI
 import logic_resources
 
-struct SearchableModifier: ViewModifier {
-  @Binding var searchText: String
-  let placeholder: LocalizableStringKey
-  let backgroundColor: Color?
-  let onSearchTextChange: (String) -> Void
-
-  func body(content: Content) -> some View {
-    VStack(spacing: .zero) {
-      CustomSearchBar(
-        text: $searchText,
-        placeholder: placeholder
-      )
-      .padding(.horizontal, SPACING_SMALL)
-      .background(backgroundColor)
-
-      content
-        .onChange(of: searchText) { newValue in
-          onSearchTextChange(newValue)
-        }
-    }
-  }
-}
-
-// MARK: - Custom View Extension
 public extension View {
   func searchable(
     searchText: Binding<String>,
-    placeholder: LocalizableStringKey = .searchDocuments,
+    placeholder: LocalizableStringKey = .search,
     backgroundColor: Color? = nil,
-    onSearchTextChange: @escaping (String) -> Void
+    onSearchTextChange: ((String) -> Void)? = nil
   ) -> some View {
     modifier(
       SearchableModifier(
@@ -58,7 +34,42 @@ public extension View {
   }
 }
 
-struct CustomSearchBar: UIViewRepresentable {
+private struct SearchableModifier: ViewModifier {
+  @Binding var searchText: String
+  let placeholder: LocalizableStringKey
+  let backgroundColor: Color?
+  let onSearchTextChange: ((String) -> Void)?
+
+  init(
+    searchText: Binding<String>,
+    placeholder: LocalizableStringKey,
+    backgroundColor: Color?,
+    onSearchTextChange: ((String) -> Void)? = nil
+  ) {
+    self._searchText = searchText
+    self.placeholder = placeholder
+    self.backgroundColor = backgroundColor
+    self.onSearchTextChange = onSearchTextChange
+  }
+
+  func body(content: Content) -> some View {
+    VStack(spacing: .zero) {
+      CustomSearchBar(
+        text: $searchText,
+        placeholder: placeholder
+      )
+      .padding(.horizontal, SPACING_SMALL)
+      .background(backgroundColor)
+
+      content
+        .onChange(of: searchText) {
+          onSearchTextChange?(searchText)
+        }
+    }
+  }
+}
+
+private struct CustomSearchBar: UIViewRepresentable {
   @Binding var text: String
   let placeholder: LocalizableStringKey
 
@@ -122,49 +133,19 @@ struct CustomSearchBar: UIViewRepresentable {
 }
 
 #Preview {
-  let todayTransactions: [ListItemData] = [
-    .init(
-      mainText: .transactions,
-      overlineText: .expired,
-      supportingText: .expiryDate,
-      overlineTextColor: .green,
-      trailingContent: .icon(Image(systemName: "chevron.right"))
-    ),
-    .init(
-      mainText: .transactions,
-      overlineText: .expired,
-      supportingText: .expiryDate,
-      overlineTextColor: .green,
-      trailingContent: .icon(Image(systemName: "chevron.right"))
-    ),
-    .init(
-      mainText: .transactions,
-      overlineText: .expired,
-      supportingText: .expiryDate,
-      overlineTextColor: .red,
-      trailingContent: .icon(Image(systemName: "chevron.right"))
-    )
-  ]
-
   NavigationView {
-    WrapListView(
-      sections: [
-        (header: "GOVERNMENT", items: todayTransactions)
-      ],
-      style: .plain,
-      hideRowSeperators: true,
-      listRowBackground: .clear,
-      rowContent: { transaction in
-        WrapCardView {
-          WrapListItemView(
-            listItem: transaction
-          )
-        }
-      }
+    WrapListItemsView(
+      listItems: [
+        .init(mainContent: .text(.custom("Family name")), supportingText: .custom("Doe")),
+        .init(mainContent: .text(.custom("Given names")), supportingText: .custom("John")),
+        .init(mainContent: .text(.custom("Date of birth")), supportingText: .custom("21 Oct 1994")),
+        .init(mainContent: .text(.custom("Age over 18")), supportingText: .custom("21 Oct 1994")),
+        .init(mainContent: .text(.custom("Date of issue")), supportingText: .custom("21 Oct 1994"))
+      ]
     )
     .searchable(
       searchText: .constant(""),
       placeholder: .search
-    ) { _ in }
+    )
   }
 }

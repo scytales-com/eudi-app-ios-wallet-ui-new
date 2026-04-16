@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,14 +13,13 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
 import SwiftUI
 
 public protocol ImageManagerProtocol: Sendable {
   var logo: Image { get }
   var faceId: Image { get }
   var id: Image { get }
-  var nfc: Image { get }
+  var ble: Image { get }
   var touchId: Image { get }
   var arrowLeft: Image { get }
   var chevronUp: Image { get }
@@ -33,6 +32,7 @@ public protocol ImageManagerProtocol: Sendable {
   var eye: Image { get }
   var eyeSlash: Image { get }
   var checkmarkCircleFill: Image { get }
+  var checkmarkCircle: Image { get }
   var checkmarkSquareFill: Image { get }
   var square: Image { get }
   var plus: Image { get }
@@ -66,6 +66,8 @@ public protocol ImageManagerProtocol: Sendable {
   var successSecuredWallet: Image { get }
   var digitalIdIssuance: Image { get }
   var documentSuccessPending: Image { get }
+  var verified: Image { get }
+  var ellipsisVertical: Image { get }
 }
 
 final class ImageManager: ImageManagerProtocol {
@@ -73,7 +75,7 @@ final class ImageManager: ImageManagerProtocol {
   enum ImageEnum: String {
     case faceId = "face-id"
     case id = "id"
-    case nfc = "nfc"
+    case ble = "ble"
     case touchId = "touch-id"
     case logo = "logo"
     case arrowLeft = "arrow.left"
@@ -87,6 +89,7 @@ final class ImageManager: ImageManagerProtocol {
     case eye = "eye"
     case eyeSlash = "eye.slash"
     case checkmarkCircleFill = "checkmark.circle.fill"
+    case checkmarkCircle = "checkmark.circle"
     case checkmarkSquareFill = "checkmark.square.fill"
     case square = "square"
     case plus = "plus"
@@ -103,7 +106,7 @@ final class ImageManager: ImageManagerProtocol {
     case walletVerified = "wallet-verified"
     case bell
     case menuIcon = "line.3.horizontal"
-    case filterMenuIcon = "filter-menu-icon"
+    case filterMenuIcon = "slider.horizontal.3"
     case bookmarkIcon = "bookmark"
     case bookmarkIconFill = "bookmark.fill"
     case gearshape
@@ -120,6 +123,8 @@ final class ImageManager: ImageManagerProtocol {
     case successSecuredWallet = "success-secured-wallet"
     case digitalIdIssuance = "digital-id-issuance"
     case documentSuccessPending = "document-success-pending"
+    case verified = "verified"
+    case ellipsisVertical = "elipsis-vertical"
   }
 
   // MARK: - Properties
@@ -137,8 +142,8 @@ final class ImageManager: ImageManagerProtocol {
   var id: Image {
     Image(ImageEnum.id.rawValue, bundle: bundle)
   }
-  var nfc: Image {
-    Image(ImageEnum.nfc.rawValue, bundle: bundle)
+  var ble: Image {
+    Image(ImageEnum.ble.rawValue, bundle: bundle)
   }
   var touchId: Image {
     Image(ImageEnum.touchId.rawValue, bundle: bundle)
@@ -178,6 +183,9 @@ final class ImageManager: ImageManagerProtocol {
   }
   var checkmarkCircleFill: Image {
     Image(systemName: ImageEnum.checkmarkCircleFill.rawValue)
+  }
+  var checkmarkCircle: Image {
+    Image(systemName: ImageEnum.checkmarkCircle.rawValue)
   }
   var checkmarkSquareFill: Image {
     Image(systemName: ImageEnum.checkmarkSquareFill.rawValue)
@@ -228,7 +236,7 @@ final class ImageManager: ImageManagerProtocol {
     Image(systemName: ImageEnum.menuIcon.rawValue)
   }
   var filterMenuIcon: Image {
-    Image(ImageEnum.filterMenuIcon.rawValue, bundle: bundle)
+    Image(systemName: ImageEnum.filterMenuIcon.rawValue)
   }
   var bookmarkIcon: Image {
     Image(systemName: ImageEnum.bookmarkIcon.rawValue)
@@ -277,5 +285,11 @@ final class ImageManager: ImageManagerProtocol {
   }
   var documentSuccessPending: Image {
     Image(ImageEnum.documentSuccessPending.rawValue, bundle: bundle)
+  }
+  var verified: Image {
+    Image(ImageEnum.verified.rawValue, bundle: bundle)
+  }
+  var ellipsisVertical: Image {
+    Image(ImageEnum.ellipsisVertical.rawValue, bundle: bundle)
   }
 }

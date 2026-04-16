@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,9 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_ui
-import logic_core
 
 public struct DocumentSuccessUIConfig: UIConfigType, Equatable {
 
@@ -23,6 +21,7 @@ public struct DocumentSuccessUIConfig: UIConfigType, Equatable {
   public let relyingParty: String?
   public let issuerLogoUrl: URL?
   public let relyingPartyIsTrusted: Bool
+  public let isIssuingDocument: Bool
 
   public var log: String {
     return "onSuccessNav: \(successNavigation.type)" +
@@ -33,11 +32,13 @@ public struct DocumentSuccessUIConfig: UIConfigType, Equatable {
     successNavigation: UIConfig.DeepLinkNavigationType,
     relyingParty: String? = nil,
     issuerLogoUrl: URL? = nil,
-    relyingPartyIsTrusted: Bool
+    relyingPartyIsTrusted: Bool,
+    isIssuingDocument: Bool
   ) {
     self.successNavigation = successNavigation
     self.relyingParty = relyingParty
     self.relyingPartyIsTrusted = relyingPartyIsTrusted
     self.issuerLogoUrl = issuerLogoUrl
+    self.isIssuingDocument = isIssuingDocument
   }
 }

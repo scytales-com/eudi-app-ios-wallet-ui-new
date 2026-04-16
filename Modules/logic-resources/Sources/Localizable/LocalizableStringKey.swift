@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -41,11 +41,8 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case addDoc
   case filters
   case sortByIssuedDateSectionTitle
-  case issuerSectionTitle
   case showResults
-  case showQRTap
   case welcomeBack([String])
-  case viewDocumentDetails
   case pleaseWait
   case requestDataShareQuickPinCaption
   case requestDataShareBiometryCaption
@@ -56,7 +53,6 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case unavailableField
   case requestDataVerifiedEntity
   case requestDataVerifiedEntityMessage
-  case moreOptions
   case changeQuickPinOption
   case quickPinSetTitle
   case quickPinEnterPin
@@ -66,10 +62,12 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case quickPinNextButton
   case quickPinConfirmButton
   case quickPinSetSuccess
+  case quickPinSetNoActivationSuccess
   case loginTitle
   case loginCaptionQuickPinOnly
   case loginCaption
   case quickPinSetSuccessButton
+  case quickPinSetNoActivationSuccessButton
   case quickPinDoNotMatch
   case quickPinUpdateTitle
   case quickPinUpdateCaptionOne
@@ -80,10 +78,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case quickPinUpdateCancellationTitle
   case quickPinUpdateCancellationCaption
   case quickPinUpdateCancellationContinue
-  case issuanceDetailsContinueButton
   case successTitlePunctuated
-  case issuanceSuccessCaption([String])
-  case issuanceSuccessNextButton
   case issuerWantWalletAddition
   case unknownVerifier
   case unknownIssuer
@@ -102,6 +97,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case requestDataNoDocument
   case issuanceDetailsDeletionTitle([String])
   case deleteDocument
+  case removeFromWallet
   case issuanceDetailsDeletionCaption([String])
   case errorUnableFetchDocuments
   case errorUnableFetchDocument
@@ -114,16 +110,10 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case cameraError
   case missingPid
   case requestCredentialOfferTitle([String])
-  case requestCredentialOfferCaption
   case requestCredentialOfferNoDocument
   case unableToIssueAndStore
+  case missingMetadata
   case issueButton
-  case cancelIssueSheetTitle
-  case cancelIssueSheetCaption
-  case cancelIssueSheetContinue
-  case credentialOfferSuccessButton
-  case credentialOfferSuccessCaption([String])
-  case credentialOfferPartialSuccessCaption([String])
   case issuanceCodeTitle([String])
   case issuanceCodeCaption([String])
   case transactionCodeFormatError([String])
@@ -160,7 +150,6 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case all
   case descending
   case ascending
-  case issuanceSuccessHeaderDescriptionWhenError
   case trustedRelyingParty
   case trustedRelyingPartyDescription
   case alertAccessOnlineServices
@@ -170,9 +159,6 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case authenticate
   case inPerson
   case online
-  case fromDevice
-  case autodashboardAuthenticateDialogMessage
-  case deleteButton
   case savedToFavorites
   case succesfullyAddedFollowingToWallet
   case removedFromFavorites
@@ -182,10 +168,9 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case requestsTheFollowing
   case walletIsSecured
   case noResults
-  case noResultsDescription
-  case proximityConnectionNfcDescription
-  case orShareViaNfc
-  case expiryPeriodSectionTitle
+  case noResultsDocumentsDescription
+  case noResultsTransactionsDescription
+  case proximityConnectionBleDescription
   case selectExpiryPeriod
   case filterByState
   case sortBy
@@ -214,7 +199,63 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case orderBy
   case filterByCategory
   case searchDocuments
+  case searchTransactions
+  case filterByStatus
+  case completed
+  case failed
+  case filterByDate
+  case startDate
+  case endDate
+  case relyingParty
+  case signedDocuments
+  case transactionInformation
+  case transactionDetailsDataShare
+  case transactionDetailsDataSigned
+  case transactionDetailsScreenCardDateLabel
+  case transactionDetailsCompleted
   case or
+  case today
+  case thisWeek
+  case unknownDate
+  case minutesAgo([String])
+  case minuteAgo([String])
+  case transactionDate
+  case filterByType
+  case presentation
+  case signing
+  case issuance
+  case deletion
+  case withoutRelyingName
+  case errorFetchTransactionLog
+  case incomplete
+  case justNow
+  case revoked
+  case revokedModalTitle
+  case revokedModalDescription
+  case transactionDetailsRequestDeletionMessage
+  case transactionDetailsRequestDeletionButton
+  case transactionDetailsReportTransactionMessage
+  case transactionDetailsReportTransactionButton
+  case settings
+  case documentDetailsDocumentCredentialsText([String])
+  case documentDetailsDocumentCredentialsExpandedTextSubtitle
+  case documentsListCredentialsUsageText([String])
+  case expandableDocumentCredentialsIssueButton
+  case issuanceAddDocumentNoOptions
+  case unknown
+  case pidCombined
+  case documentData
+  case issuanceSuccessHeaderDescription
+  case documentDetailsReIssueButton
+  case documentDetailsRemoveButton
+  case documentDetailsExpiresOn([String])
+  case documentDetailsIssuedOn([String])
+  case documentDetailsRevokedDocument
+  case documentDetailsIssuerCardIssuedMessageText
+  case documentDetailsIssuerCardRevokedMessageText
+  case documentDetailsIssuerCardIssuedActionButtonText
+  case documentProviderExtensionAcceptButton
+  case documentProviderExtensionRejectButton
 }
 
 public extension LocalizableStringKey {

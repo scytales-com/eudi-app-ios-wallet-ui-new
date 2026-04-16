@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,7 +13,6 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
 import feature_common
 import logic_core
 
@@ -21,6 +20,7 @@ final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>
 
   private let interactor: ProximityInteractor
   private var publisherTask: Task<Void, Error>?
+  private var coordinator: ProximitySessionCoordinator?
 
   init(
     router: Router,
@@ -42,29 +42,6 @@ final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>
     )
   }
 
-  func subscribeToCoordinatorPublisher() async {
-    switch self.interactor.getSessionStatePublisher() {
-    case .success(let publisher):
-      for try await state in publisher {
-        switch state {
-        case .error(let error):
-          self.onError(with: error)
-        case .responseSent:
-          self.interactor.stopPresentation()
-          self.onNavigate(
-            type: .push(
-              getOnSuccessRoute()
-            )
-          )
-        default:
-          ()
-        }
-      }
-    case .failure(let error):
-      self.onError(with: error)
-    }
-  }
-
   override func getTitle() -> LocalizableStringKey {
     .requestDataTitle([getRelyingParty()])
   }
@@ -80,7 +57,8 @@ final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>
         config: DocumentSuccessUIConfig(
           successNavigation: .pop(screen: getOriginator()),
           relyingParty: getRelyingParty(),
-          relyingPartyIsTrusted: isRelyingPartyIstrusted()
+          relyingPartyIsTrusted: isRelyingPartyIstrusted(),
+          isIssuingDocument: false
         ),
         getRequestItems()
       )
@@ -89,25 +67,22 @@ final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>
 
   override func getOnPopRoute() -> AppRoute? {
     publisherTask?.cancel()
-    return switch interactor.getCoordinator() {
-    case .success(let proximitySessionCoordinator):
-        .featureProximityModule(
-          .proximityRequest(
-            presentationCoordinator: proximitySessionCoordinator,
-            originator: getOriginator()
-          )
-        )
-    case .failure: nil
-    }
+    guard let coordinator = self.coordinator else { return nil }
+    return .featureProximityModule(
+      .proximityRequest(
+        presentationCoordinator: coordinator,
+        originator: getOriginator()
+      )
+    )
   }
 
   override func doWork() async {
 
     startPublisherTask()
 
-    let state = await Task.detached { () -> ProximityResponsePartialState in
-      return await self.interactor.onSendResponse()
-    }.value
+    await getCoordinator()
+
+    let state = await interactor.onSendResponse()
 
     switch state {
     case .sent: break
@@ -121,9 +96,39 @@ final class ProximityLoadingViewModel<Router: RouterHost, RequestItem: Sendable>
       publisherTask = Task {
         await self.subscribeToCoordinatorPublisher()
       }
-      Task {
-        try? await self.publisherTask?.value
+      Task { try? await self.publisherTask?.value }
+    }
+  }
+
+  private func subscribeToCoordinatorPublisher() async {
+    switch await self.interactor.getSessionStatePublisher() {
+    case .success(let publisher):
+      for try await state in publisher {
+        switch state {
+        case .error(let error):
+          self.onError(with: error)
+        case .responseSent:
+          await self.interactor.stopPresentation()
+          self.onNavigate(
+            type: .push(
+              getOnSuccessRoute()
+            )
+          )
+        default:
+          ()
+        }
       }
+    case .failure(let error):
+      self.onError(with: error)
+    }
+  }
+
+  private func getCoordinator() async {
+    switch await interactor.getCoordinator() {
+    case .success(let proximitySessionCoordinator):
+      self.coordinator = proximitySessionCoordinator
+    case .failure:
+      self.coordinator = nil
     }
   }
 }

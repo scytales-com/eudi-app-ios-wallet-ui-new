@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -23,4 +23,25 @@ public enum PresentationState: Sendable {
   case responseToSend(RequestItemConvertible)
   case responseSent(URL?)
   case error(Error)
+}
+
+extension PresentationState: Equatable {
+  public static func == (lhs: PresentationState, rhs: PresentationState) -> Bool {
+    return switch (lhs, rhs) {
+    case (.loading, .loading), (.prepareQr, .prepareQr):
+      true
+    case let (.qrReady(a), .qrReady(b)):
+      a == b
+    case let (.requestReceived(a), .requestReceived(b)):
+      a == b
+    case let (.responseToSend(a), .responseToSend(b)):
+      a.items == b.items
+    case let (.responseSent(a), .responseSent(b)):
+      a == b
+    case let (.error(a), .error(b)):
+      a.localizedDescription == b.localizedDescription
+    default:
+      false
+    }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,7 +15,7 @@
  */
 import Swinject
 import logic_core
-import logic_storage
+import logic_business
 
 public final class FeatureIssuanceAssembly: Assembly {
 
@@ -27,16 +27,11 @@ public final class FeatureIssuanceAssembly: Assembly {
     }
     .inObjectScope(ObjectScope.transient)
 
-    container.register(DocumentDetailsInteractor.self) { r in
-      DocumentDetailsInteractorImpl(
-        walletController: r.force(WalletKitController.self),
-        bookmarkStorageController: r.force((any BookmarkStorageController).self)
-      )
-    }
-    .inObjectScope(ObjectScope.transient)
-
     container.register(DocumentOfferInteractor.self) { r in
-      DocumentOfferInteractorImpl(walletController: r.force(WalletKitController.self))
+      DocumentOfferInteractorImpl(
+        walletController: r.force(WalletKitController.self),
+        configLogic: r.force(ConfigLogic.self)
+      )
     }
     .inObjectScope(ObjectScope.transient)
   }

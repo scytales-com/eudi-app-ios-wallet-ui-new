@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,40 +15,30 @@
  */
 import Foundation
 import logic_business
-
-struct VciConfig: Sendable {
-  public let issuerUrl: String
-  public let clientId: String
-  public let redirectUri: URL
-  public let usePAR: Bool
-  public let useDPoP: Bool
-}
-
-struct ReaderConfig: Sendable {
-  public let trustedCerts: [Data]
-}
+import EudiWalletKit
+import Security
 
 protocol WalletKitConfig: Sendable {
 
   /**
    * VCI Configuration
    */
-  var vciConfig: VciConfig { get }
+  var issuersConfig: [String: VciConfig] { get }
+
+  /**
+   * VP Configuration
+   */
+  var vpConfig: OpenId4VpConfiguration { get }
 
   /**
    * Reader Configuration
    */
-  var readerConfig: ReaderConfig { get }
+  var trustedReaderRootCertificates: [x5chain] { get }
 
   /**
    * User authentication required accessing core's secure storage
    */
   var userAuthenticationRequired: Bool { get }
-
-  /**
-   * Service name for documents key chain storage
-   */
-  var documentStorageServiceName: String { get }
 
   /**
    * The name of the file to be created to store logs
@@ -59,42 +49,123 @@ protocol WalletKitConfig: Sendable {
    * Document categories
    */
   var documentsCategories: DocumentCategories { get }
+
+  /**
+   * Logger For Transactions
+   */
+  var transactionLogger: TransactionLogger { get }
+
+  /**
+   * The interval (in seconds) at which revocations are checked.
+   */
+  var revocationIntervalSeconds: TimeInterval { get }
+
+  /**
+   * Configuration for document issuance, including default rules and specific overrides.
+   */
+  var documentIssuanceConfig: DocumentIssuanceConfig { get }
 }
 
 struct WalletKitConfigImpl: WalletKitConfig {
 
   let configLogic: ConfigLogic
+  let transactionLoggerImpl: TransactionLogger
+  let walletKitAttestationProvider: WalletKitAttestationProvider
 
-  init(configLogic: ConfigLogic) {
+  init(
+    configLogic: ConfigLogic,
+    transactionLogger: TransactionLogger,
+    walletKitAttestationProvider: WalletKitAttestationProvider
+  ) {
     self.configLogic = configLogic
+    self.transactionLoggerImpl = transactionLogger
+    self.walletKitAttestationProvider = walletKitAttestationProvider
   }
 
   var userAuthenticationRequired: Bool {
     false
   }
 
-  var vciConfig: VciConfig {
-    return switch configLogic.appBuildVariant {
-    case .DEMO:
-        .init(
-          issuerUrl: "https://issuer.eudiw.dev",
-          clientId: "wallet-dev",
-          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!,
-          usePAR: true,
-          useDPoP: true
-        )
-    case .DEV:
-        .init(
-          issuerUrl: "https://dev.issuer.eudiw.dev",
-          clientId: "wallet-dev",
-          redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!,
-          usePAR: true,
-          useDPoP: true
-        )
+  var issuersConfig: [String: VciConfig] {
+
+    let openId4VciConfigurations: [VciConfig] = {
+      switch configLogic.appBuildVariant {
+      case .DEMO:
+        return [
+          .init(
+            config: .init(
+              credentialIssuerURL: "https://issuer.eudiw.dev",
+              clientId: "wallet-dev",
+              keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+              authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+              requirePAR: true,
+              requireDpop: true,
+              cacheIssuerMetadata: true
+            ),
+            order: 1
+          ),
+          .init(
+            config: .init(
+              credentialIssuerURL: "https://issuer-backend.eudiw.dev",
+              clientId: "wallet-dev",
+              keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+              authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+              requirePAR: true,
+              requireDpop: true,
+              cacheIssuerMetadata: true
+            ),
+            order: 0
+          )
+        ]
+      case .DEV:
+        return [
+          .init(
+            config: .init(
+              credentialIssuerURL: "https://ec.dev.issuer.eudiw.dev",
+              clientId: "wallet-dev",
+              keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+              authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+              requirePAR: true,
+              requireDpop: true,
+              cacheIssuerMetadata: true
+            ),
+            order: 1
+          ),
+          .init(
+            config: .init(
+              credentialIssuerURL: "https://dev.issuer-backend.eudiw.dev",
+              clientId: "wallet-dev",
+              keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+              authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+              requirePAR: true,
+              requireDpop: true,
+              cacheIssuerMetadata: true
+            ),
+            order: 0
+          )
+        ]
+      }
+    }()
+
+    return openId4VciConfigurations.reduce(
+      into: [String: VciConfig]()
+    ) { dict, config in
+      guard
+        let issuer = config.config.credentialIssuerURL,
+        let url = URL(string: issuer),
+        let host = url.host
+      else {
+        return
+      }
+      dict[host] = config
     }
   }
 
-  var readerConfig: ReaderConfig {
+  var vpConfig: OpenId4VpConfiguration {
+    .init(clientIdSchemes: [.x509SanDns, .x509Hash])
+  }
+
+  var trustedReaderRootCertificates: [x5chain] {
     let certificates = [
       "pidissuerca02_cz",
       "pidissuerca02_ee",
@@ -102,19 +173,12 @@ struct WalletKitConfigImpl: WalletKitConfig {
       "pidissuerca02_lu",
       "pidissuerca02_nl",
       "pidissuerca02_pt",
-      "pidissuerca02_ut"
+      "pidissuerca02_ut",
+      "r45_staging"
     ]
-    let certsData: [Data] = certificates.compactMap {
-      Data(name: $0, ext: "der")
-    }
-    return .init(trustedCerts: certsData)
-  }
-
-  var documentStorageServiceName: String {
-    guard let identifier = Bundle.main.bundleIdentifier else {
-      return "eudi.document.storage"
-    }
-    return "\(identifier).eudi.document.storage"
+    return certificates
+      .compactMap { loadCertificate($0) }
+      .map { [$0] }
   }
 
   var logFileName: String {
@@ -151,7 +215,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
         .other(formatType: "urn:eu.europa.ec.eudi:ehic:1")
       ],
       .SocialSecurity: [
-        .other(formatType: "eu.europa.ec.eudi.samplepda1.1"),
+        .other(formatType: "eu.europa.ec.eudi.pda1.1"),
         .other(formatType: "urn:eu.europa.ec.eudi:pda1:1")
       ],
       .Retail: [
@@ -164,5 +228,69 @@ struct WalletKitConfigImpl: WalletKitConfig {
         .other(formatType: "urn:eu.europa.ec.eudi:por:1")
       ]
     ]
+  }
+
+  var transactionLogger: any TransactionLogger {
+    return self.transactionLoggerImpl
+  }
+
+  var revocationIntervalSeconds: TimeInterval {
+    300
+  }
+
+  var documentIssuanceConfig: DocumentIssuanceConfig {
+    return switch configLogic.appBuildVariant {
+    case .DEMO:
+      DocumentIssuanceConfig(
+        defaultRule: DocumentIssuanceRule(
+          policy: .rotateUse,
+          numberOfCredentials: 1
+        ),
+        documentSpecificRules: [
+          DocumentTypeIdentifier.mDocPid: DocumentIssuanceRule(
+            policy: .oneTimeUse,
+            numberOfCredentials: 10
+          ),
+          DocumentTypeIdentifier.sdJwtPid: DocumentIssuanceRule(
+            policy: .oneTimeUse,
+            numberOfCredentials: 10
+          )
+        ],
+        reIssuanceRule: ReIssuanceRule(
+          minNumberOfCredentials: 2,
+          minExpirationHours: 14,
+          backgroundIntervalSeconds: 300
+        )
+      )
+    case .DEV:
+      DocumentIssuanceConfig(
+        defaultRule: DocumentIssuanceRule(
+          policy: .rotateUse,
+          numberOfCredentials: 1
+        ),
+        documentSpecificRules: [
+          DocumentTypeIdentifier.mDocPid: DocumentIssuanceRule(
+            policy: .oneTimeUse,
+            numberOfCredentials: 60
+          ),
+          DocumentTypeIdentifier.sdJwtPid: DocumentIssuanceRule(
+            policy: .oneTimeUse,
+            numberOfCredentials: 60
+          )
+        ],
+        reIssuanceRule: ReIssuanceRule(
+          minNumberOfCredentials: 2,
+          minExpirationHours: 14,
+          backgroundIntervalSeconds: 300
+        )
+      )
+    }
+  }
+}
+
+private extension WalletKitConfigImpl {
+  func loadCertificate(_ name: String) -> SecCertificate? {
+    guard let data = Data(name: name, ext: "der") else { return nil }
+    return SecCertificateCreateWithData(nil, data as CFData)
   }
 }

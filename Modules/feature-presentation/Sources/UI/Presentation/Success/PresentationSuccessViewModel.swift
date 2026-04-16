@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,7 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 import logic_ui
-import logic_resources
 import feature_common
 
 class PresentationSuccessViewModel<Router: RouterHost, RequestItem: Sendable>: DocumentSuccessViewModel<Router, RequestItem> {

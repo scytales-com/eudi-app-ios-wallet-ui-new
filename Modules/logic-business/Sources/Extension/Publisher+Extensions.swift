@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -20,18 +20,15 @@ public extension Publisher where Self.Failure == Never, Self.Output: Sendable {
   func toAsyncStream() -> AsyncStream<Self.Output> {
     return AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
 
-      let cancellable = self.sink(
-        receiveCompletion: { _ in
-          Task {
+      let cancellable = self
+        .sink(
+          receiveCompletion: { _ in
             continuation.finish()
-          }
-        },
-        receiveValue: { value in
-          Task {
+          },
+          receiveValue: { value in
             _ = continuation.yield(value)
           }
-        }
-      )
+        )
       continuation.onTermination = { _ in
         cancellable.cancel()
       }

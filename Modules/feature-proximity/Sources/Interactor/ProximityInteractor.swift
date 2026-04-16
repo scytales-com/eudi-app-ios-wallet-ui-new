@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,10 +13,14 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_core
 import logic_business
 import feature_common
+
+public enum ProximityDeviceEngagementPartialState: Sendable {
+  case success
+  case failure(Error)
+}
 
 public enum ProximityResponsePartialState: Sendable {
   case sent
@@ -50,51 +54,56 @@ public enum ProximityCoordinatorPartialState: Sendable {
 
 public protocol ProximityInteractor: Sendable {
 
-  func getSessionStatePublisher() -> ProximityPublisherPartialState
-  func getCoordinator() -> ProximityCoordinatorPartialState
+  func getSessionStatePublisher() async -> ProximityPublisherPartialState
+  func getCoordinator() async -> ProximityCoordinatorPartialState
 
-  func onDeviceEngagement() async
+  func onDeviceEngagement() async -> ProximityDeviceEngagementPartialState
   func onQRGeneration() async -> ProximityQrCodePartialState
   func onRequestReceived() async -> ProximityRequestPartialState
   func onResponsePrepare(requestItems: [RequestDataUiModel]) async -> ProximityResponsePreparationPartialState
   func onSendResponse() async -> ProximityResponsePartialState
-  func stopPresentation()
+  func stopPresentation() async
 
 }
 
-final class ProximityInteractorImpl: ProximityInteractor {
+final actor ProximityInteractorImpl: ProximityInteractor {
 
   private let walletKitController: WalletKitController
   private let sessionCoordinatorHolder: SessionCoordinatorHolder
 
   init(
-    with presentationSessionCoordinator: ProximitySessionCoordinator,
+    with proximitySessionCoordinator: ProximitySessionCoordinator,
     and walletKitController: WalletKitController,
     also sessionCoordinatorHolder: SessionCoordinatorHolder
   ) {
     self.walletKitController = walletKitController
     self.sessionCoordinatorHolder = sessionCoordinatorHolder
-    self.sessionCoordinatorHolder.setActiveProximityCoordinator(presentationSessionCoordinator)
+    Task { await self.sessionCoordinatorHolder.setActiveProximityCoordinator(proximitySessionCoordinator) }
   }
 
-  func getCoordinator() -> ProximityCoordinatorPartialState {
+  func getCoordinator() async -> ProximityCoordinatorPartialState {
     do {
-      return .success(try sessionCoordinatorHolder.getActiveProximityCoordinator())
+      return .success(try await sessionCoordinatorHolder.getActiveProximityCoordinator())
     } catch {
       return .failure(error)
     }
   }
 
-  public func getSessionStatePublisher() -> ProximityPublisherPartialState {
+  public func getSessionStatePublisher() async -> ProximityPublisherPartialState {
     do {
-      return .success(try sessionCoordinatorHolder.getActiveProximityCoordinator().getStream())
+      return .success(try await sessionCoordinatorHolder.getActiveProximityCoordinator().getStream())
     } catch {
       return .failure(error)
     }
   }
 
-  public func onDeviceEngagement() async {
-    try? await sessionCoordinatorHolder.getActiveProximityCoordinator().initialize()
+  public func onDeviceEngagement() async -> ProximityDeviceEngagementPartialState {
+    do {
+      try await sessionCoordinatorHolder.getActiveProximityCoordinator().initialize()
+      return .success
+    } catch {
+      return .failure(error)
+    }
   }
 
   public func onQRGeneration() async -> ProximityQrCodePartialState {
@@ -110,8 +119,11 @@ final class ProximityInteractorImpl: ProximityInteractor {
   public func onRequestReceived() async -> ProximityRequestPartialState {
     do {
       let response = try await sessionCoordinatorHolder.getActiveProximityCoordinator().requestReceived()
+      let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
+      let documents = response.items.filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
+      guard !documents.isEmpty else { return .failure(WalletCoreError.unableFetchDocuments) }
       return .success(
-        response.items.toUiModels(
+        documents.toUiModels(
           with: self.walletKitController
         ),
         relyingParty: response.relyingParty,
@@ -127,17 +139,17 @@ final class ProximityInteractorImpl: ProximityInteractor {
 
     let requestConvertible = requestItems.prepareRequest()
 
-    guard requestConvertible.requestItems.isEmpty == false else {
+    guard requestConvertible.items.isEmpty == false else {
       return .failure(PresentationSessionError.conversionToRequestItemModel)
     }
 
     do {
-      try self.sessionCoordinatorHolder.getActiveProximityCoordinator().setState(presentationState: .responseToSend(requestConvertible))
+      try await self.sessionCoordinatorHolder.getActiveProximityCoordinator().setState(presentationState: .responseToSend(requestConvertible))
     } catch {
       return .failure(error)
     }
 
-    return .success(requestConvertible.asRequestItems())
+    return .success(requestConvertible.items)
   }
 
   public func onSendResponse() async -> ProximityResponsePartialState {
@@ -157,8 +169,8 @@ final class ProximityInteractorImpl: ProximityInteractor {
     }
   }
 
-  public func stopPresentation() {
-    walletKitController.stopPresentation()
-    try? sessionCoordinatorHolder.getActiveProximityCoordinator().stopPresentation()
+  public func stopPresentation() async {
+    await walletKitController.stopPresentation()
+    try? await sessionCoordinatorHolder.getActiveProximityCoordinator().stopPresentation()
   }
 }

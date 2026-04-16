@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,16 +14,15 @@
  * governing permissions and limitations under the Licence.
  */
 import Foundation
-import Combine
 import Peppermint
-import libPhoneNumber
+import PhoneNumberKit
 
 public protocol FormValidator: Sendable {
   func validateForm(form: ValidatableForm) async -> FormValidationResult
   func validateForms(forms: [ValidatableForm]) async -> FormsValidationResult
 }
 
-final class FormValidatorImpl: FormValidator {
+final actor FormValidatorImpl: FormValidator {
 
   public func validateForm(form: ValidatableForm) async -> FormValidationResult {
     var foundError = false
@@ -183,10 +182,14 @@ final class FormValidatorImpl: FormValidator {
   }
 
   private func isPhoneNumberValid(phone: String, countryCode: String) -> Bool {
-    guard let phoneUtil = NBPhoneNumberUtil.sharedInstance() else { return false }
+    let phoneNumberUtility = PhoneNumberUtility()
     do {
-      let phoneNumber: NBPhoneNumber = try phoneUtil.parse(phone, defaultRegion: countryCode)
-      return phoneUtil.isValidNumber(phoneNumber)
+      _ = try phoneNumberUtility.parse(
+        phone,
+        withRegion: countryCode,
+        ignoreType: false
+      )
+      return true
     } catch {
       return false
     }
@@ -280,7 +283,7 @@ public struct FormValidationResult: Equatable, Sendable {
   }
 }
 
-public struct FormsValidationResult: Equatable {
+public struct FormsValidationResult: Equatable, Sendable {
   public var isValid: Bool
   public var messages: [String]
 

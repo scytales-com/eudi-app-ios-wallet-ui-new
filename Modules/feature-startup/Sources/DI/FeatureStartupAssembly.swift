@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -28,7 +28,8 @@ public final class FeatureStartupAssembly: Assembly {
         walletKitController: r.force(WalletKitController.self),
         quickPinInteractor: r.force(QuickPinInteractor.self),
         keyChainController: r.force(KeyChainController.self),
-        prefsController: r.force(PrefsController.self)
+        prefsController: r.force(PrefsController.self),
+        configLogic: r.force(ConfigLogic.self)
       )
     }
     .inObjectScope(ObjectScope.transient)

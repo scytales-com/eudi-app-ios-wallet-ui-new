@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -25,6 +25,7 @@ public struct BaseLoadingState<T: Sendable>: ViewState {
   let requestItems: [ListItemSection<T>]
   let relyingParty: String
   let relyingPartyIsTrusted: Bool
+  let toolBarContent: ToolBarContent
 }
 
 open class BaseLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: ViewModel<Router, BaseLoadingState<RequestItem>> {
@@ -52,12 +53,17 @@ open class BaseLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: View
         ),
         requestItems: requestItems,
         relyingParty: relyingParty,
-        relyingPartyIsTrusted: relyingPartyIsTrusted
+        relyingPartyIsTrusted: relyingPartyIsTrusted,
+        toolBarContent: .init()
       )
     )
 
     if cancellationTimeout > 0 {
       setCancellationWithTimeout(cancellationTimeout)
+    } else {
+      setState {
+        $0.copy(toolBarContent: backableToolbar())
+      }
     }
   }
 
@@ -108,7 +114,7 @@ open class BaseLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: View
     setState {
       $0.copy(
         error: .init(
-          description: .custom(error.localizedDescription),
+          description: .custom(error.errorMessage),
           cancelAction: self.onNavigate(type: .pop),
           action: { self.onErrorAction() }
         )
@@ -116,21 +122,34 @@ open class BaseLoadingViewModel<Router: RouterHost, RequestItem: Sendable>: View
     }
   }
 
-  public func toolbarContent() -> ToolBarContent {
+  private func backableToolbar() -> ToolBarContent {
     .init(
       leadingActions: [
-        Action(image: Theme.shared.image.xmark) {
-          self.viewState.isCancellable ? self.onNavigate(type: .pop) : nil
+        .init(
+          image: Theme.shared.image.xmark,
+          accessibilityLocator: ToolbarLocators.xmark
+        ) {
+          self.onNavigate(type: .pop)
         }
       ]
     )
   }
 
   private func setCancellationWithTimeout(_ timeout: Double) {
-    setState { $0.copy(isCancellable: false) }
+    setState {
+      $0.copy(
+        isCancellable: false,
+        toolBarContent: .init()
+      )
+    }
     Task { [weak self] in
       try? await Task.sleep(seconds: timeout)
-      self?.setState { $0.copy(isCancellable: true) }
+      self?.setState {
+        $0.copy(
+          isCancellable: true,
+          toolBarContent: self?.backableToolbar()
+        )
+      }
     }
   }
 

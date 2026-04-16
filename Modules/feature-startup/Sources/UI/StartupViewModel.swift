@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,13 +15,10 @@
  */
 import Foundation
 import logic_ui
-import feature_common
-import logic_business
 
 @Copyable
 struct StartupState: ViewState {
   let splashDuration: TimeInterval
-  let isAnimating: Bool
   let setupError: Error?
 }
 
@@ -39,19 +36,13 @@ final class StartupViewModel<Router: RouterHost>: ViewModel<Router, StartupState
       router: router,
       initialState: .init(
         splashDuration: splashDuration,
-        isAnimating: false,
         setupError: nil
       )
     )
   }
 
-  func startAnimatingSplash() {
-    setState { $0.copy(isAnimating: true) }
-  }
-
   func initialize() async {
     let route = await interactor.initialize(with: viewState.splashDuration)
-    setState { $0.copy(isAnimating: false) }
     router.push(with: route)
   }
 }

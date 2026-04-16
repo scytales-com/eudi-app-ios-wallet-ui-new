@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,7 +15,6 @@
  */
 import SwiftUI
 import AlertToast
-import PartialSheet
 import Shimmer
 
 private let shimmeringGradient = Gradient(
@@ -67,8 +66,20 @@ public extension View {
     }
   }
 
+  @ViewBuilder
+  func ifLet<T, Content: View>(
+    _ value: T?,
+    transform: (Self, T) -> Content
+  ) -> some View {
+    if let value {
+      transform(self, value)
+    } else {
+      self
+    }
+  }
+
   func gone(if shouldHide: Bool) -> some View {
-      shouldHide ? AnyView(EmptyView()) : AnyView(self)
+    shouldHide ? AnyView(EmptyView()) : AnyView(self)
   }
 }
 
@@ -124,13 +135,22 @@ public extension View {
 }
 
 public extension View {
-  func sheetDialog<Content: View>(isPresented: Binding<Bool>, @ViewBuilder _ content: @escaping () -> Content) -> some View {
-    return self.partialSheet(
-      isPresented: isPresented,
-      iPhoneStyle: SheetStyle.iphoneSheetStyle,
-      iPadMacStyle: SheetStyle.IpadMacSheetStyle,
-      content: { ContentSheetView(content: content) }
-    )
+  func sheetDialog<Content: View>(
+    isPresented: Binding<Bool>,
+    backgroundTapToDismiss: Bool = true,
+    @ViewBuilder _ content: @escaping () -> Content
+  ) -> some View {
+    ZStack {
+      self
+      if isPresented.wrappedValue {
+        SheetContainerView(
+          isPresented: isPresented,
+          backgroundTapToDismiss: backgroundTapToDismiss,
+          content: content
+        )
+        .zIndex(1)
+      }
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -92,8 +92,7 @@ final class DeepLinkControllerImpl: DeepLinkController {
       if shouldPopToDashboardFirst {
         routerHost.popTo(
           with: .featureDashboardModule(.dashboard),
-          inclusive: false,
-          animated: false
+          inclusive: false
         )
       }
       return
@@ -102,7 +101,7 @@ final class DeepLinkControllerImpl: DeepLinkController {
     removeCachedDeepLinkURL()
 
     switch deepLinkExecutable.action {
-    case .openid4vp:
+    case .openid4vp, .haip_vp:
       guard let remoteSessionCoordinator else {
         fatalError("DeepLink Action OpenId4VP Requires Remote Session Coordinator")
       }
@@ -123,14 +122,15 @@ final class DeepLinkControllerImpl: DeepLinkController {
           )
         )
       } else {
-        postNotification(
-          with: NSNotification.PresentationVC,
-          and: ["session": remoteSessionCoordinator]
+        NotificationCenter.default.post(
+          name: NSNotification.PresentationVC,
+          object: nil,
+          userInfo: ["session": remoteSessionCoordinator]
         )
       }
     case .external:
       deepLinkExecutable.plainUrl.open()
-    case .credential_offer:
+    case .credential_offer, .haip_vci:
       let config = UIConfig.Generic(
         arguments: ["uri": deepLinkExecutable.plainUrl.absoluteString],
         navigationSuccessType: routerHost.userIsLoggedInWithDocuments()
@@ -141,9 +141,10 @@ final class DeepLinkControllerImpl: DeepLinkController {
       if !routerHost.isScreenForeground(with: .featureIssuanceModule(.credentialOfferRequest(config: config))) {
         routerHost.push(with: .featureIssuanceModule(.credentialOfferRequest(config: config)))
       } else {
-        postNotification(
-          with: NSNotification.CredentialOffer,
-          and: ["uri": deepLinkExecutable.plainUrl.absoluteString]
+        NotificationCenter.default.post(
+          name: NSNotification.CredentialOffer,
+          object: nil,
+          userInfo: ["uri": deepLinkExecutable.plainUrl.absoluteString]
         )
       }
     case .rqes:
@@ -177,17 +178,6 @@ final class DeepLinkControllerImpl: DeepLinkController {
   public func removeCachedDeepLinkURL() {
     prefsController.remove(forKey: .cachedDeepLink)
   }
-
-  private func postNotification(
-    with name: NSNotification.Name,
-    and info: [AnyHashable: Any]? = nil
-  ) {
-    NotificationCenter.default.post(
-      name: name,
-      object: nil,
-      userInfo: info
-    )
-  }
 }
 
 public extension DeepLink {
@@ -208,6 +198,8 @@ public extension DeepLink {
 
     case openid4vp
     case credential_offer
+    case haip_vci
+    case haip_vp
     case rqes
     case external
 
@@ -226,9 +218,11 @@ public extension DeepLink {
       and urlSchemaController: UrlSchemaController
     ) -> Action? {
       switch scheme {
-      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme),
+        _ where haip_vp.getSchemas(with: urlSchemaController).contains(scheme):
         return .openid4vp
-      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme),
+        _ where haip_vci.getSchemas(with: urlSchemaController).contains(scheme):
         return .credential_offer
       case _ where rqes.getSchemas(with: urlSchemaController).contains(scheme):
         return .rqes

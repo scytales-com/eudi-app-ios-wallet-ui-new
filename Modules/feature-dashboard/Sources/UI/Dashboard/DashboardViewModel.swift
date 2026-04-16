@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,9 +15,8 @@
  */
 import Foundation
 import logic_ui
-import logic_business
-import logic_core
 import feature_common
+import Observation
 
 @Copyable
 struct DashboardState<Router: RouterHost>: ViewState {
@@ -26,6 +25,8 @@ struct DashboardState<Router: RouterHost>: ViewState {
   let transactionTab: TransactionTabView<Router>?
   let toolBarContent: ToolBarContent
   let navigationTitle: LocalizableStringKey
+  let revokedDocuments: [String: String]
+  let isPaused: Bool
 }
 
 enum SelectedTab {
@@ -34,13 +35,23 @@ enum SelectedTab {
   case transactions
 }
 
+@Observable
 final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardState<Router>> {
 
+  @ObservationIgnored
   private let interactor: DashboardInteractor
-
+  @ObservationIgnored
   private let deepLinkController: DeepLinkController
 
-  @Published var selectedTab: SelectedTab = .home
+  var selectedTab: SelectedTab = .home
+  var isRevokedModalShowing: Bool = false {
+    didSet {
+      debouncedIsRevokedModalShowing.send(isRevokedModalShowing)
+    }
+  }
+
+  @ObservationIgnored
+  private var debouncedIsRevokedModalShowing = CurrentValueSubject<Bool, Never>(false)
 
   init(
     router: Router,
@@ -63,7 +74,9 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
           trailingActions: nil,
           leadingActions: nil
         ),
-        navigationTitle: .custom("")
+        navigationTitle: .custom(""),
+        revokedDocuments: [:],
+        isPaused: false
       )
     )
 
@@ -72,6 +85,78 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
       documentTabInteractor: documentTabInteractor,
       transactionTabInteractor: transactionTabInteractor
     )
+
+    listenForRevokedModalChanges()
+  }
+
+  func handleRevocationNotification(for payload: [AnyHashable: Any]?) {
+    guard
+      let payload,
+      let revokedDocuments = payload as? [String: String],
+      !isRevokedModalShowing,
+      !viewState.isPaused
+    else {
+      return
+    }
+    setState { $0.copy(revokedDocuments: revokedDocuments) }
+    isRevokedModalShowing = true
+  }
+
+  func onDocumentDetails(documentId: String) {
+
+    isRevokedModalShowing = false
+
+    router.push(
+      with: .featureDashboardModule(
+        .documentDetails(id: documentId)
+      )
+    )
+  }
+
+  func setPhase(with phase: ScenePhase) {
+    if phase == .active {
+      onResume()
+    }
+    if phase == .background {
+      onPause()
+    }
+  }
+
+  func onPause() {
+    self.setState { $0.copy(isPaused: true) }
+  }
+
+  func onCreate() async {
+    onResume()
+    await handleDeepLink()
+  }
+
+  private func onResume() {
+    self.setState { $0.copy(isPaused: false) }
+  }
+
+  private func handleDeepLink() async {
+    if let deepLink = deepLinkController.getPendingDeepLinkAction() {
+      deepLinkController.handleDeepLinkAction(
+        routerHost: router,
+        deepLinkExecutable: deepLink,
+        remoteSessionCoordinator: deepLink.requiresCoordinator
+        ? await interactor.getWalletKitController().startSameDevicePresentation(deepLink: deepLink.link)
+        : nil
+      )
+    }
+  }
+
+  private func listenForRevokedModalChanges() {
+    debouncedIsRevokedModalShowing
+      .dropFirst()
+      .removeDuplicates()
+      .sink { [weak self] value in
+        guard let self = self else { return }
+        if !value {
+          self.setState { $0.copy(revokedDocuments: [:]) }
+        }
+      }.store(in: &cancellables)
   }
 
   private func createTabs(
@@ -118,18 +203,6 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
             }
           )
         )
-      )
-    }
-  }
-
-  func handleDeepLink() async {
-    if let deepLink = deepLinkController.getPendingDeepLinkAction() {
-      deepLinkController.handleDeepLinkAction(
-        routerHost: router,
-        deepLinkExecutable: deepLink,
-        remoteSessionCoordinator: deepLink.requiresCoordinator
-        ? await interactor.getWalletKitController().startSameDevicePresentation(deepLink: deepLink.link)
-        : nil
       )
     }
   }

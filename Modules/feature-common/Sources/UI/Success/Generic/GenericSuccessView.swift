@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,17 +19,17 @@ import logic_resources
 
 struct GenericSuccessView<Router: RouterHost>: View {
 
-  @ObservedObject var viewmodel: GenericSuccessViewModel<Router>
+  @State private var viewModel: GenericSuccessViewModel<Router>
 
   init(
-    with viewmodel: GenericSuccessViewModel<Router>) {
-      self.viewmodel = viewmodel
+    with viewModel: GenericSuccessViewModel<Router>) {
+      self._viewModel = State(wrappedValue: viewModel)
     }
 
   var body: some View {
     ContentScreenView {
-      content(viewState: viewmodel.viewState) { button in
-        viewmodel.onButtonClicked(with: button)
+      content(viewState: viewModel.viewState) { button in
+        viewModel.onButtonClicked(with: button)
       }
     }
   }
@@ -42,7 +42,7 @@ private func content(
   onButtonClicked: @escaping (UIConfig.Success.Button) -> Void
 ) -> some View {
 
-  ContentHeader(
+  ContentHeaderView(
     config: ContentHeaderConfig(
       appIconAndTextData: AppIconAndTextData(
         appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
@@ -63,6 +63,7 @@ private func content(
 
     ContentTitleView(
       title: viewState.config.title.value,
+      accessibilityTitle: GenericSuccessLocators.successTitle,
       titleFont: Theme.shared.font.displayLarge,
       caption: viewState.config.subtitle,
       titleColor: viewState.config.title.color,
@@ -78,6 +79,9 @@ private func content(
           style: button.style == .primary ? .primary : .secondary,
           title: button.title,
           onAction: onButtonClicked(button)
+        )
+        .ignoreChilrenAccessibility(
+          locator: GenericSuccessLocators.successPrimaryButton
         )
       }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,11 +19,11 @@ import logic_resources
 
 struct BiometryView<Router: RouterHost>: View {
 
-  @ObservedObject var viewModel: BiometryViewModel<Router>
+  @State private var viewModel: BiometryViewModel<Router>
   @Environment(\.scenePhase) var scenePhase
 
   init(with viewModel: BiometryViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -46,12 +46,12 @@ struct BiometryView<Router: RouterHost>: View {
           secondaryButton: .cancel {}
         )
       }
-      .onChange(of: scenePhase) { phase in
-        self.viewModel.setPhase(with: phase)
+      .onChange(of: scenePhase) {
+        self.viewModel.setPhase(with: scenePhase)
       }
     }
-    .onAppear {
-      self.viewModel.onAppearBiometry()
+    .task {
+      await self.viewModel.onAppearBiometry()
     }
   }
 }
@@ -65,17 +65,19 @@ private func content(
 ) -> some View {
 
   if viewState.config.displayLogo {
-    ContentHeader(
+    ContentHeaderView(
       config: viewState.contentHeaderConfig
     )
   }
 
   ContentTitleView(
     title: viewState.config.title,
+    accessibilityTitle: BiometryLocators.biometryScreenTitle,
     titleWeight: .bold,
     caption: viewState.areBiometricsEnabled
     ? viewState.config.caption
     : viewState.config.quickPinOnlyCaption,
+    accessibilityCaption: BiometryLocators.biometryScreenPinText,
     titleColor: Theme.shared.color.onSurface,
     topSpacing: viewState.isCancellable ? .withToolbar : .withoutToolbar
   )

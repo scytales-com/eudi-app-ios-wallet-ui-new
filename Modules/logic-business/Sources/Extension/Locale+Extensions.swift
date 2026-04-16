@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -27,15 +27,17 @@ public extension Locale {
     "dd/MM/yyyy"
   ]
 
-  private var userSelectedLocale: Locale {
-    guard let identifier = DIGraph.resolver.resolve(PrefsController.self)?.getUserLocale() else {
+  var userSelectedLocale: Locale {
+    guard let identifier = DIGraph.shared.resolver.resolve(PrefsController.self)?.getUserLocale() else {
       return Locale.current
     }
     return Locale(identifier: identifier)
   }
 
   var systemLanguageCode: String? {
-    Locale.current.language.languageCode?.identifier
+    Locale.preferredLanguages.first?
+      .components(separatedBy: "-")
+      .first
   }
 
   func localizedDateTime(
@@ -75,6 +77,20 @@ public extension Locale {
     return parseDateFormatter.string(from: date)
   }
 
+  func parseDate(
+    date: String,
+    formatters: [String] = serviceDateFormatters
+  ) -> Date? {
+    for formatter in formatters {
+      let parseDateFormatter = DateFormatter()
+      parseDateFormatter.dateFormat = formatter
+      if let normalDate = parseDateFormatter.date(from: date) {
+        return normalDate
+      }
+    }
+    return nil
+  }
+
   private func parseDate(
     date: String,
     uiFormatter: DateFormatter,
@@ -93,19 +109,5 @@ public extension Locale {
       return date
     }
     return uiFormatter.string(from: parsedDate)
-  }
-
-  func parseDate(
-    date: String,
-    formatters: [String] = serviceDateFormatters
-  ) -> Date? {
-    for formatter in formatters {
-      let parseDateFormatter = DateFormatter()
-      parseDateFormatter.dateFormat = formatter
-      if let normalDate = parseDateFormatter.date(from: date) {
-        return normalDate
-      }
-    }
-    return nil
   }
 }

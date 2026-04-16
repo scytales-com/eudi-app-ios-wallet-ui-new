@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -23,6 +23,7 @@ public struct WrapListItemView: View {
   }
 
   private let listItem: ListItemData
+  private let locator: LocatorType?
   private let action: (() -> Void)?
   private let mainTextVerticalPadding: CGFloat?
   private let minHeight: Bool
@@ -41,6 +42,7 @@ public struct WrapListItemView: View {
 
   public init(
     listItem: ListItemData,
+    locator: LocatorType? = nil,
     mainTextVerticalPadding: CGFloat? = nil,
     minHeight: Bool = true,
     clickableArea: ClickableArea = .entireRow,
@@ -48,6 +50,7 @@ public struct WrapListItemView: View {
     action: (() -> Void)? = nil
   ) {
     self.listItem = listItem
+    self.locator = locator
     self.mainTextVerticalPadding = mainTextVerticalPadding
     self.minHeight = minHeight
     self.clickableArea = clickableArea
@@ -83,30 +86,72 @@ public struct WrapListItemView: View {
           Text(overlineText)
             .typography(Theme.shared.font.bodySmall)
             .foregroundStyle(listItem.overlineTextColor)
-            .lineLimit(1)
+            .lineLimit(nil)
+            .multilineTextAlignment(.leading)
             .truncationMode(.tail)
         }
 
-        Text(listItem.mainText)
-          .typography(Theme.shared.font.headlineMedium)
-          .foregroundStyle(Theme.shared.color.onSurface)
-          .fontWeight(listItem.mainStyle == .plain ? .medium : .bold)
-          .lineLimit(nil)
-          .multilineTextAlignment(.leading)
-          .truncationMode(.tail)
-          .if(listItem.isBlur) {
-            $0.blur(radius: 4, opaque: false)
+        HStack(spacing: SPACING_SMALL) {
+          switch listItem.mainContent {
+          case .text(let mainText):
+            Text(mainText)
+              .typography(Theme.shared.font.headlineMedium)
+              .foregroundStyle(Theme.shared.color.onSurface)
+              .fontWeight(listItem.mainStyle == .plain ? .medium : .bold)
+              .lineLimit(nil)
+              .multilineTextAlignment(.leading)
+              .truncationMode(.tail)
+              .if(listItem.isBlur) {
+                $0.blur(radius: 4, opaque: false)
+              }
+          case .image(let image):
+            image
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(height: Theme.shared.dimension.remoteImageIconSize)
+              .if(listItem.isBlur) {
+                $0.blur(radius: 4, opaque: false)
+              }
+              .padding(.top, SPACING_EXTRA_SMALL)
           }
+
+          Spacer()
+
+          if let trailingContent = listItem.trailingContent {
+            switch trailingContent {
+            case .textWithIcon(let image, let color, let text):
+              HStack(spacing: SPACING_SMALL) {
+                Text(text)
+                  .font(Theme.shared.font.bodySmall.font)
+                  .foregroundColor(Theme.shared.color.onSurfaceVariant)
+                  .lineLimit(1)
+                  .multilineTextAlignment(.trailing)
+                  .gone(if: text.toString.isEmpty)
+                image
+                  .renderingMode(.template)
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 16, height: 16)
+                  .foregroundColor(color)
+              }
+              .frame(alignment: .trailing)
+              case .empty, .checkbox, .icon:
+                EmptyView()
+            }
+          }
+        }
 
         if let supportingText = listItem.supportingText {
           Text(supportingText)
             .typography(Theme.shared.font.headlineSmall)
             .font(Theme.shared.font.bodyMedium.font)
             .foregroundStyle(listItem.supportingTextColor)
-            .lineLimit(1)
+            .lineLimit(nil)
+            .multilineTextAlignment(.leading)
             .truncationMode(.tail)
         }
       }
+      .layoutPriority(1)
       .frame(maxWidth: .infinity, alignment: .leading)
 
       if let trailingContent = listItem.trailingContent {
@@ -116,11 +161,10 @@ public struct WrapListItemView: View {
             .renderingMode(.template)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 20, height: 20)
+            .frame(width: 16, height: 16)
             .foregroundColor(color)
-
         case .checkbox(let enabled, let isChecked, let onToggle):
-          WrapCheckbox(
+          WrapCheckboxView(
             checkboxData: CheckboxData(
               isChecked: isChecked,
               enabled: enabled,
@@ -131,10 +175,17 @@ public struct WrapListItemView: View {
                   action?()
                 }
               }))
-        case .empty:
+        case .empty, .textWithIcon:
           EmptyView()
         }
       }
+    }
+    .ifLet(locator) { view, locator in
+      view
+        .accessibilityElement()
+        .combineChilrenAccessibility(
+          locator: locator
+        )
     }
     .contentShape(Rectangle())
     .onTapGesture {
@@ -156,7 +207,7 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Main Text"),
+          mainContent: .text(.custom("Main Text")),
           overlineText: .custom("Overline Text"),
           supportingText: .custom("Valid until: 22 March 2030"),
           leadingIcon: LeadingIcon(image: Image(systemName: "star")),
@@ -169,7 +220,7 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Another Item"),
+          mainContent: .text(.custom("Another Item")),
           overlineText: nil,
           supportingText: .custom("Additional Info"),
           leadingIcon: nil
@@ -180,7 +231,7 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Another Item"),
+          mainContent: .text(.custom("Another Item")),
           overlineText: nil,
           supportingText: .custom("Additional Info"),
           leadingIcon: LeadingIcon(image: Image(systemName: "heart"))
@@ -191,7 +242,7 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Another Item"),
+          mainContent: .text(.custom("Another Item")),
           overlineText: .custom("Overline Texr"),
           supportingText: .custom("Additional Info"),
           overlineTextColor: Theme.shared.color.error,
@@ -203,7 +254,7 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Main Text"),
+          mainContent: .text(.custom("Main Text")),
           overlineText: .custom("Overline Text"),
           supportingText: .custom("Valid until: 22 March 2030"),
           leadingIcon: LeadingIcon(image: Image(systemName: "star")),
@@ -216,8 +267,21 @@ public struct WrapListItemView: View {
     WrapCardView {
       WrapListItemView(
         listItem: .init(
-          mainText: .custom("Another Item"),
+          mainContent: .text(.custom("Another Item")),
           trailingContent: .icon(Image(systemName: "plus"))
+        )
+      )
+    }
+
+    WrapCardView {
+      WrapListItemView(
+        listItem: .init(
+          mainContent: .text(.custom("Another Item")),
+          trailingContent: .textWithIcon(
+            Image(systemName: "plus"),
+            Color.accentColor,
+            LocalizableStringKey.custom("Signing")
+          )
         )
       )
     }

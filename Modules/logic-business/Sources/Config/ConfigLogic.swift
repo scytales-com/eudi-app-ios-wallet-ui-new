@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -27,11 +27,6 @@ public enum AppBuildVariant: String, Sendable {
 public protocol ConfigLogic: Sendable {
 
   /**
-   * Wallet base url for direct network operation.
-   */
-  var walletHostUrl: String { get }
-
-  /**
    * Build type.
    */
   var appBuildType: AppBuildType { get }
@@ -55,13 +50,19 @@ public protocol ConfigLogic: Sendable {
    * Changelog URL
    */
   var changelogUrl: URL? { get }
+
+  /**
+   * Wallet requires PID Activation
+   */
+  var forcePidActivation: Bool { get }
+
+  /**
+   * Keychain Configuration
+   */
+  var keyChainConfig: KeyChainConfig { get }
 }
 
 struct ConfigLogicImpl: ConfigLogic {
-
-  public var walletHostUrl: String {
-    getBundleValue(key: "Wallet Host Url")
-  }
 
   public var appBuildType: AppBuildType {
     getBuildType()
@@ -87,5 +88,16 @@ struct ConfigLogicImpl: ConfigLogic {
       return nil
     }
     return url
+  }
+
+  var forcePidActivation: Bool {
+    false
+  }
+
+  var keyChainConfig: KeyChainConfig {
+    KeyChainConfig(
+      documentStorageServiceName: Bundle.getDocumentStorageServiceName(),
+      keychainAccessGroup: Bundle.getKeychainAccessGroup()
+    )
   }
 }

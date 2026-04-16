@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -33,21 +33,25 @@ public final class FeatureDashboardAssembly: Assembly {
       DocumentSignInteractorImpl(configLogic: r.force(ConfigLogic.self))
     }
 
-    container.register(SideMenuInteractor.self) { r in
-      SideMenuInteractorImpl(
+    container.register(SettingsInteractor.self) { r in
+      SettingsInteractorImpl(
         walletController: r.force(WalletKitController.self),
         configLogic: r.force(ConfigLogic.self)
       )
     }
 
-    container.register(TransactionTabInteractor.self) { _ in
-      TransactionTabInteractorImpl()
+    container.register(TransactionTabInteractor.self) { r in
+      TransactionTabInteractorImpl(
+        walletKitController: r.force(WalletKitController.self),
+        filterValidator: r.force(FilterValidator.self)
+      )
     }
 
     container.register(DocumentTabInteractor.self) { r in
       DocumentTabInteractorImpl(
         walletKitController: r.force(WalletKitController.self),
-        filterValidator: r.force(FilterValidator.self)
+        filterValidator: r.force(FilterValidator.self),
+        configLogic: r.force(ConfigLogic.self)
       )
     }
 
@@ -57,5 +61,19 @@ public final class FeatureDashboardAssembly: Assembly {
         reachabilityController: r.force(ReachabilityController.self)
       )
     }
+
+    container.register(DocumentDetailsInteractor.self) { r in
+      DocumentDetailsInteractorImpl(
+        walletController: r.force(WalletKitController.self),
+        prefsController: r.force(PrefsController.self),
+        configLogic: r.force(ConfigLogic.self)
+      )
+    }
+    .inObjectScope(ObjectScope.transient)
+
+    container.register(TransactionDetailsInteractor.self) { r in
+      TransactionDetailsInteractorImpl(walletController: r.force(WalletKitController.self))
+    }
+    .inObjectScope(ObjectScope.transient)
   }
 }

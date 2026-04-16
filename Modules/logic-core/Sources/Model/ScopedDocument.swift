@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -17,12 +17,14 @@
 public struct ScopedDocument: Equatable, Sendable {
   public let name: String
   public let issuer: String
+  public let order: Int
   public let configId: String
   public let isPid: Bool
+  public let docTypeIdentifier: DocumentTypeIdentifier
 }
 
 public extension ScopedDocument {
   static func empty() -> ScopedDocument {
-    .init(name: "", issuer: "", configId: "", isPid: false)
+    .init(name: "", issuer: "", order: 0, configId: "", isPid: false, docTypeIdentifier: .mDocPid)
   }
 }

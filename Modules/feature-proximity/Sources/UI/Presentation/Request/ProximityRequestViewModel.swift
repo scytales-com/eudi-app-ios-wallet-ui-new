@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,14 +13,14 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
 import feature_common
-import logic_business
+import logic_core
 
 final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<Router> {
 
   private let interactor: ProximityInteractor
   private var publisherTask: Task<Void, Error>?
+  private var coordinator: ProximitySessionCoordinator?
 
   init(
     router: Router,
@@ -31,30 +31,14 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
     super.init(router: router, originator: originator)
   }
 
-  func subscribeToCoordinatorPublisher() async {
-    switch self.interactor.getSessionStatePublisher() {
-    case .success(let publisher):
-      for try await state in publisher {
-        switch state {
-        case .error(let error):
-          self.onError(with: error)
-        default:
-          ()
-        }
-      }
-    case .failure(let error):
-      self.onError(with: error)
-    }
-  }
-
   override func doWork() async {
 
     self.onStartLoading()
     self.startPublisherTask()
 
-    let state = await Task.detached { () -> ProximityRequestPartialState in
-      return await self.interactor.onRequestReceived()
-    }.value
+    await self.getCoordinator()
+
+    let state = await interactor.onRequestReceived()
 
     switch state {
     case .success(let items, let relyingParty, _, let isTrusted):
@@ -81,8 +65,8 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
           )
         )
       }
-    case .failure:
-      self.onEmptyDocuments()
+    case .failure(let error):
+      self.onEmptyDocuments(error: error.errorMessage)
     }
   }
 
@@ -91,9 +75,7 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
 
       let items = self.viewState.items
 
-      let response = await Task.detached { () -> ProximityResponsePreparationPartialState in
-        return await self.interactor.onResponsePrepare(requestItems: items)
-      }.value
+      let response = await interactor.onResponsePrepare(requestItems: items)
 
       switch response {
       case .success:
@@ -110,33 +92,30 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
 
   override func getSuccessRoute() -> AppRoute? {
     publisherTask?.cancel()
-    return switch interactor.getCoordinator() {
-    case .success(let proximitySessionCoordinator):
-        .featureCommonModule(
-          .biometry(
-            config: UIConfig.Biometry(
-              navigationTitle: .biometryConfirmRequest,
-              caption: .requestDataShareBiometryCaption,
-              quickPinOnlyCaption: .requestDataShareQuickPinCaption,
-              navigationSuccessType: .push(
-                .featureProximityModule(
-                  .proximityLoader(
-                    relyingParty: getRelyingParty().toString,
-                    relyingPartyisTrusted: getRelyingPartyIsTrusted(),
-                    presentationCoordinator: proximitySessionCoordinator,
-                    originator: getOriginator(),
-                    items: viewState.items.filterSelectedRows()
-                  )
-                )
-              ),
-              navigationBackType: .pop,
-              isPreAuthorization: false,
-              shouldInitializeBiometricOnCreate: true
+    guard let coordinator = self.coordinator else { return nil }
+    return .featureCommonModule(
+      .biometry(
+        config: UIConfig.Biometry(
+          navigationTitle: .biometryConfirmRequest,
+          caption: .requestDataShareBiometryCaption,
+          quickPinOnlyCaption: .requestDataShareQuickPinCaption,
+          navigationSuccessType: .push(
+            .featureProximityModule(
+              .proximityLoader(
+                relyingParty: getRelyingParty().toString,
+                relyingPartyisTrusted: getRelyingPartyIsTrusted(),
+                presentationCoordinator: coordinator,
+                originator: getOriginator(),
+                items: viewState.items.filterSelectedRows()
+              )
             )
-          )
+          ),
+          navigationBackType: .pop,
+          isPreAuthorization: false,
+          shouldInitializeBiometricOnCreate: true
         )
-    case .failure: nil
-    }
+      )
+    )
   }
 
   override func getPopRoute() -> AppRoute? {
@@ -177,9 +156,32 @@ final class ProximityRequestViewModel<Router: RouterHost>: BaseRequestViewModel<
       publisherTask = Task {
         await self.subscribeToCoordinatorPublisher()
       }
-      Task {
-        try? await self.publisherTask?.value
+      Task { try? await self.publisherTask?.value }
+    }
+  }
+
+  private func subscribeToCoordinatorPublisher() async {
+    switch await self.interactor.getSessionStatePublisher() {
+    case .success(let publisher):
+      for try await state in publisher {
+        switch state {
+        case .error(let error):
+          self.onError(with: error)
+        default:
+          ()
+        }
       }
+    case .failure(let error):
+      self.onError(with: error)
+    }
+  }
+
+  private func getCoordinator() async {
+    return switch await interactor.getCoordinator() {
+    case .success(let proximitySessionCoordinator):
+      self.coordinator = proximitySessionCoordinator
+    case .failure:
+      self.coordinator = nil
     }
   }
 }

@@ -1,11 +1,11 @@
-// swift-tools-version: 6.0.0
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
   name: "logic-business",
-  platforms: [.iOS(.v16)],
+  platforms: [.iOS(.v17)],
   products: [
     .library(
       name: "logic-business",
@@ -15,11 +15,11 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/kishikawakatsumi/KeychainAccess.git",
-      from: "3.0.0"
+      from: "4.0.0"
     ),
     .package(
-      url: "https://github.com/iziz/libPhoneNumber-iOS.git",
-      branch: "master"
+      url: "https://github.com/marmelroy/PhoneNumberKit",
+      from: "4.2.0"
     ),
     .package(
       url: "https://github.com/nsagora/peppermint",
@@ -39,11 +39,11 @@ let package = Package(
     ),
     .package(
       url: "https://github.com/eu-digital-identity-wallet/SwiftCopyableMacro.git",
-      from: "0.0.3"
+      from: "0.0.4"
     ),
     .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-rqes-ui.git",
-      exact: "0.1.9"
+      exact: "0.3.9"
     ),
     .package(name: "logic-test", path: "./logic-test")
   ],
@@ -55,13 +55,10 @@ let package = Package(
         "KeychainAccess",
         "BluetoothKit",
         "Swinject",
+        "PhoneNumberKit",
         .product(
           name: "Peppermint",
           package: "peppermint"
-        ),
-        .product(
-          name: "libPhoneNumber",
-          package: "libPhoneNumber-iOS"
         ),
         .product(
           name: "Copyable",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,89 +13,57 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import RealmSwift
+import Foundation
 
 public protocol BookmarkStorageController: StorageController where Value == Bookmark {}
 
-final class BookmarkStorageControllerImpl: BookmarkStorageController {
+final actor BookmarkStorageControllerImpl: BookmarkStorageController {
 
-  private let realmService: RealmService
+  private let swiftDataService: SwiftDataService
 
-  init(realmService: RealmService) {
-    self.realmService = realmService
+  init(swiftDataService: SwiftDataService) {
+    self.swiftDataService = swiftDataService
   }
 
-  func store(_ value: Bookmark) throws {
-    let realm = try realmService.get()
-    let realmValue = value.toRealmBookmark()
-    try realm.write {
-      realm.add(realmValue, update: .all)
+  func store(_ value: Bookmark) async throws {
+    try await swiftDataService.write(value.toSdModel())
+  }
+
+  func store(_ values: [Bookmark]) async throws {
+    try await swiftDataService.writeAll(values.toSdModels())
+  }
+
+  func update(_ value: Bookmark) async throws {
+    try await swiftDataService.write(value.toSdModel())
+  }
+
+  func retrieve(_ identifier: String) async throws -> Bookmark {
+    let bookmark = try await swiftDataService.read(
+      predicate: #Predicate<SDBookmark> { $0.identifier == identifier }
+    ) {
+      $0.toBookmark()
     }
-  }
-
-  func store(_ values: [Bookmark]) throws {
-    let realm = try realmService.get()
-    let realmValues = values.toRealmBookmarks()
-    try realm.write {
-      realm.add(realmValues, update: .all)
-    }
-  }
-
-  func update(_ value: Bookmark) throws {
-    let realm = try realmService.get()
-    let realmValue = value.toRealmBookmark()
-    try realm.write {
-      realm.add(realmValue, update: .modified)
-    }
-  }
-
-  func retrieve(_ identifier: String) throws -> Bookmark {
-    let realm = try realmService.get()
-    guard
-      let bookmark = realm.object(
-        ofType: RealmBookmark.self,
-        forPrimaryKey: identifier
-      )?.toBookmark()
-    else {
+    guard let bookmark else {
       throw StorageError.itemNotFound
     }
     return bookmark
   }
 
-  func retrieveAll() throws -> [Bookmark] {
-    let realm = try realmService.get()
-    let bookmarks = realm.objects(RealmBookmark.self)
+  func retrieveAll() async throws -> [Bookmark] {
+    let bookmarks = try await swiftDataService.readAll(SDBookmark.self) { $0.toBookmark() }
     guard !bookmarks.isEmpty else {
       throw StorageError.itemsNotFound
     }
-    return bookmarks.toList().toBookmarks()
+    return bookmarks
   }
 
-  func delete(_ identifier: String) throws {
-    let realm = try realmService.get()
-
-    guard
-      let value = realm.object(
-        ofType: RealmBookmark.self,
-        forPrimaryKey: identifier
-      )
-    else {
-      return
-    }
-
-    try realm.write {
-      realm.delete(value)
-    }
+  func delete(_ identifier: String) async throws {
+    try await swiftDataService.delete(
+      predicate: #Predicate<SDBookmark> { $0.identifier == identifier }
+    )
   }
 
-  func deleteAll() throws {
-    let realm = try realmService.get()
-    let values = realm.objects(RealmBookmark.self)
-    guard !values.isEmpty else {
-      return
-    }
-    try realm.write {
-      realm.delete(values)
-    }
+  func deleteAll() async throws {
+    try await swiftDataService.deleteAll(of: SDBookmark.self)
   }
 }

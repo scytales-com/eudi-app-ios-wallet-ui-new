@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,16 +16,15 @@
 import SwiftUI
 import logic_resources
 import logic_ui
-import logic_core
 
 struct DocumentTabView<Router: RouterHost>: View {
 
   @Environment(\.scenePhase) private var scenePhase
 
-  @ObservedObject private var viewModel: DocumentTabViewModel<Router>
+  @State private var viewModel: DocumentTabViewModel<Router>
 
   public init(with viewModel: DocumentTabViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -34,7 +33,7 @@ struct DocumentTabView<Router: RouterHost>: View {
       searchQuery: $viewModel.searchQuery,
       onAction: { item in
         switch item.value.state {
-        case .issued:
+        case .issued, .revoked:
           viewModel.onDocumentDetails(documentId: item.value.id)
         case .pending, .failed:
           viewModel.onDeleteDeferredDocument(with: item)
@@ -53,44 +52,46 @@ struct DocumentTabView<Router: RouterHost>: View {
         viewModel.updateFilters(sectionID: sectionID, filterID: filterID)
       }
     }
-    .confirmationDialog(
+    .dialogCompat(
       .issuanceDetailsDeletionTitle([viewModel.viewState.pendingDocumentTitle]),
       isPresented: $viewModel.isDeleteDeferredModalShowing,
-      titleVisibility: .visible
-    ) {
-      Button(.no, role: .cancel) {}
-      Button(.yes) {
-        viewModel.deleteDeferredDocument()
-      }
-    } message: {
-      Text(.issuanceDetailsDeletionCaption([viewModel.viewState.pendingDocumentTitle]))
-    }
-    .sheetDialog(isPresented: $viewModel.isSuccededDocumentsModalShowing) {
-      SheetContentView {
-        VStack(spacing: SPACING_MEDIUM) {
-
-          ContentTitleView(
-            title: .deferredDocumentsIssuedModalTitle,
-            caption: .defferedDocumentsIssuedModalCaption
-          )
-
-          deferredSuccessList(
-            state: viewModel.viewState,
-            onDocumentDetails: {
-              viewModel.onDocumentDetails(documentId: $0)
-            }
-          )
+      actions: {
+        Button(.no, role: .cancel) {}
+        Button(.yes, role: .destructive) {
+          viewModel.deleteDeferredDocument()
         }
+      },
+      message: {
+        Text(.issuanceDetailsDeletionCaption([viewModel.viewState.pendingDocumentTitle]))
+      }
+    )
+    .sheetDialog(isPresented: $viewModel.isSuccededDocumentsModalShowing) {
+      VStack(spacing: .zero) {
+
+        ContentTitleView(
+          title: .deferredDocumentsIssuedModalTitle,
+          caption: .defferedDocumentsIssuedModalCaption
+        )
+
+        deferredSuccessList(
+          state: viewModel.viewState,
+          onDocumentDetails: {
+            viewModel.onDocumentDetails(documentId: $0)
+          }
+        )
       }
     }
-    .onChange(of: scenePhase) { phase in
-      viewModel.setPhase(with: phase)
+    .onChange(of: scenePhase) {
+      viewModel.setPhase(with: scenePhase)
     }
     .onAppear {
       viewModel.onCreate()
     }
     .onDisappear {
       viewModel.onPause()
+    }
+    .onReceive(NotificationCenter.default.publisher(for: NSNotification.DocumentTabRefresh)) { _ in
+      viewModel.handleRefreshotification()
     }
   }
 }
@@ -100,74 +101,65 @@ struct DocumentTabView<Router: RouterHost>: View {
 private func content(
   state: DocumentTabState,
   searchQuery: Binding<String>,
-  onAction: @escaping (DocumentUIModel) -> Void
+  onAction: @escaping (DocumentTabUIModel) -> Void
 ) -> some View {
   VStack {
     if state.documents.isEmpty && !searchQuery.wrappedValue.isEmpty {
-      contentUnavailableView()
+      ContentUnavailableView(
+        title: .noResults,
+        description: .noResultsDocumentsDescription
+      )
     } else if !state.documents.isEmpty {
-      List {
-        ForEach(state.documents.keys.sorted(by: { $0.order < $1.order }), id: \.self) { category in
-          Section(header: Text(category.title)) {
+
+      ScrollView {
+        LazyVStack(alignment: .leading, spacing: .zero) {
+
+          ForEach(state.documents.keys.sorted(by: { $0.order < $1.order }), id: \.self) { category in
+
+            WrapTextView(
+              text: category.title,
+              textConfig: TextConfig(
+                font: Theme.shared.font.bodySmall.font,
+                color: Theme.shared.color.onSurface,
+                textAlign: .leading,
+                fontWeight: .semibold
+              )
+            )
+            .padding(.horizontal, SPACING_MEDIUM)
+            .padding(.top, SPACING_SMALL)
+
             ForEach(state.documents[category] ?? []) { item in
               WrapCardView {
                 WrapListItemView(listItem: item.listItem) {
                   onAction(item)
                 }
               }
-              .listRowSeparator(.hidden)
+              .padding(.horizontal, SPACING_MEDIUM)
+              .padding(.top, SPACING_SMALL)
             }
-            .listRowInsets(.init(
-              top: SPACING_SMALL,
-              leading: SPACING_MEDIUM,
-              bottom: .zero,
-              trailing: SPACING_MEDIUM)
-            )
           }
         }
+        .padding(.bottom, SPACING_MEDIUM)
       }
       .shimmer(isLoading: state.isLoading)
-      .listStyle(.plain)
       .scrollIndicators(.hidden)
-      .clipped()
+
     } else if !state.isLoading {
-      contentUnavailableView()
+      ContentUnavailableView(
+        title: .noResults,
+        description: .noResultsDocumentsDescription
+      )
     } else {
-      loader()
+      ContentLoaderView(showLoader: .constant(true))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
   }
   .searchable(
     searchText: searchQuery,
-    backgroundColor: Theme.shared.color.background,
-    onSearchTextChange: { _ in }
+    placeholder: .searchDocuments,
+    backgroundColor: Theme.shared.color.background
   )
   .background(Theme.shared.color.background)
-}
-
-@MainActor
-@ViewBuilder
-private func loader() -> some View {
-  Spacer()
-  ContentLoaderView(showLoader: .constant(true))
-  Spacer()
-}
-
-@MainActor
-@ViewBuilder
-private func contentUnavailableView() -> some View {
-  VStack(spacing: SPACING_SMALL) {
-    Text(.noResults)
-      .typography(Theme.shared.font.titleLarge)
-      .fontWeight(.bold)
-
-    Text(.noResultsDescription)
-      .typography(Theme.shared.font.bodyLarge)
-      .foregroundStyle(Theme.shared.color.onSurface)
-      .multilineTextAlignment(.center)
-  }
-  .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-  .padding(.top, SPACING_LARGE_MEDIUM)
-  .padding(.horizontal, SPACING_MEDIUM)
 }
 
 @MainActor
@@ -191,7 +183,7 @@ private func deferredSuccessList(
           .foregroundStyle(Theme.shared.color.primary)
       }
       .padding()
-      .background(Theme.shared.color.background)
+      .background(Theme.shared.color.surfaceContainer)
       .clipShape(.rect(cornerRadius: 8))
       .onTapGesture {
         onDocumentDetails(item.value.id)
@@ -210,7 +202,7 @@ private func deferredSuccessList(
     pendingDeletionDocument: nil,
     succededIssuedDocuments: [],
     failedDocuments: [],
-    isFromOnPause: false,
+    isPaused: false,
     hasDefaultFilters: false
   )
   content(

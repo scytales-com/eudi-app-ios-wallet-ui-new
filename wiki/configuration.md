@@ -9,6 +9,7 @@
 * [Theme configuration](#theme-configuration)
 * [Pin Storage configuration](#pin-storage-configuration)
 * [Analytics configuration](#analytics-configuration)
+* [Document Provider extension configuration](#document-provider-extension-configuration)
 
 ## General configuration
 
@@ -23,10 +24,10 @@ public protocol WalletKitConfig {
   /**
    * VCI Configuration
    */
-  var vciConfig: VciConfig { get }
+  var issuersConfig: [String: VciConfig] { get }
 }
 ```
-Based on the Build Variant of the Wallet (e.g. Dev)
+Based on the Build Variant of the Wallet (e.g., Dev)
 
 ```swift
 struct WalletKitConfigImpl: WalletKitConfig {
@@ -37,26 +38,82 @@ struct WalletKitConfigImpl: WalletKitConfig {
     self.configLogic = configLogic
   }
 
-  var vciConfig: VciConfig {
-    return switch configLogic.appBuildVariant {
+  var issuersConfig: [String: VciConfig] {
+  let openId4VciConfigurations: [OrderedVciConfig] = {
+    switch configLogic.appBuildVariant {
+      case .DEMO:
+        return [
+          .init(
+            config: .init(
+                credentialIssuerURL: "your_demo_issuer_url",
+                clientId: "your_demo_client_id_or_nil",
+                keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+                authFlowRedirectionURI: URL(string: "your_demo_redirect")!,
+                requirePAR: should_use_par_bool,
+                useDPoP: should_use_dpop_bool,
+                requireDpop: should_use_dpop_bool,
+                cacheIssuerMetadata: should_cache_metadata_bool
+            ),
+            order: issuer_order_int
+          )
+        ]
+            
+        case .DEV:
+          return [
+            .init(
+              config: .init(
+                  credentialIssuerURL: "your_dev_issuer_url",
+                  clientId: "your_dev_client_id_or_nil",
+                  keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+                  authFlowRedirectionURI: URL(string: "your_dev_redirect")!,
+                  requirePAR: should_use_par_bool,
+                  requireDpop: should_use_dpop_bool,
+                  cacheIssuerMetadata: should_cache_metadata_bool
+              ),
+              order: issuer_order_int
+            )
+          ]
+        }
+    }()
+
+	// ...
+	}
+}
+```
+
+2. Wallet Attestation Provider
+
+Via the *WalletKitAttestationConfig* protocol inside the logic-core module.
+
+```swift
+protocol WalletProviderAttestationConfig: Sendable {
+  var walletProviderAttestationUrl: String { get }
+}
+```
+
+Based on the Build Variant of the Wallet (e.g., Dev)
+
+```swift
+final class WalletProviderAttestationConfigImpl: WalletProviderAttestationConfig {
+
+  let configLogic: ConfigLogic
+
+  init(configLogic: ConfigLogic) {
+    self.configLogic = configLogic
+  }
+
+  var walletProviderAttestationUrl: String {
+    switch configLogic.appBuildVariant {
     case .DEMO:
-        .init(
-          issuerUrl: "your_demo_url",
-          clientId: "your_demo_clientid",
-          redirectUri: URL(string: "your_demo_redirect")!
-        )
+      "your_demo_wallet_provider_host"
     case .DEV:
-        .init(
-          issuerUrl: "your_dev_url",
-          clientId: "your_dev_clientid",
-          redirectUri: URL(string: "your_dev_redirect")!
-        )
+      "your_dev_wallet_provider_host"
     }
   }
 }
 ```
 
-2. Trusted certificates
+3. Trusted certificates
 
 Via the *WalletKitConfig* protocol inside the logic-core module.
 
@@ -65,13 +122,7 @@ public protocol WalletKitConfig {
   /**
    * Reader Configuration
    */
-  var readerConfig: ReaderConfig { get }
-}
-```
-
-```swift
-public struct ReaderConfig {
-  public let trustedCerts: [Data]
+  var trustedReaderRootCertificates: [x5chain] { get }
 }
 ```
 
@@ -80,24 +131,70 @@ The *WalletKitConfigImpl* implementation of the *WalletKitConfig* protocol can b
 The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui/tree/main/Wallet/Sample)
 
 ```swift
-  var readerConfigConfig: ReaderConfig {
-    guard let cert = Data(name: "eudi_pid_issuer_ut", ext: "der") else {
-      return .init(trustedCerts: [])
-    }
-    return .init(trustedCerts: [cert])
+  var trustedReaderRootCertificates: [x5chain] {
+    let certificates = [
+      "pidissuerca02_cz",
+      "pidissuerca02_ee",
+      "pidissuerca02_eu",
+      "pidissuerca02_lu",
+      "pidissuerca02_nl",
+      "pidissuerca02_pt",
+      "pidissuerca02_ut",
+      "r45_staging"
+    ]
+    return certificates
+      .compactMap { loadCertificate($0) }
+      .map { [$0] }
   }
 ```
 
-3. Preregistered Client Scheme
+4. VP API
 
-If you plan to use the Preregistered for OpenId4VP configuration, please add the following to the *WalletKitConfigImpl* initializer.
+Via the *WalletKitConfig* protocol inside the logic-core module.
 
 ```swift
-wallet.verifierApiUri = "your_verifier_url"
-wallet.verifierLegalName = "your_verifier_legal_name"
+public protocol WalletKitConfig {
+  /**
+   * VP Configuration
+   */
+  var vpConfig: OpenId4VpConfiguration { get }
+}
 ```
 
-4. RQES
+The preregistered scheme is optional. If you want to use it, please add the following: the `SiopOpenID4VP` import and the `.preregistered` option in the `clientIdSchemes` array.
+
+```swift
+import SiopOpenID4VP
+
+struct WalletKitConfigImpl: WalletKitConfig {
+
+  let configLogic: ConfigLogic
+
+  init(configLogic: ConfigLogic) {
+    self.configLogic = configLogic
+  }
+
+  var vpConfig: OpenId4VpConfiguration {
+    .init(
+      clientIdSchemes: [
+        .x509SanDns,
+        .x509Hash,
+        .preregistered(
+          [
+            PreregisteredClient(
+              clientId: "your_verifier_id",
+              verifierApiUri: "your_verifier_url",
+              verifierLegalName: "your_verifier_legal_name"
+            )
+          ]
+        )
+      ]
+    )
+  }
+}
+```
+
+5. RQES
 
 Via the *RQESConfig* struct, which implements the *EudiRQESUiConfig* protocol from the RQESUi SDK, inside the logic-business module.
 
@@ -117,8 +214,6 @@ final class RQESConfig: EudiRQESUiConfig {
   // Optional. Default is false.
   var printLogs: Bool
 
-  var rQESConfig: RqesServiceConfig
-
   // Optional. Default English translations will be used if not set.
   var translations: [String : [LocalizableKey : String]]
 
@@ -127,7 +222,7 @@ final class RQESConfig: EudiRQESUiConfig {
 }
 ```
 
-Based on the Build Variant and Type of the Wallet (e.g. Dev Debug)
+Based on the Build Variant and Type of the Wallet (e.g., Dev Debug)
 
 ```swift
 final class RQESConfig: EudiRQESUiConfig {
@@ -146,16 +241,26 @@ final class RQESConfig: EudiRQESUiConfig {
       [
         .init(
           name: "your_dev_name",
-          uri: URL(string: "your_dev_uri")!,
-          scaURL: "your_dev_sca"
+          rsspId: "your_dev_rssp",
+          tsaUrl: "your_dev_tsa",
+          clientId: "your_dev_clientid",
+          clientSecret: "your_dev_secret",
+          authFlowRedirectionURI: "your_dev_redirect",
+          hashAlgorithm: .SHA256,
+          includeRevocationInfo: false
         )
       ]
     case .DEMO:
       [
         .init(
           name: "your_demo_name",
-          uri: URL(string: "your_demo_uri")!,
-          scaURL: "your_demo_sca"
+          rsspId: "your_demo_rssp",
+          tsaUrl: "your_demo_tsa",
+          clientId: "your_demo_clientid",
+          clientSecret: "your_demo_secret",
+          authFlowRedirectionURI: "your_demo_redirect",
+          hashAlgorithm: .SHA256,
+          includeRevocationInfo: false
         )
       ]
     }
@@ -164,33 +269,31 @@ final class RQESConfig: EudiRQESUiConfig {
   var printLogs: Bool {
     buildType == .DEBUG
   }
+}
+```
 
-  var rQESConfig: RqesServiceConfig {
-    return switch buildVariant {
-    case .DEV:
-        .init(
-          clientId: "your_dev_clientid",
-          clientSecret: "your_dev_secret",
-          authFlowRedirectionURI: "your_dev_redirect",
-          hashAlgorithm: .SHA256
-        )
-    case .DEMO:
-        .init(
-          clientId: "your_demo_clientid",
-          clientSecret: "your_demo_secret",
-          authFlowRedirectionURI: "your_demo_redirect",
-          hashAlgorithm: .SHA256
-        )
-    }
-  }
+6. Wallet Activation
+
+You can enable or disable the PID Wallet Activation flow. If you choose to enable this feature, the Wallet will not be operational until a PID is issued.
+With this feature disabled, there are no such limitations, and the Wallet can operate without a PID being issued beforehand.
+
+Via the *ConfigLogic* protocol inside the logic-business module.
+
+```swift
+public protocol ConfigLogic: Sendable {
+
+  /**
+   * Wallet requires PID Activation
+   */
+  var forcePidActivation: Bool { get }
 }
 ```
 
 ## DeepLink Schemas configuration
 
-According to the specifications issuance and presentation require deep-linking for the same device flows.
+According to the specifications, issuance, presentation, and RQES require deep-linking for the same device flows.
 
-If you want to change or add your own you can do it by adjusting the *Wallet.plist* file.
+If you want to change or add your own, you can do it by adjusting the *Wallet.plist* file.
 
 ```xml
 <array>
@@ -204,13 +307,16 @@ If you want to change or add your own you can do it by adjusting the *Wallet.pli
 			<string>eudi-openid4vp</string>
 			<string>mdoc-openid4vp</string>
 			<string>openid4vp</string>
+			<string>haip-vp</string>
 			<string>openid-credential-offer</string>
+			<string>haip-vci</string>
+			<string>rqes</string>
 		</array>
 	</dict>
 </array>
 ```
 
-Let's assume you want to add a new one for the credential offer (e.g. custom-my-offer://) the *Wallet.plist* should look like this:
+Let's assume you want to add a new one for the credential offer (e.g., custom-my-offer://), the *Wallet.plist* should look like this:
 
 ```xml
 <array>
@@ -224,7 +330,10 @@ Let's assume you want to add a new one for the credential offer (e.g. custom-my-
 			<string>eudi-openid4vp</string>
 			<string>mdoc-openid4vp</string>
 			<string>openid4vp</string>
+			<string>haip-vp</string>
 			<string>openid-credential-offer</string>
+			<string>haip-vci</string>
+			<string>rqes</string>
 			<string>custom-my-offer</string>
 		</array>
 	</dict>
@@ -240,7 +349,10 @@ public extension DeepLink {
   enum Action: String, Equatable {
 
     case openid4vp
+	case haip_vp
     case credential_offer
+	case haip_vci
+    case rqes
     case external
 
     static func parseType(
@@ -248,10 +360,14 @@ public extension DeepLink {
       and urlSchemaController: UrlSchemaController
     ) -> Action? {
       switch scheme {
-      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme),
+		_ where haip_vp.getSchemas(with: urlSchemaController).contains(scheme):
         return .openid4vp
-      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme),
+		_ where haip_vci.getSchemas(with: urlSchemaController).contains(scheme):
         return .credential_offer
+      case _ where rqes.getSchemas(with: urlSchemaController).contains(scheme):
+        return .rqes
       default:
         return .external
       }
@@ -267,7 +383,10 @@ public extension DeepLink {
   enum Action: String, Equatable {
 
     case openid4vp
+	case haip_vp
     case credential_offer
+	case haip_vci
+    case rqes
     case custom_my_offer
     case external
 
@@ -276,12 +395,15 @@ public extension DeepLink {
       and urlSchemaController: UrlSchemaController
     ) -> Action? {
       switch scheme {
-      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where openid4vp.getSchemas(with: urlSchemaController).contains(scheme),
+		_ where haip_vp.getSchemas(with: urlSchemaController).contains(scheme):
         return .openid4vp
-      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme):
+      case _ where credential_offer.getSchemas(with: urlSchemaController).contains(scheme),
+		_ where haip_vci.getSchemas(with: urlSchemaController).contains(scheme),
+		_ where custom_my_offer.getSchemas(with: urlSchemaController).contains(scheme):
         return .credential_offer
-      case _ where custom_my_offer.getSchemas(with: urlSchemaController).contains(scheme):
-        return .credential_offer
+      case _ where rqes.getSchemas(with: urlSchemaController).contains(scheme):
+        return .rqes
       default:
         return .external
       }
@@ -302,7 +424,7 @@ This section describes configuring the application to interact with services uti
 Add these lines of code to the top of the file *WalletKitController*, inside the logic-core module, just below the import statements. 
 
 ```swift
-class SelfSignedDelegate: NSObject, URLSessionDelegate {
+final class SelfSignedDelegate: NSObject, URLSessionDelegate {
   func urlSession(
     _ session: URLSession,
     didReceive challenge: URLAuthenticationChallenge,
@@ -333,13 +455,15 @@ let walletSession: URLSession = {
 }()
 ```
 
-Once the above is in place add the following:
+Once the above is in place, adjust the initializer:
 
 ```swift
-wallet.urlSession = walletSession
+guard let walletKit = try? EudiWallet(serviceName: configLogic.documentStorageServiceName, networking: walletSession) else {
+  fatalError("Unable to Initialize WalletKit")
+}
 ```
 
-in the initializer. This change will allow the app to interact with web services that rely on self-signed certificates.
+This change will allow the app to interact with web services that rely on self-signed certificates.
 
 ## Theme configuration
 
@@ -413,7 +537,7 @@ container.register(PinStorageProvider.self) { r in
 
 The application allows the configuration of multiple analytics providers. You can configure the following:
 
-1. Initializing the provider (e.g. Firebase, Appcenter, etc...)
+1. Initializing the provider (e.g., Firebase, Appcenter, etc)
 2. Screen logging
 3. Event logging
 
@@ -428,9 +552,9 @@ protocol AnalyticsConfig {
 }
 ```
 
-You can provide your implementation by implementing the *AnalyticsProvider* protocol and then adding it to your *AnalyticsConfigImpl* analyticsProviders variable.
+You can implement the *AnalyticsProvider* protocol and add it to your *AnalyticsConfigImpl* analyticsProviders variable.
 You will also need the provider's token/key, thus requiring a [String: AnalyticsProvider] configuration.
-The project utilizes Dependency Injection (DI), thus requiring adjustment of the *LogicAnalyticsAssembly* graph to provide the configuration.
+The project uses Dependency Injection (DI), which requires adjusting the *LogicAnalyticsAssembly* graph to provide the configuration.
 
 Implementation Example:
 
@@ -476,3 +600,82 @@ container.register(AnalyticsConfig.self) { _ in
 }
 .inObjectScope(ObjectScope.graph)
 ```
+
+## Document Provider extension configuration
+
+This section explains how the Identity Document Provider extension is wired and how to configure `SHARED_APP_GROUP_IDENTIFIER`.
+
+### Why `SHARED_APP_GROUP_IDENTIFIER` matters
+
+The extension reads Wallet data through `DcApiHandler`, which is initialized with:
+
+- a shared keychain access group
+- a shared document storage service name
+
+The keychain access group for the extension is defined in `EudiReferenceWalletIDProvider/EudiReferenceWalletIDProvider.entitlements` as:
+
+```xml
+<key>keychain-access-groups</key>
+<array>
+  <string>$(AppIdentifierPrefix)$(SHARED_APP_GROUP_IDENTIFIER)</string>
+</array>
+```
+
+`SHARED_APP_GROUP_IDENTIFIER` must match the main app's effective keychain group for the same build configuration (Dev or Demo), otherwise the extension cannot access the same keychain-backed wallet context.
+
+### Step-by-step setup
+
+1. **Set `SHARED_APP_GROUP_IDENTIFIER` for all extension build configurations**
+
+In the extension target build settings (`EudiReferenceWallet.xcodeproj/project.pbxproj`), ensure `SHARED_APP_GROUP_IDENTIFIER` is set for:
+
+- Debug Dev
+- Release Dev
+- Debug Demo
+- Release Demo
+
+Current values in this repository:
+
+- Dev: `eu.europa.ec.euidi.dev`
+- Demo: `eu.europa.ec.euidi`
+
+2. **Ensure extension entitlements use that value**
+
+In `EudiReferenceWalletIDProvider/EudiReferenceWalletIDProvider.entitlements`, keep:
+
+```xml
+<string>$(AppIdentifierPrefix)$(SHARED_APP_GROUP_IDENTIFIER)</string>
+```
+
+3. **Ensure the main app has matching keychain sharing**
+
+In `EudiWallet.entitlements`, the main app uses:
+
+```xml
+<string>$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+```
+
+For Dev/Demo setups in this project, `PRODUCT_BUNDLE_IDENTIFIER` of the main app maps to the same logical identifiers (`eu.europa.ec.euidi.dev` / `eu.europa.ec.euidi`), so the group stays aligned with the extension.
+
+4. **Verify extension DI initialization**
+
+The extension entry point is `EudiReferenceWalletIDProvider/DocumentProviderExtension.swift`.
+
+At startup it initializes `DocumentProviderDIContainer`, which assembles `LogicIDPModule`. `LogicIDPModule` creates `DcApiHandler` with:
+
+- `serviceName`: derived by `Bundle.getDocumentStorageServiceName()`
+- `accessGroup`: derived by `Bundle.getKeychainAccessGroup()`
+
+5. **Verify registration from wallet to extension**
+
+In `Modules/logic-core/Sources/Controller/WalletKitController.swift`, documents are registered to `IdentityDocumentProviderRegistrationStore` (iOS 26+) through `DocumentRegistrationManager`.
+
+Only CBOR documents are registered (`document.docDataFormat == .cbor`), which controls what the extension can serve for Identity Document requests.
+
+### Validation checklist
+
+- Wallet app and extension both sign correctly with your Team ID.
+- Extension target has `EudiReferenceWalletIDProvider.entitlements` assigned.
+- `SHARED_APP_GROUP_IDENTIFIER` is present for all extension configurations.
+- Main app and extension resolve to the same runtime keychain access group.
+- On iOS 26+, registered CBOR documents appear in the extension request flow.

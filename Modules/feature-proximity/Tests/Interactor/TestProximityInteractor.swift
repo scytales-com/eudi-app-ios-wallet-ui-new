@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -62,18 +62,42 @@ final class TestProximityInteractor: EudiTest {
     self.presentationSessionCoordinator = nil
   }
   
-  func testOnDeviceEngagement_WhenInteractorMethodCalled_ThenVerifyCoordinatorInitializedAndState() async {
+  func testOnDeviceEngagement_WhenCoordinatorInitializeSuccess_ThenVerifyCoordinatorInitializedAndState() async {
     // Given
     stub(presentationSessionCoordinator) { mock in
       when(mock.initialize()).thenDoNothing()
     }
     // When
-    await interactor.onDeviceEngagement()
+    let state = await interactor.onDeviceEngagement()
     // Then
+    switch state {
+    case .success:
+      XCTAssertTrue(true)
+    default:
+      XCTFail("Wrong state \(state)")
+    }
     verify(presentationSessionCoordinator).initialize()
   }
   
-  func testGetSessionStatePublisher_WhenInteractorMethodCalledAndCoordinatorIsValid_ThenVerifyStateSuccess() async {
+  func testOnDeviceEngagement_WhenCoordinatorInitializeThrowsError_ThenVerifyStateError() async {
+    // Given
+    let expectedError = RuntimeError.genericError
+    stub(presentationSessionCoordinator) { mock in
+      when(mock.initialize()).thenThrow(expectedError)
+    }
+    // When
+    let state = await interactor.onDeviceEngagement()
+    // Then
+    switch state {
+    case .failure(let error):
+      XCTAssertEqual(expectedError.localizedDescription, error.localizedDescription)
+    default:
+      XCTFail("Wrong state \(state)")
+    }
+    verify(presentationSessionCoordinator).initialize()
+  }
+  
+  func testGetSessionStatePublisher_WhenCoordinatorIsValid_ThenVerifyStateSuccess() async {
     // Given
     let sendableCurrentValueSubject: SendableCurrentValueSubject<PresentationState> = SendableCurrentValueSubject(.loading)
     let stream: AsyncStream<PresentationState> = AsyncStream { completion in }
@@ -85,7 +109,7 @@ final class TestProximityInteractor: EudiTest {
       when(mock.getStream()).thenReturn(stream)
     }
     // When
-    let state = interactor.getSessionStatePublisher()
+    let state = await interactor.getSessionStatePublisher()
     // Then
     switch state {
     case .success:
@@ -95,14 +119,17 @@ final class TestProximityInteractor: EudiTest {
     }
   }
   
-  func testGetSessionStatePublisher_WhenInteractorMethodCalledAndCoordinatorIsNotValid_ThenVerifyStateFailure() async {
+  func testGetSessionStatePublisher_WhenCoordinatorIsNotValid_ThenVerifyStateFailure() async {
     // Given
     let expectedError = RuntimeError.genericError
     stub(sessionHolder) { mock in
       when(mock.getActiveProximityCoordinator()).thenThrow(expectedError)
     }
+    stub(sessionHolder) { mock in
+      when(mock.setActiveProximityCoordinator(any())).thenDoNothing()
+    }
     // When
-    let state = interactor.getSessionStatePublisher()
+    let state = await interactor.getSessionStatePublisher()
     // Then
     switch state {
     case .failure(let error):
@@ -112,9 +139,9 @@ final class TestProximityInteractor: EudiTest {
     }
   }
   
-  func testGetCoordinator_WhenInteractorMethodCalledAndCoordinatorIsValid_ThenVerifyStateSuccess() async {
+  func testGetCoordinator_WhenCoordinatorIsValid_ThenVerifyStateSuccess() async {
     // When
-    let state = interactor.getCoordinator()
+    let state = await interactor.getCoordinator()
     // Then
     switch state {
     case .success:
@@ -124,14 +151,14 @@ final class TestProximityInteractor: EudiTest {
     }
   }
   
-  func testGetCoordinator_WhenInteractorMethodCalledAndCoordinatorIsNotValid_ThenVerifyStateSuccess() async {
+  func testGetCoordinator_WhenCoordinatorIsNotValid_ThenVerifyStateSuccess() async {
     // Given
     let expectedError = RuntimeError.genericError
     stub(sessionHolder) { mock in
       when(mock.getActiveProximityCoordinator()).thenThrow(expectedError)
     }
     // When
-    let state = interactor.getCoordinator()
+    let state = await interactor.getCoordinator()
     // Then
     switch state {
     case .failure(let error):
@@ -208,13 +235,13 @@ final class TestProximityInteractor: EudiTest {
     verify(presentationSessionCoordinator).startQrEngagement()
   }
   
-  func testStopPresentation_WhenInteractorMethodCalled_ThenVerifyWalletKitControllerStopPresentation() async {
+  func testStopPresentation_WhenWalletKitControllerStopPresenation_ThenVerifyWalletKitControllerStopPresentation() async {
     // Given
     stub(walletKitController) { mock in
       when(mock.stopPresentation()).thenDoNothing()
     }
     // When
-    interactor.stopPresentation()
+    await interactor.stopPresentation()
     // Then
     verify(walletKitController).stopPresentation()
   }
@@ -255,6 +282,8 @@ final class TestProximityInteractor: EudiTest {
       )
     }
     
+    stubFetchRevokedDocuments(with: [])
+    
     // When
     let state = await interactor.onRequestReceived()
     
@@ -277,6 +306,8 @@ final class TestProximityInteractor: EudiTest {
     stub(presentationSessionCoordinator) { mock in
       when(mock.requestReceived()).thenThrow(expectedError)
     }
+    
+    stubFetchRevokedDocuments(with: [])
     
     // When
     let state = await interactor.onRequestReceived()
@@ -306,8 +337,8 @@ final class TestProximityInteractor: EudiTest {
     
     // Then
     switch state {
-    case .success(let items):
-      XCTAssertEqual(items.asRequestItems(), expectedRequestItems)
+    case .success(let request):
+      XCTAssertEqual(request.items, expectedRequestItems)
     default:
       XCTFail("Wrong state \(state)")
     }
@@ -416,6 +447,135 @@ final class TestProximityInteractor: EudiTest {
     verify(presentationSessionCoordinator, times(0)).getState()
     verify(presentationSessionCoordinator, times(0)).sendResponse(response: any())
   }
+
+  func testOnResponsePrepare_WhenGetActiveProximityCoordinatorThrowsError_ThenVerifyFailureState() async {
+    // Given
+    let expectedError = RuntimeError.genericError
+    let validRequestItems = Self.mockUiModels()
+
+    stub(sessionHolder) { mock in
+      when(mock.getActiveProximityCoordinator()).thenThrow(expectedError)
+    }
+
+    // When
+    let state = await interactor.onResponsePrepare(requestItems: validRequestItems)
+
+    // Then
+    switch state {
+    case .failure(let error):
+      XCTAssertEqual(error.localizedDescription, expectedError.localizedDescription)
+    default:
+      XCTFail("Expected failure state, got \(state)")
+    }
+  }
+
+  func testOnSendResponse_WhenGetActiveProximityCoordinatorThrowsError_ThenVerifyFailureState() async {
+    // Given
+    let presetationState: PresentationState = .responseToSend(Self.mockRequestItems)
+    let expectedError = PresentationSessionError.invalidState
+
+    stub(sessionHolder) { mock in
+      when(
+        mock.getActiveProximityCoordinator()
+      )
+      .thenReturn(presentationSessionCoordinator)
+      .thenThrow(expectedError)
+    }
+
+    stub(presentationSessionCoordinator) { mock in
+      when(mock.getState()).thenReturn(presetationState)
+    }
+
+    // When
+    let state = await interactor.onSendResponse()
+
+    // Then
+    switch state {
+    case .failure(let error):
+      XCTAssertEqual(
+        error.localizedDescription,
+        expectedError.localizedDescription
+      )
+    default:
+      XCTFail("Expected failure state, got \(state)")
+    }
+  }
+
+  func testOnRequestReceived_WhenAllDocumentsAreRevoked_ThenVerifyFailureState() async {
+    // Given
+    let mockResponse = Self.mockPresentationRequest
+    let revokedDocIds = mockResponse.items.map { $0.docId }
+
+    stub(presentationSessionCoordinator) { mock in
+      when(mock.requestReceived()).thenReturn(mockResponse)
+    }
+    stub(walletKitController) { mock in
+      when(mock.fetchRevokedDocuments()).thenReturn(revokedDocIds)
+    }
+
+    // When
+    let state = await interactor.onRequestReceived()
+
+    // Then
+    switch state {
+    case .failure(let error):
+      XCTAssertEqual(
+        error.localizedDescription,
+        WalletCoreError.unableFetchDocuments.localizedDescription
+      )
+    default:
+      XCTFail("Expected failure state, got \(state)")
+    }
+  }
+
+  func testOnRequestReceived_WhenFetchRevokedDocumentsThrowsAndItemsNotEmpty_ThenVerifySuccessState() async {
+    // Given
+    let mockResponse = Self.mockPresentationRequest
+
+    stub(presentationSessionCoordinator) { mock in
+      when(mock.requestReceived()).thenReturn(mockResponse)
+    }
+
+    stub(walletKitController) { mock in
+      when(mock.fetchRevokedDocuments()).thenThrow(RuntimeError.genericError)
+    }
+
+    stub(walletKitController) { mock in
+      when(
+        mock.parseDocClaim(
+          docId: any(),
+          groupId: any(),
+          docClaim: any(),
+          type: any(),
+          parser: any()
+        )
+      ).thenReturn(
+       [
+        .primitive(
+          id: Constants.randomIdentifier,
+          title: "elementIdentifier",
+          documentId: Constants.isoMdlModelId,
+          nameSpace: "nameSpace",
+          path: ["elementIdentifier"],
+          type: .mdoc,
+          value: .string("value"),
+          status: .available(isRequired: false)
+        )
+       ]
+      )
+    }
+
+    // When
+    let state = await interactor.onRequestReceived()
+
+    // Then
+    switch state {
+    case .success:
+      XCTAssertTrue(true)
+    default:
+      XCTFail("Expected success state, got \(state)")
+    }
+  }
 }
 
 private extension TestProximityInteractor {
@@ -442,7 +602,7 @@ private extension TestProximityInteractor {
             .single(
               .init(
                 collapsed: .init(
-                  mainText: .custom("value"),
+                  mainContent: .text(.custom("value")),
                   overlineText: .custom("elementIdentifier"),
                   isEnable: true,
                   trailingContent: .checkbox(
@@ -467,4 +627,10 @@ private extension TestProximityInteractor {
       ]
     ]
   ]
+  
+  func stubFetchRevokedDocuments(with revokedDocuments: [String]) {
+    stub(walletKitController) { mock in
+      when(mock.fetchRevokedDocuments()).thenReturn(revokedDocuments)
+    }
+  }
 }

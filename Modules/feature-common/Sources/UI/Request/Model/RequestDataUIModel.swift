@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,7 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 import SwiftUI
-import logic_business
 import logic_core
 import logic_ui
 import Copyable
@@ -153,18 +152,7 @@ public extension Array where Element == RequestDataUiModel {
             guard let path = claim.domainModel?.path else {
               return []
             }
-            let claimPath = path.compactMap {
-              return if !$0.isEmpty {
-                $0
-              } else {
-                nil
-              }
-            }
-            return if let path = claimPath.last {
-              [path]
-            } else {
-              claimPath
-            }
+            return path
           default:
             return []
           }
@@ -179,9 +167,9 @@ public extension Array where Element == RequestDataUiModel {
         }
 
         let requestItem: RequestItem = .init(elementPath: path)
-        var nameSpaceDict = partialResult.requestItems[documentId, default: [nameSpace: [requestItem]]]
+        var nameSpaceDict = partialResult.items[documentId, default: [nameSpace: [requestItem]]]
         nameSpaceDict[nameSpace, default: [requestItem]].appendIfNotExists(requestItem)
-        partialResult.requestItems[documentId] = nameSpaceDict
+        partialResult.items[documentId] = nameSpaceDict
       }
 
     return requestConvertible
@@ -299,7 +287,7 @@ public extension RequestDataUiModel {
             .single(
               .init(
                 collapsed: ListItemData(
-                  mainText: .custom("Tzouvaras"),
+                  mainContent: .text(.custom("Tzouvaras")),
                   overlineText: .custom("Family Name")
                 ),
                 domainModel: nil
@@ -308,7 +296,7 @@ public extension RequestDataUiModel {
             .single(
               .init(
                 collapsed: ListItemData(
-                  mainText: .custom("Stilianos"),
+                  mainContent: .text(.custom("Stilianos")),
                   overlineText: .custom("First Name")
                 ),
                 domainModel: nil
@@ -317,7 +305,7 @@ public extension RequestDataUiModel {
             .single(
               .init(
                 collapsed: ListItemData(
-                  mainText: .custom("21-09-1985"),
+                  mainContent: .text(.custom("21-09-1985")),
                   overlineText: .custom("Date of Birth")
                 ),
                 domainModel: nil
@@ -326,7 +314,7 @@ public extension RequestDataUiModel {
             .single(
               .init(
                 collapsed: ListItemData(
-                  mainText: .custom("Greece"),
+                  mainContent: .text(.custom("Greece")),
                   overlineText: .custom("Resident")
                 ),
                 domainModel: nil
@@ -451,7 +439,7 @@ private extension DocumentElementClaim {
     case .group(let id, let title, let items):
       return .nested(
         .init(
-          collapsed: .init(groupId: id, mainText: .custom(title)),
+          collapsed: .init(groupId: id, mainContent: .text(.custom(title))),
           expanded: items.compactMap { $0.toExpandableListItem() },
           isExpanded: false
         )
@@ -472,7 +460,7 @@ private extension DocumentElementClaim {
           .init(
             collapsed: .init(
               groupId: id,
-              mainText: .custom(value),
+              mainContent: .text(.custom(value)),
               overlineText: .custom(title),
               isEnable: !status.isRequired,
               trailingContent: .checkbox(
@@ -485,22 +473,41 @@ private extension DocumentElementClaim {
           )
         )
       case .image(let image):
-        return .single(
-          .init(
-            collapsed: .init(
-              groupId: id,
-              mainText: .custom(title),
-              leadingIcon: .init(image: image),
-              isEnable: !status.isRequired,
-              trailingContent: .checkbox(
-                !status.isRequired && status.isAvailable,
-                status.isAvailable,
-                { _ in }
-              )
-            ),
-            domainModel: self
+        if path?.last == DocumentJsonKeys.SIGNATURE {
+          return .single(
+            .init(
+              collapsed: .init(
+                groupId: id,
+                mainContent: .image(image),
+                overlineText: .custom(title),
+                isEnable: !status.isRequired,
+                trailingContent: .checkbox(
+                  !status.isRequired && status.isAvailable,
+                  status.isAvailable,
+                  { _ in }
+                )
+              ),
+              domainModel: self
+            )
           )
-        )
+        } else {
+          return .single(
+            .init(
+              collapsed: .init(
+                groupId: id,
+                mainContent: .text(.custom(title)),
+                leadingIcon: .init(image: image),
+                isEnable: !status.isRequired,
+                trailingContent: .checkbox(
+                  !status.isRequired && status.isAvailable,
+                  status.isAvailable,
+                  { _ in }
+                )
+              ),
+              domainModel: self
+            )
+          )
+        }
       case .unavailable:
         return nil
       }

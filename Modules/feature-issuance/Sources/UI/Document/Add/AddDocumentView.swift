@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -21,12 +21,12 @@ import logic_core
 
 struct AddDocumentView<Router: RouterHost>: View {
 
-  @ObservedObject var viewModel: AddDocumentViewModel<Router>
+  @State private var viewModel: AddDocumentViewModel<Router>
 
-  var contentSize: CGFloat = 0.0
+  private var contentSize: CGFloat = 0.0
 
   init(with viewModel: AddDocumentViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
     self.contentSize = getScreenRect().width / 2.0
   }
 
@@ -39,9 +39,18 @@ struct AddDocumentView<Router: RouterHost>: View {
       isLoading: viewModel.viewState.isLoading,
       toolbarContent: viewModel.toolbarContent()
     ) {
-
-      content(viewState: viewModel.viewState) { type in
-        viewModel.onClick(for: type)
+      if viewModel.viewState.addDocumentCellModels.isEmpty {
+        noDocumentsFound()
+      } else {
+        content(
+          viewState: viewModel.viewState
+        ) { issuerId, configIds, identifier in
+          viewModel.onClick(
+            issuerId: issuerId,
+            configIds: configIds,
+            docTypeIdentifier: identifier
+          )
+        }
       }
 
       if viewModel.viewState.showFooterScanner {
@@ -65,23 +74,47 @@ struct AddDocumentView<Router: RouterHost>: View {
 @ViewBuilder
 private func content(
   viewState: AddDocumentViewState,
-  action: @escaping (String) -> Void
+  action: @escaping (String, [String], DocumentTypeIdentifier) -> Void
 ) -> some View {
+
   ScrollView {
-    VStack(spacing: SPACING_LARGE_MEDIUM) {
+    LazyVStack(spacing: SPACING_MEDIUM_SMALL) {
 
       Text(.chooseFromListTitle)
         .typography(Theme.shared.font.bodyLarge)
         .foregroundStyle(Theme.shared.color.onSurface)
+        .accessibilityLocator(AddDocumentLocators.subtitle)
 
-      VStack(spacing: SPACING_MEDIUM_SMALL) {
-        ForEach(viewState.addDocumentCellModels) { cell in
-          WrapCardView {
-            WrapListItemView(
-              listItem: cell.listItem,
-              isLoading: cell.isLoading,
-              action: { action(cell.configId) }
+      ForEach(viewState.addDocumentCellModels.elements, id: \.key) { pair in
+
+        let issuer = pair.key
+        let models = pair.value
+
+        Section(
+          header: WrapTextView(
+            text: .custom(issuer),
+            textConfig: TextConfig(
+              font: Theme.shared.font.bodySmall.font,
+              color: Theme.shared.color.onSurface,
+              textAlign: .leading,
+              fontWeight: .semibold
             )
+          )
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .shimmer(isLoading: viewState.isLoading)
+          .padding(.top, SPACING_MEDIUM_SMALL)
+        ) {
+          ForEach(models, id: \.id) { cell in
+            WrapCardView {
+              WrapListItemView(
+                listItem: cell.listItem,
+                locator: AddDocumentLocators.attestation(
+                  "\(cell.issuerId)_\(cell.docTypeIdentifier)"
+                ),
+                isLoading: cell.isLoading,
+                action: { action(cell.issuerId, cell.configIds, cell.docTypeIdentifier) }
+              )
+            }
           }
         }
       }
@@ -89,6 +122,24 @@ private func content(
     .padding(.horizontal, Theme.shared.dimension.padding)
     .padding(.bottom)
   }
+  .disabled(viewState.addDocumentCellModels.allSatisfy { $0.value.isEmpty })
+}
+
+@MainActor
+@ViewBuilder
+private func noDocumentsFound() -> some View {
+  VStack(spacing: .zero) {
+    Text(.chooseFromListTitle)
+      .typography(Theme.shared.font.bodyLarge)
+      .foregroundStyle(Theme.shared.color.onSurface)
+
+    Spacer()
+    ContentEmptyView(
+      title: .issuanceAddDocumentNoOptions
+    )
+    Spacer()
+  }
+  .padding(.horizontal, Theme.shared.dimension.padding)
 }
 
 @MainActor
@@ -129,6 +180,9 @@ private func scanFooter(
       isLoading: viewState.isLoading,
       onAction: action()
     )
+    .combineChilrenAccessibility(
+      locator: AddDocumentLocators.primaryButton
+    )
 
     Spacer()
 
@@ -147,7 +201,9 @@ private func scanFooter(
     showFooterScanner: true
   )
 
-  content(viewState: viewState) { _ in }
+  content(
+    viewState: viewState
+  ) { _, _, _ in }
 }
 
 #Preview {

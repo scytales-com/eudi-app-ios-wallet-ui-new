@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,12 +19,12 @@ import logic_resources
 
 struct ProximityConnectionView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: ProximityConnectionViewModel<Router>
+  @State private var viewModel: ProximityConnectionViewModel<Router>
 
   var contentSize: CGFloat = 0.0
 
   init(with viewModel: ProximityConnectionViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
     self.contentSize = getScreenRect().width / 1.5
   }
 
@@ -33,7 +33,7 @@ struct ProximityConnectionView<Router: RouterHost>: View {
       padding: .zero,
       errorConfig: viewModel.viewState.error,
       navigationTitle: .authenticate,
-      toolbarContent: toolbarContent()
+      toolbarContent: viewModel.toolbarContent()
     ) {
       content(
         viewState: viewModel.viewState,
@@ -43,17 +43,6 @@ struct ProximityConnectionView<Router: RouterHost>: View {
     .task {
       await viewModel.initialize()
     }
-  }
-
-  func toolbarContent() -> ToolBarContent {
-    .init(
-      trailingActions: [],
-      leadingActions: [
-        Action(image: Theme.shared.image.chevronLeft) {
-          viewModel.pop()
-        }
-      ]
-    )
   }
 }
 
@@ -99,16 +88,13 @@ private func content(
 @ViewBuilder
 private func nfcFooter(contentSize: CGFloat) -> some View {
   VStack(alignment: .center, spacing: SPACING_SMALL) {
-    Text(.orShareViaNfc)
-      .typography(Theme.shared.font.bodyLarge)
-      .foregroundStyle(Theme.shared.color.onSurface)
 
-    Theme.shared.image.nfc
+    Theme.shared.image.ble
       .resizable()
       .scaledToFit()
       .frame(width: 36, height: 36)
 
-    Text(.proximityConnectionNfcDescription)
+    Text(.proximityConnectionBleDescription)
       .typography(Theme.shared.font.bodyMedium)
       .foregroundStyle(Theme.shared.color.onSurface)
   }

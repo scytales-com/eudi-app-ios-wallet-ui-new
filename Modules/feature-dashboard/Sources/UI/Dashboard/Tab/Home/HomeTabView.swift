@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,17 +16,15 @@
 import SwiftUI
 import logic_ui
 import logic_resources
-import feature_common
-import logic_business
 
 struct HomeTabView<Router: RouterHost>: View {
 
   @Environment(\.scenePhase) private var scenePhase
 
-  @ObservedObject private var viewModel: HomeTabViewModel<Router>
+  @State private var viewModel: HomeTabViewModel<Router>
 
   init(with viewModel: HomeTabViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -44,34 +42,41 @@ struct HomeTabView<Router: RouterHost>: View {
       isPresented: $viewModel.isAuthenticateModalShowing,
       titleVisibility: .visible
     ) {
-      Button(.cancelButton, role: .cancel) {}
       Button(.inPerson) {
         viewModel.onShare()
       }
+      .accessibilityLocator(HomeTabViewLocators.inPersonButton)
+
       Button(.online) {
         viewModel.onShowScanner()
       }
+      .accessibilityLocator(HomeTabViewLocators.onlineButton)
+
+      Button(.cancelButton, role: .destructive) {}
+        .accessibilityLocator(HomeTabViewLocators.cancelButton)
     } message: {
       Text(.authenticateAuthoriseTransactions)
     }
-    .confirmationDialog(
+    .dialogCompat(
       .bleDisabledModalTitle,
       isPresented: $viewModel.isBleModalShowing,
-      titleVisibility: .visible
-    ) {
-      Button(.cancelButton, role: .cancel) {}
-      Button(.bleDisabledModalButton) {
-        viewModel.onBleSettings()
+      actions: {
+        Button(.bleDisabledModalButton) {
+          viewModel.onBleSettings()
+        }
+        Button(.cancelButton, role: .cancel) {}
+      },
+      message: {
+        Text(.bleDisabledModalCaption)
       }
-    } message: {
-      Text(.bleDisabledModalCaption)
+    )
+    .onChange(of: scenePhase) {
+      self.viewModel.setPhase(with: scenePhase)
     }
-    .onChange(of: scenePhase) { phase in
-      self.viewModel.setPhase(with: phase)
+    .task {
+      await viewModel.onCreate()
     }
-    .onAppear {
-      viewModel.onCreate()
-    }
+    .background(Theme.shared.color.background)
   }
 }
 
@@ -88,16 +93,20 @@ private func content(
 ) -> some View {
   ScrollView {
     VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
-      ContentHeader(
+      ContentHeaderView(
         config: viewState.contentHeaderConfig
       )
 
-      Text(.welcomeBack([viewState.username]))
-        .font(Theme.shared.font.titleMedium.font)
-        .foregroundStyle(Theme.shared.color.onSurface)
+      if let username = viewState.username {
+        Text(.welcomeBack([username]))
+          .font(Theme.shared.font.titleMedium.font)
+          .foregroundStyle(Theme.shared.color.onSurface)
+          .accessibilityLocator(HomeTabViewLocators.userNameText)
+      }
 
       HomeCardView(
         text: LocalizableStringKey.authenticateAuthoriseTransactions,
+        locator: HomeTabViewLocators.authenticateAuthoriseTransactions,
         buttonText: LocalizableStringKey.authenticate,
         illustration: Theme.shared.image.homeIdentity,
         learnMoreText: LocalizableStringKey.learnMore,
@@ -110,12 +119,14 @@ private func content(
         isPresented: isAuthenticateAlertShowing,
         title: .alertAccessOnlineServices,
         message: .alertAccessOnlineServicesMessage,
-        buttonText: .okButton,
-        onDismiss: nil
+        actions: {
+          Button(.okButton, role: .cancel) {}
+        }
       )
 
       HomeCardView(
         text: LocalizableStringKey.electronicallySignDigitalDocuments,
+        locator: HomeTabViewLocators.electronicallySignDigitalDocuments,
         buttonText: LocalizableStringKey.signDocument,
         illustration: Theme.shared.image.homeContract,
         learnMoreText: LocalizableStringKey.learnMore,
@@ -128,13 +139,15 @@ private func content(
         isPresented: isSignDocumentAlertShowing,
         title: .alertSignDocumentsSafely,
         message: .alertSignDocumentsSafelyMessage,
-        buttonText: .okButton,
-        onDismiss: nil
+        actions: {
+          Button(.okButton, role: .cancel) {}
+        }
       )
     }
     .padding(.horizontal, SPACING_MEDIUM)
+    .padding(.bottom, SPACING_MEDIUM)
   }
-  .clipped()
+  .background(Theme.shared.color.background)
 }
 
 #Preview {

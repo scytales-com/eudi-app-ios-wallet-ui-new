@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -27,8 +27,8 @@ private extension Constants {
   
   static let pkb64 = "pQECIAEhWCBoHIiBQnDRMLUT4yOLqJ1l8mrfNIgrjNnFq4RyZgxSmiJYIGD/Sabu6GejaR4eTiym1JkyjnBNcJ+f59pN+lCEyhVyI1ggC6EPCKyGci++LGWUX3fXpPFW6pYO8pyyKLMKs1qF0jo="
   static let kcSks = KeyChainSecureKeyStorage(serviceName: "name", accessGroup: "Group")
-  static let pk = CoseKeyPrivate(privateKeyId: pkb64, secureArea: SoftwareSecureArea.create(storage: kcSks))
-  static let dr = DeviceResponse(data: Constants.sampleCborData.bytes)!
+  static let pk = CoseKeyPrivate(privateKeyId: pkb64, index: 0, secureArea: SoftwareSecureArea.create(storage: kcSks))
+  static let dr = try! DeviceResponse(data: Constants.sampleCborData.bytes)
 }
 
 extension Constants {
@@ -43,70 +43,160 @@ extension Constants {
   static let documentCreatedAt = Date()
   static let claimExpiredAt = Date()
   
-  static let isoMdlModel = GenericMdocModel(
-    id: isoMdlModelId,
-    createdAt: documentCreatedAt,
-    docType: dr.documents!.first!.issuerSigned.issuerAuth.mso.docType,
-    displayName: isoMdlName,
-    display: nil,
-    issuerDisplay: nil,
-    credentialIssuerIdentifier: nil,
-    configurationIdentifier: nil,
-    validFrom: nil,
-    validUntil: nil,
-    modifiedAt: nil,
-    docClaims: [
-      .init(
-        name: DocumentJsonKeys.EXPIRY_DATE,
-        dataValue: .date(claimExpiredAt.formatted()),
-        stringValue: claimExpiredAt.formatted()
-      ),
-      .init(
-        name: DocumentJsonKeys.FIRST_NAME,
-        dataValue: .string(claimFirstName),
-        stringValue: claimFirstName
-      ),
-      .init(
-        name: DocumentJsonKeys.LAST_NAME,
-        dataValue: .string(claimLastName),
-        stringValue: claimLastName
-      )
-    ],
-    docDataFormat: .cbor,
-    hashingAlg: nil
+  private struct TestMdocModel: DocClaimsDecodable {
+    var id: String
+    var createdAt: Date
+    var modifiedAt: Date?
+    var displayName: String?
+    var display: [MdocDataModel18013.DisplayMetadata]?
+    var issuerDisplay: [MdocDataModel18013.DisplayMetadata]?
+    var credentialIssuerIdentifier: String?
+    var configurationIdentifier: String?
+    var docType: String
+    var docClaims: [MdocDataModel18013.DocClaim]
+    var docDataFormat: MdocDataModel18013.DocDataFormat
+    var validFrom: Date?
+    var validUntil: Date?
+    var statusIdentifier: MdocDataModel18013.StatusIdentifier?
+    var secureAreaName: String?
+    var credentialsUsageCounts: MdocDataModel18013.CredentialsUsageCounts?
+    var credentialPolicy: MdocDataModel18013.CredentialPolicy
+    var ageOverXX: [Int : Bool]
+  }
+  
+  static func createEuPidModel(credentialsUsageCounts: CredentialsUsageCounts? = nil) -> any DocClaimsDecodable {
+    return TestMdocModel(
+      id: euPidModelId,
+      createdAt: documentCreatedAt,
+      modifiedAt: nil,
+      displayName: euPidName,
+      display: nil,
+      issuerDisplay: nil,
+      credentialIssuerIdentifier: nil,
+      configurationIdentifier: nil,
+      docType: dr.documents!.last!.issuerSigned.issuerAuth.mso.docType,
+      docClaims: [
+        .init(
+          name: DocumentJsonKeys.EXPIRY_DATE,
+          dataValue: .date(claimExpiredAt.formatted()),
+          stringValue: claimExpiredAt.formatted()
+        ),
+        .init(
+          name: DocumentJsonKeys.FIRST_NAME,
+          dataValue: .string(claimFirstName),
+          stringValue: claimFirstName
+        ),
+        .init(
+          name: DocumentJsonKeys.LAST_NAME,
+          dataValue: .string(claimLastName),
+          stringValue: claimLastName
+        )
+      ],
+      docDataFormat: .cbor,
+      validFrom: nil,
+      validUntil: nil,
+      statusIdentifier: nil,
+      secureAreaName: nil,
+      credentialsUsageCounts: credentialsUsageCounts,
+      credentialPolicy: .oneTimeUse,
+      ageOverXX: [:]
+    )
+  }
+  
+  static func createIsoMdlModel(credentialsUsageCounts: CredentialsUsageCounts? = nil) -> any DocClaimsDecodable {
+    return TestMdocModel(
+      id: isoMdlModelId,
+      createdAt: documentCreatedAt,
+      modifiedAt: nil,
+      displayName: isoMdlName,
+      display: nil,
+      issuerDisplay: nil,
+      credentialIssuerIdentifier: nil,
+      configurationIdentifier: nil,
+      docType: dr.documents!.first!.issuerSigned.issuerAuth.mso.docType,
+      docClaims: [
+        .init(
+          name: DocumentJsonKeys.EXPIRY_DATE,
+          dataValue: .date(claimExpiredAt.formatted()),
+          stringValue: claimExpiredAt.formatted()
+        ),
+        .init(
+          name: DocumentJsonKeys.FIRST_NAME,
+          dataValue: .string(claimFirstName),
+          stringValue: claimFirstName
+        ),
+        .init(
+          name: DocumentJsonKeys.LAST_NAME,
+          dataValue: .string(claimLastName),
+          stringValue: claimLastName
+        )
+      ],
+      docDataFormat: .cbor,
+      validFrom: nil,
+      validUntil: nil,
+      statusIdentifier: nil,
+      secureAreaName: nil,
+      credentialsUsageCounts: credentialsUsageCounts,
+      credentialPolicy: .oneTimeUse,
+      ageOverXX: [:]
+    )
+  }
+  
+  private static let documentMetaData: Data? =
+  try? "{\"display\":[{\"backgroundColor\":\"\",\"logo\":{},\"textColor\":\"\",\"name\":\"PID (SD-JWT VC Compact) (deferred)\",\"localeIdentifier\":\"en\",\"description\":\"\"}],\"claims\":[{\"isMandatory\":true,\"claimPath\":[\"family_name\"],\"display\":[{\"description\":\"\",\"localeIdentifier\":\"en\",\"name\":\"Family Name(s)\",\"logo\":{},\"textColor\":\"\",\"backgroundColor\":\"\"}]},{\"isMandatory\":true,\"claimPath\":[\"given_name\"],\"display\":[{\"backgroundColor\":\"\",\"textColor\":\"\",\"name\":\"Given Name(s)\",\"localeIdentifier\":\"en\",\"logo\":{},\"description\":\"\"}]},{\"isMandatory\":true,\"claimPath\":[\"birthdate\"],\"display\":[{\"description\":\"\",\"name\":\"Birth Date\",\"textColor\":\"\",\"logo\":{},\"backgroundColor\":\"\",\"localeIdentifier\":\"en\"}]},{\"isMandatory\":true,\"claimPath\":[\"place_of_birth\"],\"display\":[{\"localeIdentifier\":\"en\",\"logo\":{},\"description\":\"\",\"name\":\"Birth Place\",\"backgroundColor\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":true,\"claimPath\":[\"place_of_birth\",\"locality\"],\"display\":[{\"localeIdentifier\":\"en\",\"logo\":{},\"backgroundColor\":\"\",\"name\":\"Locality\",\"textColor\":\"\",\"description\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"place_of_birth\",\"region\"],\"display\":[{\"textColor\":\"\",\"description\":\"\",\"localeIdentifier\":\"en\",\"logo\":{},\"backgroundColor\":\"\",\"name\":\"Region\"}]},{\"isMandatory\":false,\"claimPath\":[\"place_of_birth\",\"country\"],\"display\":[{\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"logo\":{},\"description\":\"\",\"textColor\":\"\",\"name\":\"Country\"}]},{\"isMandatory\":true,\"claimPath\":[\"nationalities\"],\"display\":[{\"localeIdentifier\":\"en\",\"description\":\"\",\"name\":\"Nationality\",\"logo\":{},\"backgroundColor\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\"],\"display\":[{\"logo\":{},\"textColor\":\"\",\"name\":\"Address\",\"localeIdentifier\":\"en\",\"description\":\"\",\"backgroundColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"house_number\"],\"display\":[{\"textColor\":\"\",\"description\":\"\",\"localeIdentifier\":\"en\",\"backgroundColor\":\"\",\"name\":\"House Number\",\"logo\":{}}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"street_address\"],\"display\":[{\"logo\":{},\"description\":\"\",\"name\":\"Street\",\"localeIdentifier\":\"en\",\"backgroundColor\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"locality\"],\"display\":[{\"logo\":{},\"localeIdentifier\":\"en\",\"textColor\":\"\",\"name\":\"Locality\",\"description\":\"\",\"backgroundColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"region\"],\"display\":[{\"localeIdentifier\":\"en\",\"description\":\"\",\"textColor\":\"\",\"logo\":{},\"backgroundColor\":\"\",\"name\":\"Region\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"postal_code\"],\"display\":[{\"description\":\"\",\"backgroundColor\":\"\",\"name\":\"Postal Code\",\"localeIdentifier\":\"en\",\"logo\":{},\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"country\"],\"display\":[{\"textColor\":\"\",\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"name\":\"Country\",\"logo\":{},\"description\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"address\",\"formatted\"],\"display\":[{\"logo\":{},\"textColor\":\"\",\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"description\":\"\",\"name\":\"Full Address\"}]},{\"isMandatory\":false,\"claimPath\":[\"personal_administrative_number\"],\"display\":[{\"description\":\"\",\"name\":\"Personal Administrative Number\",\"textColor\":\"\",\"logo\":{},\"backgroundColor\":\"\",\"localeIdentifier\":\"en\"}]},{\"isMandatory\":false,\"claimPath\":[\"picture\"],\"display\":[{\"description\":\"\",\"textColor\":\"\",\"name\":\"Portrait Image\",\"backgroundColor\":\"\",\"logo\":{},\"localeIdentifier\":\"en\"}]},{\"isMandatory\":false,\"claimPath\":[\"birth_family_name\"],\"display\":[{\"name\":\"Birth Family Name(s)\",\"logo\":{},\"description\":\"\",\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"birth_given_name\"],\"display\":[{\"textColor\":\"\",\"logo\":{},\"name\":\"Birth Given Name(s)\",\"localeIdentifier\":\"en\",\"description\":\"\",\"backgroundColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"sex\"],\"display\":[{\"name\":\"Sex\",\"backgroundColor\":\"\",\"logo\":{},\"localeIdentifier\":\"en\",\"description\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"email\"],\"display\":[{\"localeIdentifier\":\"en\",\"description\":\"\",\"backgroundColor\":\"\",\"textColor\":\"\",\"logo\":{},\"name\":\"Email Address\"}]},{\"isMandatory\":false,\"claimPath\":[\"phone_number\"],\"display\":[{\"name\":\"Mobile Phone Number\",\"logo\":{},\"description\":\"\",\"localeIdentifier\":\"en\",\"backgroundColor\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":true,\"claimPath\":[\"date_of_expiry\"],\"display\":[{\"textColor\":\"\",\"logo\":{},\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"name\":\"Expiry Date\",\"description\":\"\"}]},{\"isMandatory\":true,\"claimPath\":[\"issuing_authority\"],\"display\":[{\"name\":\"Issuing Authority\",\"backgroundColor\":\"\",\"description\":\"\",\"localeIdentifier\":\"en\",\"textColor\":\"\",\"logo\":{}}]},{\"isMandatory\":true,\"claimPath\":[\"issuing_country\"],\"display\":[{\"description\":\"\",\"logo\":{},\"textColor\":\"\",\"backgroundColor\":\"\",\"localeIdentifier\":\"en\",\"name\":\"Issuing Country\"}]},{\"isMandatory\":false,\"claimPath\":[\"document_number\"],\"display\":[{\"localeIdentifier\":\"en\",\"description\":\"\",\"backgroundColor\":\"\",\"textColor\":\"\",\"logo\":{},\"name\":\"Document Number\"}]},{\"isMandatory\":false,\"claimPath\":[\"issuing_jurisdiction\"],\"display\":[{\"description\":\"\",\"logo\":{},\"name\":\"Issuing Jurisdiction\",\"localeIdentifier\":\"en\",\"backgroundColor\":\"\",\"textColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"date_of_issuance\"],\"display\":[{\"localeIdentifier\":\"en\",\"textColor\":\"\",\"logo\":{},\"name\":\"Issuance Date\",\"description\":\"\",\"backgroundColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"trust_anchor\"],\"display\":[{\"description\":\"\",\"name\":\"Trust Anchor\",\"textColor\":\"\",\"localeIdentifier\":\"en\",\"logo\":{},\"backgroundColor\":\"\"}]},{\"isMandatory\":false,\"claimPath\":[\"attestation_legal_category\"],\"display\":[{\"name\":\"Attestation Legal Category\",\"textColor\":\"\",\"localeIdentifier\":\"en\",\"logo\":{},\"description\":\"\",\"backgroundColor\":\"\"}]}],\"credentialIssuerIdentifier\":\"dev.issuer-backend.eudiw.dev\",\"issuerDisplay\":[{\"logo\":{\"alternativeText\":\"EU Digital Identity Wallet Logo\",\"urlString\":\"https:\\/\\/eudiw.dev\\/ic-logo.svg\"},\"name\":\"Digital Credentials Issuer\",\"localeIdentifier\":\"en\"},{\"logo\":{\"alternativeText\":\"Λογότυπο Ευρωπαϊκού Πορτοφολιού Ψηφιακής Ταυτότητας\",\"urlString\":\"https:\\/\\/eudiw.dev\\/ic-logo.svg\"},\"name\":\"Εκδότης Ψηφιακών Διαπιστευτηρίων\",\"localeIdentifier\":\"el\"}],\"configurationIdentifier\":\"eu.europa.ec.eudi.pid_vc_sd_jwt_deferred\", \"docType\":\"\"}".tryToData()
+  
+  static let scopedDocument = ScopedDocument(
+    name: "Test Document",
+    issuer: "Test Issuer",
+    order: 0,
+    configId: "test-config-id",
+    isPid: true,
+    docTypeIdentifier: DocumentTypeIdentifier.mDocPid
   )
   
-  static let euPidModel = GenericMdocModel(
-    id: euPidModelId,
-    createdAt: documentCreatedAt,
-    docType: dr.documents!.last!.issuerSigned.issuerAuth.mso.docType,
-    displayName: euPidName,
-    display: nil,
-    issuerDisplay: nil,
-    credentialIssuerIdentifier: nil,
-    configurationIdentifier: nil,
-    validFrom: nil,
-    validUntil: nil,
-    modifiedAt: nil,
-    docClaims: [
-      .init(
-        name: DocumentJsonKeys.EXPIRY_DATE,
-        dataValue: .date(claimExpiredAt.formatted()),
-        stringValue: claimExpiredAt.formatted()
-      ),
-      .init(
-        name: DocumentJsonKeys.FIRST_NAME,
-        dataValue: .string(claimFirstName),
-        stringValue: claimFirstName
-      ),
-      .init(
-        name: DocumentJsonKeys.LAST_NAME,
-        dataValue: .string(claimLastName),
-        stringValue: claimLastName
-      )
-    ],
-    docDataFormat: .cbor,
-    hashingAlg: nil
+  static let scopedDocumentNotPid = ScopedDocument(
+    name: "Test Document",
+    issuer: "Test Issuer",
+    order: 0,
+    configId: "test-config-id",
+    isPid: false,
+    docTypeIdentifier: DocumentTypeIdentifier.mDocPid
+  )
+  
+  static let defferedPendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    docKeyInfo: nil,
+    createdAt: Date(),
+    metadata: documentMetaData,
+    displayName: "My Document",
+    status: .deferred
+  )
+  
+  static let issuedPendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    docKeyInfo: nil,
+    createdAt: Date(),
+    metadata: nil,
+    displayName: "My Document",
+    status: .issued
+  )
+  
+  static let pendingDocument = Document(
+    id: "doc-id",
+    docType: "type",
+    docDataFormat: .sdjwt,
+    data: Data(),
+    docKeyInfo: nil,
+    createdAt: Date(),
+    metadata: nil,
+    displayName: "My Document",
+    status: .pending
   )
 }
 
@@ -116,6 +206,11 @@ extension Constants {
 
 extension Constants {
   struct MockPresentationService: PresentationService {
+    var zkpDocumentIds: [WalletStorage.Document.ID]?
+    
+    func waitForDisconnect() async throws {}
+    
+    var transactionLog: EudiWalletKit.TransactionLog
     
     func startQrEngagement(secureAreaName: String?, crv: MdocDataModel18013.CoseEcCurve) async throws -> String {
       ""
@@ -137,9 +232,78 @@ extension Constants {
     func sendResponse(userAccepted: Bool, itemsToSend: EudiWalletKit.RequestItems, onSuccess: ((URL?) -> Void)?) async throws {}
   }
   
+  static let mockTransactionLog: TransactionLog = .init(
+    timestamp: .min,
+    status: .completed,
+    type: .presentation,
+    dataFormat: .cbor
+  )
+  
+  static let eudiRemoteVerifierMock: TransactionLogItem = .init(
+    id: "transactionId1",
+    transactionLogData: .presentation(
+      log: .init(
+        TransactionLog(
+          timestamp: Int64(Date().timeIntervalSince1970),
+          status: .completed,
+          errorMessage: nil,
+          rawRequest: nil,
+          rawResponse: nil,
+          relyingParty: TransactionLog.RelyingParty(
+            name: "EUDI Remote Verifier",
+            isVerified: true,
+            certificateChain: [],
+            readerAuth: nil
+          ),
+          type: .presentation,
+          dataFormat: .json,
+          sessionTranscript: nil,
+          docMetadata: nil
+        ),
+        uiCulture: Locale.current.systemLanguageCode
+      )
+    )
+  )
+  
+  static let otherRelPartyMock: TransactionLogItem = .init(
+    id: "transactionId2",
+    transactionLogData: .presentation(
+      log: .init(
+        TransactionLog(
+          timestamp: Int64(Date().addingTimeInterval(-3600).timeIntervalSince1970),
+          status: .failed,
+          errorMessage: "Some Error",
+          rawRequest: nil,
+          rawResponse: nil,
+          relyingParty: TransactionLog.RelyingParty(
+            name: "Other Relaying Party",
+            isVerified: false,
+            certificateChain: [],
+            readerAuth: nil
+          ),
+          type: .presentation,
+          dataFormat: .json,
+          sessionTranscript: nil,
+          docMetadata: nil
+        ),
+        uiCulture: Locale.current.systemLanguageCode
+      )
+    )
+  )
+  
+  static let mockStorageService: DataStorageService = KeyChainStorageService(
+    serviceName: "",
+    accessGroup: ""
+  )
+  
   static let mockPresentationSession = PresentationSession(
-    presentationService: MockPresentationService(flow: .other),
+    presentationService: MockPresentationService(
+      transactionLog: mockTransactionLog,
+      flow: .other
+    ),
+    storageManager: .init(storageService: mockStorageService),
     docIdToPresentInfo: [:],
+    documentKeyIndexes: [:],
     userAuthenticationRequired: false
   )
 }
@@ -158,7 +322,6 @@ extension Constants {
               elements: [
                 .init(
                   elementIdentifier: "elementIdentifier",
-                  displayName: "localizedName",
                   isOptional: false,
                   stringValue: "value",
                   docClaim: .init(name: "elementIdentifier", dataValue: .string("value"), stringValue: "value"),

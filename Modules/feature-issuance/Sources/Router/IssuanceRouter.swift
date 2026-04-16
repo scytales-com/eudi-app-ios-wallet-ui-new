@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,31 +19,22 @@ import logic_business
 @MainActor
 public final class IssuanceRouter {
 
-  public static func resolve(module: FeatureIssuanceRouteModule, host: some RouterHost) -> AnyView {
+  @ViewBuilder
+  public static func resolve(module: FeatureIssuanceRouteModule, host: some RouterHost) -> some View {
     switch module {
     case .issuanceAddDocument(config: let config):
       AddDocumentView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             AddDocumentInteractor.self
           ),
-          deepLinkController: DIGraph.resolver.force(
+          deepLinkController: DIGraph.shared.resolver.force(
             DeepLinkController.self
           ),
           config: config
         )
-      ).eraseToAnyView()
-    case .issuanceDocumentDetails(config: let config):
-      DocumentDetailsView(
-        with: .init(
-          router: host,
-          interactor: DIGraph.resolver.force(
-            DocumentDetailsInteractor.self
-          ),
-          config: config
-        )
-      ).eraseToAnyView()
+      )
     case .issuanceSuccess(
       let config,
       let uiModels
@@ -52,32 +43,32 @@ public final class IssuanceRouter {
         with: .init(
           router: host,
           config: config,
-          deepLinkController: DIGraph.resolver.force(
+          deepLinkController: DIGraph.shared.resolver.force(
             DeepLinkController.self
           ),
-          requestItems: uiModels.compactMap { $0 as? ListItemSection<Sendable> }
+          requestItems: uiModels.compactMap { $0 as? GenericListItemSection }
         )
-      ).eraseToAnyView()
+      )
     case .credentialOfferRequest(let config):
       DocumentOfferView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             DocumentOfferInteractor.self
           ),
           config: config
         )
-      ).eraseToAnyView()
+      )
     case .issuanceCode(config: let config):
       OfferCodeView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             DocumentOfferInteractor.self
           ),
           config: config
         )
-      ).eraseToAnyView()
+      )
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -25,7 +25,7 @@ final class TestDeepLinkController: EudiTest {
   var prefsController: MockPrefsController!
   var urlSchemaController: MockUrlSchemaController!
   var routerHost: MockRouterHost!
-  
+
   override func setUp() {
     self.prefsController = MockPrefsController()
     self.urlSchemaController = MockUrlSchemaController()
@@ -97,7 +97,7 @@ final class TestDeepLinkController: EudiTest {
     verify(prefsController).setValue(any(), forKey: Prefs.Key.cachedDeepLink)
     verify(prefsController, times(0)).remove(forKey: Prefs.Key.cachedDeepLink)
   }
-  
+
   func testHandleDeepLinkAction_WhenRouterReturnsAfterAuthorizationFlowAndActionIsOpenId4VPAndScreenNotForeground_ThenValidateCachingRemovalAndExecutionOfNavigation() async {
     // Given
     let sessionCoordinator = RemoteSessionCoordinatorImpl(
@@ -239,6 +239,33 @@ final class TestDeepLinkController: EudiTest {
     // Then
     verify(prefsController).setValue(any(), forKey: Prefs.Key.cachedDeepLink)
   }
+
+  func testHandleDeepLinkAction_WhenCredentialOfferActionAndScreenIsNotForeground_ThenPushCredentialOfferRequest() async {
+    // Given
+    let sessionCoordinator = RemoteSessionCoordinatorImpl(
+      session: Self.mockPresentationSession
+    )
+    let pendingAction = Self.mockedCredentialOfferDeepLinkAction
+
+    stubHandleDeepLink(
+      action: pendingAction,
+      route: nil,
+      isAfterAuth: true,
+      isScreenForeground: true
+    )
+
+    // When
+    await controller.handleDeepLinkAction(
+      routerHost: routerHost,
+      deepLinkExecutable: pendingAction,
+      remoteSessionCoordinator: sessionCoordinator
+    )
+
+    // Then
+    verify(prefsController, times(0)).setValue(any(), forKey: Prefs.Key.cachedDeepLink)
+    verify(prefsController).remove(forKey: Prefs.Key.cachedDeepLink)
+    verify(routerHost, times(0)).push(with: any())
+  }
 }
 
 private extension TestDeepLinkController {
@@ -283,13 +310,24 @@ private extension TestDeepLinkController {
     plainUrl: mockedExternalUrl,
     action: .external
   )
-  
+
+  static let mockedCredentialOfferDeepLinkAction = DeepLink.Executable(
+    link: URLComponents(url: mockedExternalUrl, resolvingAgainstBaseURL: true)!,
+    plainUrl: mockedExternalUrl,
+    action: .credential_offer
+  )
+
   static let mockedMalformedUrl: URL = URL(string: "not_a_valid_url")!
   
 }
 
 private extension TestDeepLinkController {
   struct MockPresentationService: PresentationService {
+    var zkpDocumentIds: [WalletStorage.Document.ID]?
+    
+    func waitForDisconnect() async throws {}
+    
+    var transactionLog: EudiWalletKit.TransactionLog
     
     func startQrEngagement(secureAreaName: String?, crv: MdocDataModel18013.CoseEcCurve) async throws -> String {
       ""
@@ -308,9 +346,26 @@ private extension TestDeepLinkController {
     func sendResponse(userAccepted: Bool, itemsToSend: EudiWalletKit.RequestItems, onSuccess: ((URL?) -> Void)?) async throws {}
   }
   
+  static let mockTransactionLog: TransactionLog = .init(
+    timestamp: .min,
+    status: .completed,
+    type: .presentation,
+    dataFormat: .cbor
+  )
+  
+  static let mockStorageService: DataStorageService = KeyChainStorageService(
+    serviceName: "",
+    accessGroup: ""
+  )
+  
   static let mockPresentationSession = PresentationSession(
-    presentationService: MockPresentationService(flow: .other),
+    presentationService: MockPresentationService(
+      transactionLog: mockTransactionLog,
+      flow: .other
+    ),
+    storageManager: .init(storageService: mockStorageService),
     docIdToPresentInfo: [:],
+    documentKeyIndexes: [:],
     userAuthenticationRequired: false
   )
 }

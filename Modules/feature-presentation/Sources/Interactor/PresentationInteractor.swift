@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,9 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_core
-import logic_business
 import feature_common
 
 public struct OnlineAuthenticationRequestSuccessModel: Sendable {
@@ -41,17 +39,18 @@ public enum RemoteSentResponsePartialState: Sendable {
 }
 
 public protocol PresentationInteractor: Sendable {
-  func getSessionStatePublisher() -> RemotePublisherPartialState
-  func getCoordinator() -> PresentationCoordinatorPartialState
+  func getSessionStatePublisher() async -> RemotePublisherPartialState
+  func getCoordinator() async -> PresentationCoordinatorPartialState
   func onDeviceEngagement() async -> Result<OnlineAuthenticationRequestSuccessModel, Error>
   func onResponsePrepare(requestItems: [RequestDataUiModel]) async -> Result<RequestItemConvertible, Error>
+  func onRequestReceived() async -> Result<OnlineAuthenticationRequestSuccessModel, Error>
   func onSendResponse() async -> RemoteSentResponsePartialState
-  func updatePresentationCoordinator(with coordinator: RemoteSessionCoordinator)
-  func storeDynamicIssuancePendingUrl(with url: URL)
-  func stopPresentation()
+  func updatePresentationCoordinator(with coordinator: RemoteSessionCoordinator) async
+  func storeDynamicIssuancePendingUrl(with url: URL) async
+  func stopPresentation() async
 }
 
-final class PresentationInteractorImpl: PresentationInteractor {
+final actor PresentationInteractorImpl: PresentationInteractor {
 
   private let sessionCoordinatorHolder: SessionCoordinatorHolder
   private let walletKitController: WalletKitController
@@ -63,27 +62,27 @@ final class PresentationInteractorImpl: PresentationInteractor {
   ) {
     self.walletKitController = walletKitController
     self.sessionCoordinatorHolder = sessionCoordinatorHolder
-    self.sessionCoordinatorHolder.setActiveRemoteCoordinator(presentationCoordinator)
+    Task { await self.sessionCoordinatorHolder.setActiveRemoteCoordinator(presentationCoordinator) }
   }
 
-  public func getSessionStatePublisher() -> RemotePublisherPartialState {
+  public func getSessionStatePublisher() async -> RemotePublisherPartialState {
     do {
-      return .success(try self.sessionCoordinatorHolder.getActiveRemoteCoordinator().getStream())
+      return .success(try await self.sessionCoordinatorHolder.getActiveRemoteCoordinator().getStream())
     } catch {
       return .failure(error)
     }
   }
 
-  public func getCoordinator() -> PresentationCoordinatorPartialState {
+  public func getCoordinator() async -> PresentationCoordinatorPartialState {
     do {
-      return .success(try self.sessionCoordinatorHolder.getActiveRemoteCoordinator())
+      return .success(try await self.sessionCoordinatorHolder.getActiveRemoteCoordinator())
     } catch {
       return .failure(error)
     }
   }
 
-  public func updatePresentationCoordinator(with coordinator: RemoteSessionCoordinator) {
-    self.sessionCoordinatorHolder.setActiveRemoteCoordinator(coordinator)
+  public func updatePresentationCoordinator(with coordinator: RemoteSessionCoordinator) async {
+    await self.sessionCoordinatorHolder.setActiveRemoteCoordinator(coordinator)
   }
 
   public func onDeviceEngagement() async -> Result<OnlineAuthenticationRequestSuccessModel, Error> {
@@ -94,9 +93,12 @@ final class PresentationInteractorImpl: PresentationInteractor {
   public func onRequestReceived() async -> Result<OnlineAuthenticationRequestSuccessModel, Error> {
     do {
       let response = try await sessionCoordinatorHolder.getActiveRemoteCoordinator().requestReceived()
+      let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
+      let documents = response.items.filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
+      guard !documents.isEmpty else { return .failure(WalletCoreError.unableFetchDocuments) }
       return .success(
         .init(
-          requestDataCells: response.items.toUiModels(
+          requestDataCells: documents.toUiModels(
             with: self.walletKitController
           ),
           relyingParty: response.relyingParty,
@@ -113,17 +115,21 @@ final class PresentationInteractorImpl: PresentationInteractor {
 
     let requestConvertible = requestItems.prepareRequest()
 
-    guard requestConvertible.requestItems.isEmpty == false else {
+    guard requestConvertible.items.isEmpty == false else {
       return .failure(PresentationSessionError.conversionToRequestItemModel)
     }
 
     do {
-      try self.sessionCoordinatorHolder.getActiveRemoteCoordinator().setState(presentationState: .responseToSend(requestConvertible))
+
+      try await self.sessionCoordinatorHolder
+        .getActiveRemoteCoordinator()
+        .setState(presentationState: .responseToSend(requestConvertible))
+
     } catch {
       return .failure(error)
     }
 
-    return .success(requestConvertible.asRequestItems())
+    return .success(requestConvertible.items)
   }
 
   public func onSendResponse() async -> RemoteSentResponsePartialState {
@@ -143,12 +149,12 @@ final class PresentationInteractorImpl: PresentationInteractor {
     }
   }
 
-  public func storeDynamicIssuancePendingUrl(with url: URL) {
-    walletKitController.storeDynamicIssuancePendingUrl(with: url)
+  public func storeDynamicIssuancePendingUrl(with url: URL) async {
+    await walletKitController.storeDynamicIssuancePendingUrl(with: url)
   }
 
-  public func stopPresentation() {
-    walletKitController.stopPresentation()
-    try? sessionCoordinatorHolder.getActiveRemoteCoordinator().stopPresentation()
+  public func stopPresentation() async {
+    await walletKitController.stopPresentation()
+    try? await sessionCoordinatorHolder.getActiveRemoteCoordinator().stopPresentation()
   }
 }

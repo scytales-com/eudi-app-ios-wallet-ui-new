@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,6 +15,8 @@
  */
 import Swinject
 import logic_business
+import logic_storage
+import logic_api
 
 public final class LogicCoreAssembly: Assembly {
 
@@ -22,18 +24,76 @@ public final class LogicCoreAssembly: Assembly {
 
   public func assemble(container: Container) {
     container.register(WalletKitConfig.self) { r in
-      WalletKitConfigImpl(configLogic: r.force(ConfigLogic.self))
+      WalletKitConfigImpl(
+        configLogic: r.force(ConfigLogic.self),
+        transactionLogger: r.force(TransactionLogger.self),
+        walletKitAttestationProvider: r.force(WalletKitAttestationProvider.self)
+      )
+    }
+    .inObjectScope(ObjectScope.container)
+
+    container.register(DocumentRegistrationManager.self) { _ in
+      if #available(iOS 26.0, *) {
+        return DocumentRegistrationManagerImpl()
+      } else {
+        return DocumentRegistrationManagerNoOp()
+      }
     }
     .inObjectScope(ObjectScope.container)
 
     container.register(WalletKitController.self) { r in
       WalletKitControllerImpl(
-        configLogic: r.force(WalletKitConfig.self),
+        walletKitConfig: r.force(WalletKitConfig.self),
+        configLogic: r.force(ConfigLogic.self),
         keyChainController: r.force(KeyChainController.self),
-        sessionCoordinatorHolder: r.force(SessionCoordinatorHolder.self)
+        sessionCoordinatorHolder: r.force(SessionCoordinatorHolder.self),
+        bookmarkStorageController: r.force((any BookmarkStorageController).self),
+        transactionLogStorageController: r.force((any TransactionLogStorageController).self),
+        revokedDocumentStorageController: r.force((any RevokedDocumentStorageController).self),
+        failedReIssuedDocStorageController: r.force((any FailedReIssuedDocStorageController).self),
+        networkSessionProvider: r.force((any NetworkSessionProvider).self),
+        documentRegistrationManager: r.force((any DocumentRegistrationManager).self)
       )
     }
     .inObjectScope(ObjectScope.container)
+
+    container.register(WalletProviderAttestationConfig.self) { r in
+      WalletProviderAttestationConfigImpl(
+        configLogic: r.force(ConfigLogic.self)
+      )
+    }
+    .inObjectScope(ObjectScope.container)
+
+    container.register(TransactionLogger.self) { r in
+      WalletKitTransactionLogControllerImpl(
+        transactionLogStorageController: r.force((any TransactionLogStorageController).self)
+      )
+    }
+    .inObjectScope(ObjectScope.graph)
+
+    container.register(RevocationWorkManager.self) { r in
+      RevocationWorkManagerImpl(
+        configLogic: r.force(WalletKitConfig.self),
+        walletKitController: r.force(WalletKitController.self)
+      )
+    }
+    .inObjectScope(ObjectScope.graph)
+
+    container.register(ReIssuanceWorkManager.self) { r in
+      ReIssuanceWorkManagerImpl(
+        configLogic: r.force(WalletKitConfig.self),
+        walletKitController: r.force(WalletKitController.self)
+      )
+    }
+    .inObjectScope(ObjectScope.graph)
+
+    container.register(WalletKitAttestationProvider.self) { r in
+      WalletKitAttestationProviderImpl(
+        with: r.force(WalletAttestationRepository.self),
+        and: r.force(WalletProviderAttestationConfig.self)
+      )
+    }
+    .inObjectScope(ObjectScope.graph)
 
     container.register(ProximitySessionCoordinator.self) { _, session in
       ProximitySessionCoordinatorImpl(session: session)

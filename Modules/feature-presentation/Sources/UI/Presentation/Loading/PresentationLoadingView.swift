@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,15 +14,14 @@
  * governing permissions and limitations under the Licence.
  */
 import SwiftUI
-import logic_ui
 import feature_common
 
 struct PresentationLoadingView<Router: RouterHost, RequestItem: Sendable>: View {
 
-  @ObservedObject private var viewModel: PresentationLoadingViewModel<Router, RequestItem>
+  @State private var viewModel: PresentationLoadingViewModel<Router, RequestItem>
 
   init(with viewModel: PresentationLoadingViewModel<Router, RequestItem>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,14 +14,14 @@
  * governing permissions and limitations under the Licence.
  */
 import logic_ui
-import logic_business
 import feature_common
 import logic_core
 
 @MainActor
 public final class ProximityRouter {
 
-  public static func resolve(module: FeatureProximityRouteModule, host: some RouterHost) -> AnyView {
+  @ViewBuilder
+  public static func resolve(module: FeatureProximityRouteModule, host: some RouterHost) -> some View {
     switch module {
     case .proximityConnection(
       presentationCoordinator: let presentationCoordinator,
@@ -30,13 +30,13 @@ public final class ProximityRouter {
       ProximityConnectionView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             ProximityInteractor.self,
             argument: presentationCoordinator as ProximitySessionCoordinator
           ),
           originator: originator
         )
-      ).eraseToAnyView()
+      )
     case .proximityRequest(
       presentationCoordinator: let presentationCoordinator,
       originator: let originator
@@ -44,13 +44,13 @@ public final class ProximityRouter {
       ProximityRequestView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             ProximityInteractor.self,
             argument: presentationCoordinator as ProximitySessionCoordinator
           ),
           originator: originator
         )
-      ).eraseToAnyView()
+      )
     case .proximityLoader(
       let relyingParty,
       let relyingPartyIsTrusted,
@@ -61,7 +61,7 @@ public final class ProximityRouter {
       ProximityLoadingView(
         with: .init(
           router: host,
-          interactor: DIGraph.resolver.force(
+          interactor: DIGraph.shared.resolver.force(
             ProximityInteractor.self,
             argument: presentationCoordinator as ProximitySessionCoordinator
           ),
@@ -70,7 +70,7 @@ public final class ProximityRouter {
           originator: originator,
           requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
         )
-      ).eraseToAnyView()
+      )
     case .proximitySuccess(
       let config,
       let uiModels
@@ -79,12 +79,12 @@ public final class ProximityRouter {
         with: .init(
           router: host,
           config: config,
-          deepLinkController: DIGraph.resolver.force(
+          deepLinkController: DIGraph.shared.resolver.force(
             DeepLinkController.self
           ),
           requestItems: uiModels.compactMap { $0 as? PresentationListItemSection }
         )
-      ).eraseToAnyView()
+      )
     }
   }
 }

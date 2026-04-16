@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,7 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 import Foundation
-import logic_ui
 import feature_common
 import logic_core
 import logic_business
@@ -23,34 +22,34 @@ public protocol StartupInteractor: Sendable {
   func initialize(with splashAnimationDuration: TimeInterval) async -> AppRoute
 }
 
-final class StartupInteractorImpl: StartupInteractor {
+final actor StartupInteractorImpl: StartupInteractor {
 
   private let walletKitController: WalletKitController
   private let quickPinInteractor: QuickPinInteractor
   private let keyChainController: KeyChainController
   private let prefsController: PrefsController
-
-  private var hasDocuments: Bool {
-    return !walletKitController.fetchAllDocuments().isEmpty
-  }
+  private let configLogic: ConfigLogic
 
   init(
     walletKitController: WalletKitController,
     quickPinInteractor: QuickPinInteractor,
     keyChainController: KeyChainController,
-    prefsController: PrefsController
+    prefsController: PrefsController,
+    configLogic: ConfigLogic
   ) {
     self.walletKitController = walletKitController
     self.quickPinInteractor = quickPinInteractor
     self.keyChainController = keyChainController
     self.prefsController = prefsController
+    self.configLogic = configLogic
   }
 
   public func initialize(with splashAnimationDuration: TimeInterval) async -> AppRoute {
     await manageStorageForFirstRun()
     try? await walletKitController.loadDocuments()
+    let hasDocuments = await !walletKitController.fetchAllDocuments().isEmpty
     try? await Task.sleep(nanoseconds: splashAnimationDuration.nanoseconds)
-    if quickPinInteractor.hasPin() {
+    if await quickPinInteractor.hasPin() {
       return .featureCommonModule(
         .biometry(
           config: UIConfig.Biometry(
@@ -59,9 +58,9 @@ final class StartupInteractorImpl: StartupInteractor {
             caption: .loginCaption,
             quickPinOnlyCaption: .loginCaptionQuickPinOnly,
             navigationSuccessType: .push(
-              hasDocuments
-              ? .featureDashboardModule(.dashboard)
-              : .featureIssuanceModule(.issuanceAddDocument(config: IssuanceFlowUiConfig(flow: .noDocument)))
+              !hasDocuments && configLogic.forcePidActivation
+              ? .featureIssuanceModule(.issuanceAddDocument(config: IssuanceFlowUiConfig(flow: .noDocument)))
+              : .featureDashboardModule(.dashboard)
             ),
             navigationBackType: nil,
             isPreAuthorization: true,
@@ -71,7 +70,13 @@ final class StartupInteractorImpl: StartupInteractor {
       )
     } else {
       return .featureCommonModule(
-        .quickPin(config: QuickPinUiConfig(flow: .set))
+        .quickPin(
+          config: QuickPinUiConfig(
+            flow: configLogic.forcePidActivation
+            ? .setWithActivation
+            : .setWithoutActivation
+          )
+        )
       )
     }
   }

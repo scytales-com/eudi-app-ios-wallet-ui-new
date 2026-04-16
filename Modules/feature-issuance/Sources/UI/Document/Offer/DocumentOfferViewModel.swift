@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,9 +16,7 @@
 import Foundation
 import logic_ui
 import logic_resources
-import logic_business
 import feature_common
-import logic_core
 
 @Copyable
 struct DocumentOfferViewState: ViewState {
@@ -89,9 +87,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
 
     let offerUri = viewState.offerUri
 
-    let state = await Task.detached { () -> OfferRequestPartialState in
-      return await self.interactor.processOfferRequest(with: offerUri)
-    }.value
+    let state = await interactor.processOfferRequest(with: offerUri)
 
     switch state {
     case .success(let uiModel):
@@ -122,7 +118,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
         $0.copy(
           isLoading: false,
           error: ContentErrorView.Config(
-            description: .custom(error.localizedDescription),
+            description: .custom(error.errorMessage),
             cancelAction: self.onPop()
           ),
           allowIssue: false,
@@ -160,15 +156,13 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
       let docOffers = viewState.documentOfferUiModel.docOffers
       let successNavigation = viewState.successNavigation
 
-      let state = await Task.detached { () -> OfferResultPartialState in
-        return await self.interactor.issueDocuments(
-          with: offerUri,
-          issuerName: issuerName,
-          docOffers: docOffers,
-          successNavigation: successNavigation,
-          txCodeValue: nil
-        )
-      }.value
+      let state = await interactor.issueDocuments(
+        with: offerUri,
+        issuerName: issuerName,
+        docOffers: docOffers,
+        successNavigation: successNavigation,
+        txCodeValue: nil
+      )
 
       switch state {
       case .success(let route):
@@ -192,7 +186,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
           $0.copy(
             isLoading: false,
             error: .init(
-              description: .custom(error.localizedDescription),
+              description: .custom(error.errorMessage),
               cancelAction: self.setState { $0.copy(error: nil) }
             )
           )
@@ -247,12 +241,10 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
     let issuerName = viewState.documentOfferUiModel.issuerName
     let successNavigation = viewState.successNavigation
 
-    let state = await Task.detached { () -> OfferDynamicIssuancePartialState in
-      return await self.interactor.resumeDynamicIssuance(
-        issuerName: issuerName,
-        successNavigation: successNavigation
-      )
-    }.value
+    let state = await interactor.resumeDynamicIssuance(
+      issuerName: issuerName,
+      successNavigation: successNavigation
+    )
 
     switch state {
     case .success(let route):
@@ -264,7 +256,7 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
         $0.copy(
           isLoading: false,
           error: .init(
-            description: .custom(error.localizedDescription),
+            description: .custom(error.errorMessage),
             cancelAction: self.setState { $0.copy(error: nil) }
           )
         )
@@ -275,15 +267,17 @@ final class DocumentOfferViewModel<Router: RouterHost>: ViewModel<Router, Docume
   func toolbarContent() -> ToolBarContent {
     .init(
       trailingActions: [
-        Action(
-          title: .issueButton
+        .init(
+          title: .issueButton,
+          accessibilityLocator: DocumentOfferLocators.issueButton
         ) {
           self.onIssueDocuments()
         }
       ],
       leadingActions: [
-        Action(
-          title: .cancelButton
+        .init(
+          title: .cancelButton,
+          accessibilityLocator: DocumentOfferLocators.cancelButton
         ) {
           self.onPop()
         }

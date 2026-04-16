@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,34 +13,29 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import EudiWalletKit
 
 public typealias RequestConvertibleItems = [String: [String: [RequestItem]]]
 
 public protocol RequestItemConvertible: Sendable {
-  func asRequestItems() -> RequestConvertibleItems
+  var items: RequestConvertibleItems { get }
 }
 
 public struct RequestItemsWrapper: RequestItemConvertible {
 
-  public var requestItems: RequestConvertibleItems
+  public var items: RequestConvertibleItems
 
   public init() {
-    requestItems = RequestConvertibleItems()
+    items = RequestConvertibleItems()
   }
 
   public init(dictionary: RequestConvertibleItems) {
-    self.requestItems = dictionary
-  }
-
-  public func asRequestItems() -> RequestConvertibleItems {
-    requestItems
+    self.items = dictionary
   }
 }
 
 extension RequestItems: RequestItemConvertible {
-  public func asRequestItems() -> RequestConvertibleItems {
+  public var items: RequestConvertibleItems {
     return self
   }
 }

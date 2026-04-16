@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,28 +13,29 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
-import logic_ui
-import logic_resources
 import feature_common
+import Observation
 
 @Copyable
 struct HomeTabState: ViewState {
-  let username: String
+  let username: String?
   let contentHeaderConfig: ContentHeaderConfig
   let phase: ScenePhase
   let pendingBleModalAction: Bool
 }
 
+@Observable
 final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState> {
 
+  @ObservationIgnored
   private let interactor: HomeTabInteractor
+  @ObservationIgnored
   private let onUpdateToolbar: (ToolBarContent, LocalizableStringKey) -> Void
 
-  @Published var isAuthenticateAlertShowing: Bool = false
-  @Published var isAuthenticateModalShowing: Bool = false
-  @Published var isSignDocumentAlertShowing: Bool = false
-  @Published var isBleModalShowing: Bool = false
+  var isAuthenticateAlertShowing: Bool = false
+  var isAuthenticateModalShowing: Bool = false
+  var isSignDocumentAlertShowing: Bool = false
+  var isBleModalShowing: Bool = false
 
   init(
     router: Router,
@@ -46,7 +47,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
     super.init(
       router: router,
       initialState: .init(
-        username: interactor.fetchUsername(),
+        username: nil,
         contentHeaderConfig: .init(
           appIconAndTextData: AppIconAndTextData(
             appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
@@ -59,12 +60,17 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
     )
   }
 
-  func onCreate() {
+  func onCreate() async {
+    let username = await interactor.fetchUsername()
+    setState { $0.copy(username: username) }
     onUpdateToolbar(
       .init(
         trailingActions: nil,
         leadingActions: [
-          Action(image: Theme.shared.image.menuIcon) {
+          .init(
+            image: Theme.shared.image.menuIcon,
+            accessibilityLocator: ToolbarLocators.menuButton
+          ) {
             self.onMyWallet()
           }
         ]
@@ -96,9 +102,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
   func onShare() {
     Task {
 
-      let state = await Task.detached { () -> Reachability.BleAvailibity in
-        return await self.interactor.getBleAvailability()
-      }.value
+      let state = await interactor.getBleAvailability()
 
       switch state {
       case .available:
@@ -128,7 +132,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
 
   func onBleSettings() {
     toggleBleModal()
-    interactor.openBleSettings()
+    Task { await interactor.openBleSettings() }
   }
 
   func setPhase(with phase: ScenePhase) {

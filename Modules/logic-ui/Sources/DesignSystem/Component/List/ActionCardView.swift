@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,15 +19,18 @@ import logic_resources
 public struct ActionCard: View {
   private let icon: Image
   private let title: LocalizableStringKey
+  private let locator: LocatorType?
   private let action: () -> Void
 
   public init(
     icon: Image,
     title: LocalizableStringKey,
+    locator: LocatorType? = nil,
     action: @escaping () -> Void
   ) {
     self.icon = icon
     self.title = title
+    self.locator = locator
     self.action = action
   }
 
@@ -48,6 +51,9 @@ public struct ActionCard: View {
       .padding(.vertical, SPACING_MEDIUM)
       .background(Theme.shared.color.surfaceContainer)
       .cornerRadius(SPACING_MEDIUM)
+    }
+    .ifLet(locator) { view, locator in
+      view.accessibilityLocator(locator)
     }
   }
 }

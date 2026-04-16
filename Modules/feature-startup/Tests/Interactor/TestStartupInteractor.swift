@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -28,19 +28,23 @@ final class TestStartupInteractor: EudiTest {
   var quickPinInteractor: MockQuickPinInteractor!
   var keyChainController: MockKeyChainController!
   var prefsController: MockPrefsController!
+  var configLogic: MockConfigLogic!
   
   override func setUp() {
     self.walletKitController = MockWalletKitController()
     self.quickPinInteractor = MockQuickPinInteractor()
     self.keyChainController = MockKeyChainController()
     self.prefsController = MockPrefsController()
+    self.configLogic = MockConfigLogic()
     self.interactor = StartupInteractorImpl(
       walletKitController: walletKitController,
       quickPinInteractor: quickPinInteractor,
       keyChainController: keyChainController,
-      prefsController: prefsController
+      prefsController: prefsController,
+      configLogic: configLogic
     )
     
+    stubConfigLogic()
     stubPrefsControllerSetValue()
     stubKeyChainClear()
     stubWalletKiControllerClearAllDocuments()
@@ -52,12 +56,15 @@ final class TestStartupInteractor: EudiTest {
     self.quickPinInteractor = nil
     self.keyChainController = nil
     self.prefsController = nil
+    self.configLogic = nil
   }
   
   func testInitialize_WhenIsNotFirstBootAndPinIsNotSet_ThenReturnQuickPinAppRoute() async throws {
     // Given
-    let expectedConfig = QuickPinUiConfig(flow: .set)
-    stubFetchDocuments(with: [Constants.euPidModel, Constants.isoMdlModel])
+    let expectedConfig = QuickPinUiConfig(flow: .setWithActivation)
+    let expectedPid = Constants.createEuPidModel()
+    let expectedMdl = Constants.createIsoMdlModel()
+    stubFetchDocuments(with: [expectedPid, expectedMdl])
     stubHasPin(with: false)
     stubRunAtLeastOnce()
     // When
@@ -82,7 +89,9 @@ final class TestStartupInteractor: EudiTest {
   func testInitialize_WhenIsNotFirstBootAndPinIsSetAndHasIssuedDocuments_ThenReturnBiometricsAppRouteWithNavigationSuccessDashboard() async throws {
     // Given
     let expectedConfig = biometryConfig(with: true)
-    stubFetchDocuments(with: [Constants.euPidModel, Constants.isoMdlModel])
+    let expectedPid = Constants.createEuPidModel()
+    let expectedMdl = Constants.createIsoMdlModel()
+    stubFetchDocuments(with: [expectedPid, expectedMdl])
     stubHasPin(with: true)
     stubRunAtLeastOnce()
     // When
@@ -131,8 +140,10 @@ final class TestStartupInteractor: EudiTest {
   
   func testInitialize_WhenIsFirstBootAndPinIsNotSet_ThenClearDocumentStorageAndReturnQuickPinAppRoute() async throws {
     // Given
-    let expectedConfig = QuickPinUiConfig(flow: .set)
-    stubFetchDocuments(with: [Constants.euPidModel, Constants.isoMdlModel])
+    let expectedConfig = QuickPinUiConfig(flow: .setWithActivation)
+    let expectedPid = Constants.createEuPidModel()
+    let expectedMdl = Constants.createIsoMdlModel()
+    stubFetchDocuments(with: [expectedPid, expectedMdl])
     stubHasPin(with: false)
     stubRunAtLeastOnce(false)
     // When
@@ -157,7 +168,7 @@ final class TestStartupInteractor: EudiTest {
 
 private extension TestStartupInteractor {
   
-  func stubFetchDocuments(with documents: [DocClaimsDecodable]) {
+  func stubFetchDocuments(with documents: [any DocClaimsDecodable]) {
     stub(walletKitController) { mock in
       when(mock.loadDocuments()).thenDoNothing()
       when(mock.fetchAllDocuments()).thenReturn(documents)
@@ -190,6 +201,12 @@ private extension TestStartupInteractor {
   func stubPrefsControllerSetValue() {
     stub(prefsController) { mock in
       when(mock.setValue(any(), forKey: any())).thenDoNothing()
+    }
+  }
+  
+  func stubConfigLogic() {
+    stub(configLogic) { mock in
+      when(mock.forcePidActivation.get).thenReturn(true)
     }
   }
   

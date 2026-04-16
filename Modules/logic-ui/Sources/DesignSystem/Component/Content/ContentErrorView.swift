@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,7 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 import SwiftUI
-import logic_business
 import logic_resources
 
 public struct ContentErrorView: View {
@@ -29,11 +28,15 @@ public struct ContentErrorView: View {
 
     ContentScreenView {
 
-      ContentHeaderView(dismissIcon: Theme.shared.image.xmark) {
+      ContentHeaderErrorView(dismissIcon: Theme.shared.image.xmark) {
         config.cancelAction()
       }
 
-      ContentTitleView(title: config.title, caption: config.description)
+      ContentTitleView(
+        title: config.title,
+        accessibilityTitle: ContentErrorLocators.screenTitle,
+        caption: config.description
+      )
 
       Spacer()
 
@@ -42,6 +45,9 @@ public struct ContentErrorView: View {
           style: .primary,
           title: config.button,
           onAction: action()
+        )
+        .combineChilrenAccessibility(
+          locator: ContentErrorLocators.primaryButton
         )
       }
     }

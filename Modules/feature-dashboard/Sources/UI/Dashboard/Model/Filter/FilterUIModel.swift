@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -27,7 +27,28 @@ public struct FilterUIItem: Sendable, Identifiable {
   public let id: String
   public let title: String
   public let selected: Bool
+  public let startDate: Date?
+  public let endDate: Date?
   public let filterAction: FilterAction
+  public let filterSectionType: FilterElementType
+
+  init(
+    id: String,
+    title: String,
+    selected: Bool,
+    startDate: Date? = nil,
+    endDate: Date? = nil,
+    filterAction: FilterAction,
+    filterSectionType: FilterElementType
+  ) {
+    self.id = id
+    self.title = title
+    self.selected = selected
+    self.startDate = startDate
+    self.endDate = endDate
+    self.filterAction = filterAction
+    self.filterSectionType = filterSectionType
+  }
 }
 
 public extension FilterUISection {

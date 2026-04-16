@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,10 +19,10 @@ import logic_resources
 
 public struct BaseRequestView<Router: RouterHost>: View {
 
-  @ObservedObject var viewModel: BaseRequestViewModel<Router>
+  @State private var viewModel: BaseRequestViewModel<Router>
 
   public init(with router: Router, viewModel: BaseRequestViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   public var body: some View {
@@ -35,7 +35,6 @@ public struct BaseRequestView<Router: RouterHost>: View {
     ) {
       content(
         viewState: viewModel.viewState,
-        getScreenRect: getScreenRect(),
         onShare: viewModel.onShare,
         onSelectionChanged: { id in
           Task {
@@ -45,18 +44,26 @@ public struct BaseRequestView<Router: RouterHost>: View {
       )
     }
     .confirmationDialog(
-      title: .requestDataInfoNotice,
-      message: .requestDataSheetCaption,
-      baseText: .okButton,
+      .requestDataInfoNotice,
       isPresented: $viewModel.isRequestInfoModalShowing,
-      baseAction: viewModel.onShowRequestInfoModal()
+      actions: {
+        Button(.okButton) {
+          viewModel.onShowRequestInfoModal()
+        }
+      }, message: {
+        Text(.requestDataSheetCaption)
+      }
     )
     .confirmationDialog(
-      title: viewModel.getTrustedRelyingParty(),
-      message: viewModel.getTrustedRelyingPartyInfo(),
-      baseText: .okButton,
+      viewModel.getTrustedRelyingParty(),
       isPresented: $viewModel.isVerifiedEntityModalShowing,
-      baseAction: viewModel.onVerifiedEntityModal()
+      actions: {
+        Button(.okButton) {
+          viewModel.onVerifiedEntityModal()
+        }
+      }, message: {
+        Text(viewModel.getTrustedRelyingPartyInfo())
+      }
     )
     .task {
       if !viewModel.viewState.initialized {
@@ -66,7 +73,10 @@ public struct BaseRequestView<Router: RouterHost>: View {
     .alertView(
       isPresented: $viewModel.itemsChanged,
       title: .custom(""),
-      message: .incompleteRequestDataSelection
+      message: .incompleteRequestDataSelection,
+      actions: {
+        Button(.okButton) {}
+      }
     )
   }
 }
@@ -75,30 +85,58 @@ public struct BaseRequestView<Router: RouterHost>: View {
 @ViewBuilder
 private func content(
   viewState: RequestViewState,
-  getScreenRect: CGRect,
   onShare: @escaping () -> Void,
-  onSelectionChanged: @escaping @Sendable (String) -> Void
+  onSelectionChanged: @escaping (String) -> Void
+) -> some View {
+  let errorTitle =
+    viewState.errorTitle
+    ?? (viewState.items.isEmpty ? .requestDataNoDocument : nil)
+
+  if let errorTitle {
+    noDocumentsFound(
+      contentHeaderConfig: viewState.contentHeaderConfig,
+      errorTitle: errorTitle
+    )
+  } else {
+    scrollableContent(
+      viewState: viewState,
+      onShare: onShare,
+      onSelectionChanged: onSelectionChanged
+    )
+  }
+}
+
+@MainActor
+@ViewBuilder
+private func scrollableContent(
+  viewState: RequestViewState,
+  onShare: @escaping () -> Void,
+  onSelectionChanged: @escaping (String) -> Void
 ) -> some View {
   ScrollView {
     VStack(spacing: .zero) {
-      ContentHeader(
-        config: viewState.contentHeaderConfig
+      ContentHeaderView(
+        config: viewState.contentHeaderConfig,
+        accessibilityDescription: BaseRequestLocators.description
       )
-
-      if viewState.items.isEmpty {
-        noDocumentsFound(getScreenRect: getScreenRect)
-      } else {
+      ZStack {
         VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
 
-          ForEach(viewState.items, id: \.id) { section in
+          ForEach(viewState.items.indices, id: \.self) { index in
+            let section = viewState.items[index]
             WrapExpandableListView(
               header: .init(
-                mainText: .custom(section.section.title),
+                mainContent: .text(.custom(section.section.title)),
                 supportingText: .viewDetails
               ),
               items: section.section.listItems,
               hideSensitiveContent: false,
+              isLoading: viewState.isLoading,
               onItemClick: { onSelectionChanged($0.groupId) }
+            )
+            .accessibilityElement()
+            .combineChilrenAccessibility(
+              locator: BaseRequestLocators.requestedDocument(index.string)
             )
           }
 
@@ -106,41 +144,36 @@ private func content(
             .typography(Theme.shared.font.bodyMedium)
             .foregroundColor(Theme.shared.color.onSurface)
             .multilineTextAlignment(.leading)
+            .shimmer(isLoading: viewState.isLoading)
 
           VSpacer.medium()
         }
         .padding(.top, Theme.shared.dimension.padding)
-        .shimmer(isLoading: viewState.isLoading)
       }
+      .padding(Theme.shared.dimension.padding)
     }
-    .padding(Theme.shared.dimension.padding)
   }
 }
 
 @MainActor
 @ViewBuilder
-private func noDocumentsFound(getScreenRect: CGRect) -> some View {
-  VStack(alignment: .center) {
-
-    Spacer()
-
-    VStack(alignment: .center, spacing: SPACING_MEDIUM) {
-
-      let imageSize = getScreenRect.width / 4
-
-      Theme.shared.image.exclamationmarkCircle
-        .renderingMode(.template)
-        .resizable()
-        .foregroundStyle(Theme.shared.color.secondaryFixed)
-        .frame(width: imageSize, height: imageSize)
-
-      Text(.requestDataNoDocument)
-        .typography(Theme.shared.font.bodyLarge)
-        .foregroundColor(Theme.shared.color.secondaryFixed)
-        .multilineTextAlignment(.center)
+private func noDocumentsFound(
+  contentHeaderConfig: ContentHeaderConfig,
+  errorTitle: LocalizableStringKey
+) -> some View {
+  VStack(spacing: .zero) {
+    ContentHeaderView(
+      config: contentHeaderConfig,
+      accessibilityDescription: BaseRequestLocators.description
+    )
+    VStack(spacing: .zero) {
+      Spacer()
+      ContentEmptyView(
+        title: errorTitle
+      )
+      Spacer()
     }
-
-    Spacer()
+    .padding(.horizontal, Theme.shared.dimension.padding)
   }
 }
 
@@ -148,6 +181,7 @@ private func noDocumentsFound(getScreenRect: CGRect) -> some View {
   let viewState = RequestViewState(
     isLoading: false,
     error: nil,
+    errorTitle: nil,
     showMissingCredentials: false,
     items: RequestDataUiModel.mockData(),
     trustedRelyingPartyInfo: .requestDataVerifiedEntityMessage,
@@ -167,7 +201,6 @@ private func noDocumentsFound(getScreenRect: CGRect) -> some View {
   ContentScreenView {
     content(
       viewState: viewState,
-      getScreenRect: UIScreen.main.bounds,
       onShare: {},
       onSelectionChanged: { _ in }
     )

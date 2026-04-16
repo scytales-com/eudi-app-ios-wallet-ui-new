@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,13 +16,15 @@
 import Foundation
 import logic_resources
 
-public enum WalletCoreError: LocalizedError {
+public enum WalletCoreError: LocalizedError, Equatable {
   case unableFetchDocuments
   case unableFetchDocument
   case missingPid
   case unableToIssueAndStore
+  case missingMetadata
   case transactionCodeFormat([String])
   case unableToPresentAndShare
+  case unableToFetchTransactionLog
 
   public var errorDescription: String? {
     return switch self {
@@ -34,10 +36,14 @@ public enum WalletCoreError: LocalizedError {
       LocalizableStringKey.missingPid.toString
     case .unableToIssueAndStore:
       LocalizableStringKey.unableToIssueAndStore.toString
+    case .missingMetadata:
+      LocalizableStringKey.missingMetadata.toString
     case .transactionCodeFormat(let args):
       LocalizableStringKey.transactionCodeFormatError(args).toString
     case .unableToPresentAndShare:
       LocalizableStringKey.unableToPresentAndShare.toString
+    case .unableToFetchTransactionLog:
+      LocalizableStringKey.errorFetchTransactionLog.toString
     }
   }
 }

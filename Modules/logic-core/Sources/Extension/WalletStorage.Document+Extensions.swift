@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,10 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 import Foundation
-import EudiWalletKit
 
 extension Array where Element == WalletStorage.Document {
-  func transformToDeferredDecodables() -> [DocClaimsDecodable] {
+  func transformToDeferredDecodables() -> [any DocClaimsDecodable] {
     return self.compactMap { document in
       return document.transformToDeferredDecodable()
     }
@@ -29,8 +28,10 @@ extension WalletStorage.Document {
     let metadata = DocMetadata(from: self.metadata)
     return DeferrredDocument(
       id: self.id,
+      statusIdentifier: nil,
       createdAt: self.createdAt,
       displayName: metadata?.getDisplayName(Locale.current.systemLanguageCode),
+      docType: "",
       docClaims: [],
       docDataFormat: self.docDataFormat,
       ageOverXX: [:],
@@ -39,7 +40,15 @@ extension WalletStorage.Document {
       credentialIssuerIdentifier: metadata?.credentialIssuerIdentifier,
       configurationIdentifier: metadata?.configurationIdentifier,
       validFrom: nil,
-      validUntil: nil
+      validUntil: nil,
+      credentialsUsageCounts: nil,
+      credentialPolicy: .oneTimeUse
     )
+  }
+}
+
+extension WalletStorage.Document {
+  var documentTypeIdentifier: DocumentTypeIdentifier {
+    DocumentTypeIdentifier(rawValue: docType)
   }
 }

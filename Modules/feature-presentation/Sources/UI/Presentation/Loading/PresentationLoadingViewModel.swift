@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,7 +13,6 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
 import feature_common
 import logic_core
 
@@ -21,6 +20,7 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
 
   private let interactor: PresentationInteractor
   private var publisherTask: Task<Void, Error>?
+  private var coordinator: RemoteSessionCoordinator?
 
   init(
     router: Router,
@@ -44,15 +44,15 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
   }
 
   func subscribeToCoordinatorPublisher() async {
-    switch self.interactor.getSessionStatePublisher() {
+    switch await self.interactor.getSessionStatePublisher() {
     case .success(let publisher):
       for try await state in publisher {
         switch state {
         case .error(let error):
           self.onError(with: error)
         case .responseSent(let url):
-          self.interactor.stopPresentation()
-          self.onNavigate(type: .push(getOnSuccessRoute(with: url)))
+          await self.interactor.stopPresentation()
+          self.onNavigate(type: .push(await getOnSuccessRoute(with: url)))
         default:
           ()
         }
@@ -70,7 +70,7 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
     .requestsTheFollowing
   }
 
-  private func getOnSuccessRoute(with url: URL?) -> AppRoute {
+  private func getOnSuccessRoute(with url: URL?) async -> AppRoute {
 
     self.publisherTask?.cancel()
 
@@ -79,7 +79,7 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
         return .pop(screen: getOriginator())
       }
       guard !isDynamicIssuance() else {
-        interactor.storeDynamicIssuancePendingUrl(with: url)
+        Task { await interactor.storeDynamicIssuancePendingUrl(with: url) }
         return .pop(screen: getOriginator())
       }
       return .deepLink(
@@ -93,7 +93,8 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
         config: DocumentSuccessUIConfig(
           successNavigation: navigationType,
           relyingParty: getRelyingParty(),
-          relyingPartyIsTrusted: isRelyingPartyIstrusted()
+          relyingPartyIsTrusted: isRelyingPartyIstrusted(),
+          isIssuingDocument: false
         ),
         getRequestItems()
       )
@@ -113,25 +114,22 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
 
   override func getOnPopRoute() -> AppRoute? {
     self.publisherTask?.cancel()
-    return switch interactor.getCoordinator() {
-    case .success(let remoteSessionCoordinator):
-        .featurePresentationModule(
-          .presentationRequest(
-            presentationCoordinator: remoteSessionCoordinator,
-            originator: getOriginator()
-          )
-        )
-    case .failure: nil
-    }
+    guard let coordinator = self.coordinator else { return nil }
+    return .featurePresentationModule(
+      .presentationRequest(
+        presentationCoordinator: coordinator,
+        originator: getOriginator()
+      )
+    )
   }
 
   override func doWork() async {
 
     startPublisherTask()
 
-    let result = await Task.detached { () -> RemoteSentResponsePartialState in
-      return await self.interactor.onSendResponse()
-    }.value
+    await getCoordinator()
+
+    let result = await interactor.onSendResponse()
 
     switch result {
     case .sent: break
@@ -145,9 +143,16 @@ final class PresentationLoadingViewModel<Router: RouterHost, RequestItem: Sendab
       publisherTask = Task {
         await self.subscribeToCoordinatorPublisher()
       }
-      Task {
-        try? await self.publisherTask?.value
-      }
+      Task { try? await self.publisherTask?.value }
+    }
+  }
+
+  private func getCoordinator() async {
+    switch await interactor.getCoordinator() {
+    case .success(let remoteSessionCoordinator):
+      self.coordinator = remoteSessionCoordinator
+    case .failure:
+      self.coordinator = nil
     }
   }
 }

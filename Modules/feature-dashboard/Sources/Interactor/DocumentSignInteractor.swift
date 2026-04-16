@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,7 +13,6 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_business
 import EudiRQESUi
 
@@ -21,7 +20,7 @@ public protocol DocumentSignInteractor: Sendable {
   func initiateSigning(url: URL) async
 }
 
-final class DocumentSignInteractorImpl: DocumentSignInteractor {
+final actor DocumentSignInteractorImpl: DocumentSignInteractor {
 
   private let configLogic: ConfigLogic
 
@@ -34,9 +33,9 @@ final class DocumentSignInteractorImpl: DocumentSignInteractor {
     let eudiRQESUi: EudiRQESUi
 
     do {
-      eudiRQESUi = try EudiRQESUi.instance()
+      eudiRQESUi = try .instance()
     } catch {
-      eudiRQESUi = EudiRQESUi.init(config: configLogic.rqesConfig)
+      eudiRQESUi = await .init(config: configLogic.rqesConfig)
     }
 
     guard let controller = await UIApplication.shared.topViewController() else {

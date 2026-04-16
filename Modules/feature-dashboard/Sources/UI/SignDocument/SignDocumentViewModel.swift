@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,19 +13,21 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_ui
 import logic_resources
+import Observation
 
 @Copyable
 struct SignDocumentState: ViewState {
   let listItem: ListItemData
 }
 
+@Observable
 final class SignDocumentViewModel<Router: RouterHost>: ViewModel<Router, SignDocumentState> {
 
-  @Published var showFilePicker: Bool = false
+  var showFilePicker: Bool = false
 
+  @ObservationIgnored
   private let interactor: DocumentSignInteractor
 
   init(
@@ -37,15 +39,25 @@ final class SignDocumentViewModel<Router: RouterHost>: ViewModel<Router, SignDoc
       router: router,
       initialState: .init(
         listItem: .init(
-          mainText: .selectDocument,
+          mainContent: .text(.selectDocument),
           trailingContent: .icon(Theme.shared.image.plus)
         )
       )
     )
   }
 
-  func pop() {
-    router.pop()
+  func toolbarContent() -> ToolBarContent {
+    .init(
+      trailingActions: [],
+      leadingActions: [
+        .init(
+          image: Theme.shared.image.chevronLeft,
+          accessibilityLocator: ToolbarLocators.chevronLeft
+        ) {
+          self.router.pop()
+        }
+      ]
+    )
   }
 
   func onFileSelection(with url: URL) {

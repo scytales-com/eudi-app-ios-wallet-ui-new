@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,10 +13,8 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_ui
 import logic_business
-import UIKit
 import logic_resources
 import logic_core
 
@@ -42,25 +40,49 @@ final class ProximityConnectionViewModel<Router: RouterHost>: ViewModel<Router, 
         originator: originator
       )
     )
-    publisherTask = Task {
-      await self.subscribeToCoordinatorPublisher()
-    }
   }
 
   func initialize() async {
-    await self.interactor.onDeviceEngagement()
-    try? await publisherTask?.value
+    self.startPublisherTask()
+    switch await self.interactor.onDeviceEngagement() {
+    case .success: break
+    case .failure(let error):
+      self.onError(with: error)
+    }
   }
 
-  func subscribeToCoordinatorPublisher() async {
-    switch self.interactor.getSessionStatePublisher() {
+  func toolbarContent() -> ToolBarContent {
+    .init(
+      trailingActions: [],
+      leadingActions: [
+        .init(
+          image: Theme.shared.image.chevronLeft,
+          accessibilityLocator: ToolbarLocators.chevronLeft
+        ) {
+          self.pop()
+        }
+      ]
+    )
+  }
+
+  private func startPublisherTask() {
+    if publisherTask == nil || publisherTask?.isCancelled == true {
+      publisherTask = Task {
+        await self.subscribeToCoordinatorPublisher()
+      }
+      Task { try? await self.publisherTask?.value }
+    }
+  }
+
+  private func subscribeToCoordinatorPublisher() async {
+    switch await self.interactor.getSessionStatePublisher() {
     case .success(let publisher):
       for try await state in publisher {
         switch state {
         case .prepareQr:
           await self.onQRGeneration()
         case .requestReceived:
-          self.onConnectionSuccess()
+          await self.onConnectionSuccess()
         case .error(let error):
           self.onError(with: error)
         default:
@@ -72,6 +94,12 @@ final class ProximityConnectionViewModel<Router: RouterHost>: ViewModel<Router, 
     }
   }
 
+  private func pop() {
+    publisherTask?.cancel()
+    Task { await interactor.stopPresentation() }
+    router.pop()
+  }
+
   private func onQRGeneration() async {
     switch await interactor.onQRGeneration() {
     case .success(let qrImage):
@@ -81,14 +109,9 @@ final class ProximityConnectionViewModel<Router: RouterHost>: ViewModel<Router, 
     }
   }
 
-  func goBack() {
-    interactor.stopPresentation()
-    router.pop()
-  }
-
-  private func onConnectionSuccess() {
+  private func onConnectionSuccess() async {
     publisherTask?.cancel()
-    switch interactor.getCoordinator() {
+    switch await interactor.getCoordinator() {
     case .success(let proximitySessionCoordinator):
       router.push(
         with: .featureProximityModule(
@@ -108,13 +131,9 @@ final class ProximityConnectionViewModel<Router: RouterHost>: ViewModel<Router, 
       $0.copy(
         error: .init(
           description: .custom(error.localizedDescription),
-          cancelAction: self.router.pop()
+          cancelAction: self.pop()
         )
       )
     }
-  }
-
-  func pop() {
-    router.pop()
   }
 }

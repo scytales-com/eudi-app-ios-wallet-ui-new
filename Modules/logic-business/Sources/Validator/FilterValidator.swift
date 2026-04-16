@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,28 +13,26 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Combine
 import Foundation
-import logic_resources
 
 public enum FilterResultPartialState: Sendable {
   case success(FilterResult)
   case completion
 }
-
 public protocol FilterValidator: Sendable {
   func getFilterResultStream() -> AsyncStream<FilterResultPartialState>
   func initializeValidator(filters: Filters, filterableList: FilterableList) async
   func updateLists(sortOrder: SortOrderType, filterableList: FilterableList) async
-  func applyFilters() async
+  func applyFilters(sortOrder: SortOrderType) async
   func applySearch(query: String) async
   func resetFilters() async
   func revertFilters() async
   func updateFilter(filterGroupId: String, filterId: String) async
+  func updateDateFilters(filterGroupId: String, filterId: String, startDate: Date, endDate: Date) async
   func updateSortOrder(sortOrder: SortOrderType) async
 }
 
-actor FilterValidatorImpl: FilterValidator {
+final actor FilterValidatorImpl: FilterValidator {
 
   private var appliedFilters: Filters
   private var defaultFilters: Filters
@@ -69,7 +67,7 @@ actor FilterValidatorImpl: FilterValidator {
     return filterResultSubject.getAsyncStream()
   }
 
-  func initializeValidator (
+  func initializeValidator(
     filters: Filters,
     filterableList: FilterableList
   ) async {
@@ -84,24 +82,31 @@ actor FilterValidatorImpl: FilterValidator {
       }
     }
 
-    appliedFilters = Filters(filterGroups: mergedFilterGroups, sortOrder: appliedFilters.sortOrder)
+    appliedFilters = Filters(
+      filterGroups: mergedFilterGroups,
+      sortOrder: defaultFilters.sortOrder
+    )
 
     self.initialList = filterableList
   }
 
-  func applyFilters() async {
+  func applyFilters(sortOrder: SortOrderType = .ascending) async {
 
     if !snapshotFilters.isEmpty {
       appliedFilters = snapshotFilters.copy()
-      snapshotFilters = Filters.emptyFilters()
+      snapshotFilters = Filters.emptyFilters(sortOrder: sortOrder)
     }
 
     var filteredList = appliedFilters.filterGroups.reduce(initialList) { currentList, group in
       switch group {
       case let multipleGroup as MultipleSelectionFilterGroup:
         return applyMultipleSelectionFilter(currentList, multipleGroup)
+      case let reversingMultipleGroup as ReversibleMultipleSelectionFilterGroup:
+        return applyReversibleMultipleSelectionFilter(currentList, reversingMultipleGroup)
       case let singleGroup as SingleSelectionFilterGroup:
         return applySingleSelectionFilter(currentList, singleGroup)
+      case let reversingSingleGroup as ReversibleSingleSelectionFilterGroup:
+        return applyReversibleSingleSelectionFilter(currentList, reversingSingleGroup)
       default:
         return currentList
       }
@@ -141,6 +146,36 @@ actor FilterValidatorImpl: FilterValidator {
 
     let updatedFilterGroups = filtersUpdate.filterGroups.map { group in
       return group.id == filterGroupId ? updateFilterInGroup(group: group, filterId: filterId) : group
+    }
+
+    let sortOrder = updatedFilterGroups
+      .filter { $0.filterType == .orderBy }
+      .flatMap { $0.filters }
+      .first { $0.selected }?.id == FilterIds.ORDER_BY_ASCENDING
+    ? SortOrderType.ascending
+    : SortOrderType.descending
+
+    let updatedFilters = filtersUpdate.copy(
+      filterGroups: updatedFilterGroups,
+      sortOrder: sortOrder
+    )
+
+    snapshotFilters = updatedFilters
+
+    self.filterResultSubject.send(
+      .success(
+        .filterUpdateResult(
+          updatedFilters: snapshotFilters
+        )
+      )
+    )
+  }
+
+  func updateDateFilters(filterGroupId: String, filterId: String, startDate: Date, endDate: Date) async {
+    let filtersUpdate = snapshotFilters.isEmpty ? appliedFilters : snapshotFilters
+
+    let updatedFilterGroups = filtersUpdate.filterGroups.map { group in
+      return group.id == filterGroupId ? updateFilterInGroup(group: group, filterId: filterId, startDate: startDate, endDate: endDate) : group
     }
 
     let sortOrder = updatedFilterGroups
@@ -214,14 +249,39 @@ actor FilterValidatorImpl: FilterValidator {
           _ currentList: FilterableList,
           _ group: SingleSelectionFilterGroup
   ) -> FilterableList {
-    return group.filters.filter { $0.selected }
-      .reduce(currentList) { innerCurrentList, filter in
-        filter.filterableAction.applyFilter(
-          sortOrder: appliedFilters.sortOrder,
-          filterableItems: innerCurrentList,
-          filter: filter
-        )
-      }
+    guard let selectedFilter = group.filters.first(where: { $0.selected }) else {
+      return .init(items: [])
+    }
+
+    return selectedFilter.filterableAction.applyFilter(
+      sortOrder: appliedFilters.sortOrder,
+      filterableItems: currentList,
+      filter: selectedFilter
+    )
+  }
+
+  private func applyReversibleSingleSelectionFilter(
+    _ currentList: FilterableList,
+    _ group: ReversibleSingleSelectionFilterGroup
+  ) -> FilterableList {
+    guard let selectedFilter = group.filters.first(where: { $0.selected }) else {
+      return currentList
+    }
+
+    return selectedFilter.filterableAction.applyFilter(
+      sortOrder: appliedFilters.sortOrder,
+      filterableItems: currentList,
+      filter: selectedFilter
+    )
+  }
+
+  private func applyReversibleMultipleSelectionFilter(
+    _ currentList: FilterableList,
+    _ group: ReversibleMultipleSelectionFilterGroup
+  ) -> FilterableList {
+    return group.filters.contains { $0.selected } ?
+    group.filterableAction.applyFilterGroup(filterableItems: currentList, filterGroup: group) :
+    currentList
   }
 
   private func mergeFilters(
@@ -230,24 +290,39 @@ actor FilterValidatorImpl: FilterValidator {
   ) -> FilterGroup {
     let mergedFilters = newFilterGroup.filters.map { newFilter in
       if let existingFilter = existingFilterGroup.filters.first(where: { $0.id == newFilter.id }) {
-        return newFilter.copy(selected: existingFilter.selected)
+        return newFilter.copy(
+          selected: existingFilter.selected,
+          startDate: existingFilter.startDate,
+          endDate: existingFilter.endDate
+        )
       }
       return newFilter
     }
 
     switch newFilterGroup {
-      case var multipleGroup as MultipleSelectionFilterGroup:
-        multipleGroup.filters = mergedFilters
-        return multipleGroup
-      case var singleGroup as SingleSelectionFilterGroup:
-        singleGroup.filters = mergedFilters
-        return singleGroup
-      default:
-        return newFilterGroup
+    case var multipleGroup as MultipleSelectionFilterGroup:
+      multipleGroup.filters = mergedFilters
+      return multipleGroup
+    case var reversibleMultipleGroup as ReversibleMultipleSelectionFilterGroup:
+      reversibleMultipleGroup.filters = mergedFilters
+      return reversibleMultipleGroup
+    case var singleGroup as SingleSelectionFilterGroup:
+      singleGroup.filters = mergedFilters
+      return singleGroup
+    case var reversibleSingleGroup as ReversibleSingleSelectionFilterGroup:
+      reversibleSingleGroup.filters = mergedFilters
+      return reversibleSingleGroup
+    default:
+      return newFilterGroup
     }
   }
 
-  private func updateFilterInGroup(group: FilterGroup, filterId: String) -> FilterGroup {
+  private func updateFilterInGroup(
+    group: FilterGroup,
+    filterId: String,
+    startDate: Date? = nil,
+    endDate: Date? = nil
+  ) -> FilterGroup {
     if var multipleGroup = group as? MultipleSelectionFilterGroup {
       multipleGroup.filters = multipleGroup.filters.map { filter in
         let updatedFilter = filter
@@ -263,9 +338,26 @@ actor FilterValidatorImpl: FilterValidator {
     if var singleGroup = group as? SingleSelectionFilterGroup {
       singleGroup.filters = singleGroup.filters.map { filter in
         let updatedFilter = filter
+        if filter.id == FilterIds.FILTER_BY_TRANSACTION_DATE_RANGE {
+          return updatedFilter.copy(startDate: startDate, endDate: endDate)
+        }
         return updatedFilter.copy(selected: (filter.id == filterId))
       }
       return singleGroup
+    }
+
+    if var singleReversibleGroup = group as? ReversibleSingleSelectionFilterGroup {
+      singleReversibleGroup.filters = singleReversibleGroup.filters.map { filter in
+        return filter.id == filterId ? filter.copy(selected: !filter.selected) : filter
+      }
+      return singleReversibleGroup
+    }
+
+    if var multipleReversibleGroup = group as? ReversibleMultipleSelectionFilterGroup {
+      multipleReversibleGroup.filters = multipleReversibleGroup.filters.map { filter in
+        return filter.id == filterId ? filter.copy(selected: !filter.selected) : filter
+      }
+      return multipleReversibleGroup
     }
 
     return group
@@ -279,5 +371,11 @@ actor FilterValidatorImpl: FilterValidator {
     let allUnselectedAreNotDefault = allFilters.filter { !$0.selected }.allSatisfy { !$0.isDefault }
 
     return allSelectedAreDefault && allUnselectedAreNotDefault
+  }
+}
+
+extension FilterValidatorImpl {
+  var appliedFiltersForTesting: Filters {
+    return appliedFilters
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -28,14 +28,14 @@ final class TestBiometryInteractor: EudiTest {
   var systemBiometricController: MockSystemBiometryController!
   
   override func setUp() {
+    super.setUp()
     self.prefsController = MockPrefsController()
     self.quickPinInteractor = MockQuickPinInteractor()
     self.systemBiometricController = MockSystemBiometryController()
     self.interactor = BiometryInteractorImpl(
       prefsController: self.prefsController,
       quickPinInteractor: self.quickPinInteractor,
-      biometryController: self.systemBiometricController,
-      useTestDispatcher: true
+      biometryController: self.systemBiometricController
     )
   }
   
@@ -44,38 +44,43 @@ final class TestBiometryInteractor: EudiTest {
     self.prefsController = nil
     self.quickPinInteractor = nil
     self.systemBiometricController = nil
+    super.tearDown()
   }
   
-  func testIsBiometryEnabled_WhenPrefsControllerReturnsTrue_ThenReturnEnabled() {
+  // MARK: - isBiometryEnabled
+  
+  func testIsBiometryEnabled_WhenPrefsControllerReturnsTrue_ThenReturnEnabled() async {
     // Given
     stub(prefsController) { mock in
       when(mock.getBool(forKey: Prefs.Key.biometryEnabled)).thenReturn(true)
     }
     // When
-    let isEnabled = interactor.isBiometryEnabled()
+    let isEnabled = await interactor.isBiometryEnabled()
     // Then
     XCTAssertTrue(isEnabled)
   }
   
-  func testIsBiometryEnabled_WhenPrefsControllerReturnsFalse_ThenReturnIsNotEnabled() {
+  func testIsBiometryEnabled_WhenPrefsControllerReturnsFalse_ThenReturnIsNotEnabled() async {
     // Given
     stub(prefsController) { mock in
       when(mock.getBool(forKey: Prefs.Key.biometryEnabled)).thenReturn(false)
     }
     // When
-    let isEnabled = interactor.isBiometryEnabled()
+    let isEnabled = await interactor.isBiometryEnabled()
     // Then
     XCTAssertFalse(isEnabled)
   }
   
-  func testIsPinValid_WhenQuickPinInteractorReturnsValid_ThenReturnSuccessPartialState() {
+  // MARK: - isPinValid
+  
+  func testIsPinValid_WhenQuickPinInteractorReturnsValid_ThenReturnSuccessPartialState() async {
     // Given
     let pin = "1234"
     stub(quickPinInteractor) { mock in
       when(mock.isPinValid(pin: pin)).thenReturn(.success)
     }
     // When
-    let state = interactor.isPinValid(with: pin)
+    let state = await interactor.isPinValid(with: pin)
     // Then
     switch state {
     case .success:
@@ -85,7 +90,7 @@ final class TestBiometryInteractor: EudiTest {
     }
   }
   
-  func testIsPinValid_WhenQuickPinInteractorReturnsNotValid_ThenReturnFailurePartialState() {
+  func testIsPinValid_WhenQuickPinInteractorReturnsNotValid_ThenReturnFailurePartialState() async {
     // Given
     let pin = "1234"
     let mockedError = AuthenticationError.quickPinInvalid
@@ -93,7 +98,7 @@ final class TestBiometryInteractor: EudiTest {
       when(mock.isPinValid(pin: pin)).thenReturn(.failure(mockedError))
     }
     // When
-    let state = interactor.isPinValid(with: pin)
+    let state = await interactor.isPinValid(with: pin)
     // Then
     switch state {
     case .failure(let error):
@@ -103,102 +108,144 @@ final class TestBiometryInteractor: EudiTest {
     }
   }
   
-  func testSetBiometrySelection_WhenMethodCalledWithTrue_ThenVerifyPrefsControllerSet() {
+  // MARK: - setBiometrySelection
+  
+  func testSetBiometrySelection_WhenMethodCalledWithTrue_ThenVerifyPrefsControllerSet() async {
     // Given
     stub(prefsController) { mock in
       when(mock.setValue(any(), forKey: Prefs.Key.biometryEnabled)).thenDoNothing()
     }
     // When
-    interactor.setBiometrySelection(isEnabled: true)
+    await interactor.setBiometrySelection(isEnabled: true)
     // Then
     verify(prefsController).setValue(any(), forKey: Prefs.Key.biometryEnabled)
   }
   
-  func testBiometricsImage_WhenControllerReturnsFaceIdType_ThenReturnFaceIdImage() {
+  // MARK: - getBiometricsImage
+  
+  func testBiometricsImage_WhenControllerReturnsFaceIdType_ThenReturnFaceIdImage() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.faceID)
+      when(mock.getBiometryType()).thenReturn(.faceID)
     }
     // When
-    let biometryImage = interactor.biometricsImage
+    let biometryImage = await interactor.getBiometricsImage()
     // Then
     XCTAssertEqual(biometryImage, Theme.shared.image.faceId)
   }
   
-  func testBiometricsImage_WhenControllerReturnsTouchIdType_ThenReturnTouchIdImage() {
+  func testBiometricsImage_WhenControllerReturnsTouchIdType_ThenReturnTouchIdImage() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.touchID)
+      when(mock.getBiometryType()).thenReturn(.touchID)
     }
     // When
-    let biometryImage = interactor.biometricsImage
+    let biometryImage = await interactor.getBiometricsImage()
     // Then
     XCTAssertEqual(biometryImage, Theme.shared.image.touchId)
   }
   
-  func testBiometricsImage_WhenControllerReturnsNotSupportedType_ThenReturnNil() {
+  func testBiometricsImage_WhenControllerReturnsNotSupportedType_ThenReturnNil() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.none)
+      when(mock.getBiometryType()).thenReturn(.none)
     }
     // When
-    let biometryImage = interactor.biometricsImage
+    let biometryImage = await interactor.getBiometricsImage()
     // Then
     XCTAssertNil(biometryImage)
   }
   
-  func testBiometricType_WhenControllerReturnsFaceIdType_ThenReturnFaceIdType() {
+  // MARK: - getBiometryType
+  
+  func testBiometricType_WhenControllerReturnsFaceIdType_ThenReturnFaceIdType() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.faceID)
+      when(mock.getBiometryType()).thenReturn(.faceID)
     }
     // When
-    let biometryType = interactor.biometryType
+    let biometryType = await interactor.getBiometryType()
     // Then
     XCTAssertEqual(biometryType, .faceID)
   }
   
-  func testBiometricType_WhenControllerReturnsTouchIdType_ThenReturnTouchIdType() {
+  func testBiometricType_WhenControllerReturnsTouchIdType_ThenReturnTouchIdType() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.touchID)
+      when(mock.getBiometryType()).thenReturn(.touchID)
     }
     // When
-    let biometryType = interactor.biometryType
+    let biometryType = await interactor.getBiometryType()
     // Then
     XCTAssertEqual(biometryType, .touchID)
   }
   
-  func testCurrentBiometricsMethod_WhenControllerReturnsFaceIdType_ThenReturnFaceIdStringLiteral() {
+  // MARK: - getBiometricsMethod
+  
+  func testCurrentBiometricsMethod_WhenControllerReturnsFaceIdType_ThenReturnFaceIdStringLiteral() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.faceID)
+      when(mock.getBiometryType()).thenReturn(.faceID)
     }
     // When
-    let method = interactor.currentBiometricsMethod
+    let method = await interactor.getBiometricsMethod()
     // Then
     XCTAssertEqual(method, "Face ID")
   }
   
-  func testCurrentBiometricsMethod_WhenControllerReturnsTouchIdType_ThenReturnTouchIdStringLiteral() {
+  func testCurrentBiometricsMethod_WhenControllerReturnsTouchIdType_ThenReturnTouchIdStringLiteral() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.touchID)
+      when(mock.getBiometryType()).thenReturn(.touchID)
     }
     // When
-    let method = interactor.currentBiometricsMethod
+    let method = await interactor.getBiometricsMethod()
     // Then
     XCTAssertEqual(method, "Touch ID")
   }
   
-  func testCurrentBiometricsMethod_WhenControllerReturnsNotSupportedType_ThenReturnEmptyString() {
+  func testCurrentBiometricsMethod_WhenControllerReturnsNotSupportedType_ThenReturnEmptyString() async {
     // Given
     stub(systemBiometricController) { mock in
-      when(mock.biometryType.get).thenReturn(.none)
+      when(mock.getBiometryType()).thenReturn(.none)
     }
     // When
-    let method = interactor.currentBiometricsMethod
+    let method = await interactor.getBiometricsMethod()
     // Then
     XCTAssertEqual(method, "")
+  }
+  
+  // MARK: - authenticate
+  
+  func testAuthenticate_WhenRequestBiometricUnlockSucceeds_ThenEmitsAuthenticated() async {
+    // Given
+    stub(systemBiometricController) { mock in
+      when(mock.requestBiometricUnlock()).thenDoNothing()
+    }
+    
+    // When
+    let state = await interactor.authenticate()
+    
+    // Then
+    XCTAssertEqual(state, .authenticated)
+  }
+  
+  func testAuthenticate_WhenRequestBiometricUnlockFails_ThenEmitsFailureWithError() async {
+    // Given
+    stub(systemBiometricController) { mock in
+      when(mock.requestBiometricUnlock())
+        .thenThrow(SystemBiometryError.deniedAccess)
+    }
+    
+    // When
+    let state = await interactor.authenticate()
+    
+    // Then
+    switch state {
+    case .failure(let error):
+      XCTAssertEqual(error, .deniedAccess)
+    default:
+      XCTFail("Expected .failure(.deniedAccess) but got \(state)")
+    }
   }
 }

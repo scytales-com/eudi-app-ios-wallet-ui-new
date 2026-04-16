@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,33 +19,22 @@ import logic_resources
 
 struct SideMenuView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: SideMenuViewModel<Router>
+  @State private var viewModel: SideMenuViewModel<Router>
 
   init(with viewModel: SideMenuViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
     ContentScreenView(
       canScroll: true,
       navigationTitle: .myEuWallet,
-      toolbarContent: toolbarContent()
+      toolbarContent: viewModel.toolbarContent()
     ) {
       content(
         viewState: viewModel.viewState
       )
     }
-  }
-
-  func toolbarContent() -> ToolBarContent {
-    .init(
-      trailingActions: [],
-      leadingActions: [
-        Action(image: Theme.shared.image.chevronLeft) {
-          viewModel.onPop()
-        }
-      ]
-    )
   }
 }
 
@@ -54,32 +43,14 @@ struct SideMenuView<Router: RouterHost>: View {
 private func content(viewState: SideMenuViewState) -> some View {
   VStack(spacing: SPACING_MEDIUM_SMALL) {
     ForEach(viewState.items) { item in
-      if item.isShareLink {
-        if let fileUrl = viewState.logsUrl {
-          ShareLink(item: fileUrl) {
-            TappableCellView(
-              title: .retrieveLogs,
-              showDivider: item.showDivider,
-              useOverlay: false,
-              action: {}()
-            )
-          }
-        }
-      } else {
-        TappableCellView(
-          title: item.title,
-          showDivider: item.showDivider,
-          action: item.action()
-        )
-      }
+      TappableCellView(
+        title: item.title,
+        showDivider: item.showDivider,
+        action: item.action()
+      )
     }
 
     Spacer()
-
-    Text(viewState.appVersion)
-      .typography(Theme.shared.font.bodyMedium)
-      .frame(maxWidth: .infinity, alignment: .center)
-
   }
   .padding(.bottom, SPACING_LARGE_MEDIUM)
 }
@@ -91,10 +62,7 @@ private func content(viewState: SideMenuViewState) -> some View {
         title: .changeQuickPinOption,
         action: {}()
       )
-    ],
-    appVersion: "",
-    logsUrl: URL(string: "https://www.example.com"),
-    changelogUrl: URL(string: "https://www.example.com")
+    ]
   )
   ContentScreenView(
     padding: .zero,

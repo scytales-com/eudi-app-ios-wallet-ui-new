@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Foundation
 import SwiftUI
 import logic_ui
 import logic_resources
-import logic_core
 import CodeScanner
 
 struct ScannerView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: ScannerViewModel<Router>
+  @State private var viewModel: ScannerViewModel<Router>
 
   private var cameraSurfaceSize: CGFloat = .zero
 
   init(with viewModel: ScannerViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
     self.cameraSurfaceSize = getScreenRect().width - (Theme.shared.dimension.padding * 2)
   }
 
@@ -36,7 +34,7 @@ struct ScannerView<Router: RouterHost>: View {
     ContentScreenView(
       padding: SPACING_NONE,
       navigationTitle: viewModel.viewState.title,
-      toolbarContent: toolbarContent()
+      toolbarContent: viewModel.toolbarContent()
     ) {
       content(
         viewState: viewModel.viewState,
@@ -46,17 +44,6 @@ struct ScannerView<Router: RouterHost>: View {
           viewModel.onResult(scanResult: scanResult)
         }
     }
-  }
-
-  func toolbarContent() -> ToolBarContent {
-    .init(
-      trailingActions: [],
-      leadingActions: [
-        Action(image: Theme.shared.image.chevronLeft) {
-          viewModel.pop()
-        }
-      ]
-    )
   }
 }
 

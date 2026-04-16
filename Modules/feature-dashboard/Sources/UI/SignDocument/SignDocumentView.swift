@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -18,16 +18,16 @@ import feature_common
 
 struct SignDocumentView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: SignDocumentViewModel<Router>
+  @State private var viewModel: SignDocumentViewModel<Router>
 
   public init(with viewModel: SignDocumentViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
     ContentScreenView(
       navigationTitle: .signDocument,
-      toolbarContent: toolbarContent()
+      toolbarContent: viewModel.toolbarContent()
     ) {
       content(
         viewState: viewModel.viewState
@@ -49,17 +49,6 @@ struct SignDocumentView<Router: RouterHost>: View {
 
       Spacer()
     }
-  }
-
-  func toolbarContent() -> ToolBarContent {
-    .init(
-      trailingActions: [],
-      leadingActions: [
-        Action(image: Theme.shared.image.chevronLeft) {
-          viewModel.pop()
-        }
-      ]
-    )
   }
 }
 
@@ -92,7 +81,7 @@ private func content(
   ContentScreenView {
     content(viewState: .init(
       listItem: .init(
-        mainText: .selectDocument,
+        mainContent: .text(.selectDocument),
         trailingContent: .icon(Theme.shared.image.plus)
       )
     ), action: {}

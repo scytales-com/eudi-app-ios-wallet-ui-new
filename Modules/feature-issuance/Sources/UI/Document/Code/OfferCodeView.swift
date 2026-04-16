@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -15,15 +15,14 @@
  */
 import SwiftUI
 import logic_ui
-import logic_resources
 import feature_common
 
 struct OfferCodeView<Router: RouterHost>: View {
 
-  @ObservedObject var viewModel: OfferCodeViewModel<Router>
+  @State private var viewModel: OfferCodeViewModel<Router>
 
   init(with viewModel: OfferCodeViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -83,7 +82,7 @@ private func content(
   codeIsFocused: Binding<Bool>
 ) -> some View {
 
-  ContentHeader(
+  ContentHeaderView(
     config: viewState.contentHeaderConfig
   )
 

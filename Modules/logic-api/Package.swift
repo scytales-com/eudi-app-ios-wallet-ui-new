@@ -1,18 +1,17 @@
-// swift-tools-version: 6.0.0
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
   name: "logic-api",
-  platforms: [.iOS(.v16)],
+  platforms: [.iOS(.v17)],
   products: [
     .library(
       name: "logic-api",
       targets: ["logic-api"])
   ],
   dependencies: [
-    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.6.4"),
     .package(
       name: "logic-business",
       path: "./logic-business"
@@ -21,10 +20,6 @@ let package = Package(
       name: "logic-analytics",
       path: "./logic-analytics"
     ),
-    .package(
-      name: "logic-core",
-      path: "./logic-core"
-    ),
     .package(name: "logic-test", path: "./logic-test")
   ],
   targets: [
@@ -32,12 +27,7 @@ let package = Package(
       name: "logic-api",
       dependencies: [
         "logic-business",
-        "logic-core",
-        "logic-analytics",
-        .product(
-          name: "Alamofire",
-          package: "Alamofire"
-        )
+        "logic-analytics"
       ],
       path: "./Sources"
     ),
@@ -47,7 +37,6 @@ let package = Package(
         "logic-api",
         "logic-analytics",
         "logic-business",
-        "logic-core",
         "logic-test"
       ],
       path: "./Tests"

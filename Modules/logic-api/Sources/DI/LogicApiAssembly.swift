@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -21,13 +21,19 @@ public final class LogicApiAssembly: Assembly {
   public init() {}
 
   public func assemble(container: Container) {
+
+    container.register(NetworkSessionProvider.self) { _ in
+      NetworkSessionProviderImpl()
+    }
+    .inObjectScope(ObjectScope.container)
+
     container.register(NetworkManager.self) { r in
-      NetworkManagerImpl(configLogic: r.force(ConfigLogic.self))
+      NetworkManagerImpl(with: r.force(NetworkSessionProvider.self))
     }
     .inObjectScope(ObjectScope.transient)
 
-    container.register(SampleRepository.self) { r in
-      SampleRepositoryImpl(networkManager: r.force(NetworkManager.self))
+    container.register(WalletAttestationRepository.self) { r in
+      WalletAttestationRepositoryImpl(networkManager: r.force(NetworkManager.self))
     }
     .inObjectScope(ObjectScope.transient)
   }

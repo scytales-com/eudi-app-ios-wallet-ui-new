@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -17,17 +17,18 @@ import Foundation
 import logic_ui
 import logic_core
 import feature_common
+import Observation
 
 @Copyable
 struct DocumentTabState: ViewState {
   let isLoading: Bool
-  let documents: [DocumentCategory: [DocumentUIModel]]
+  let documents: [DocumentCategory: [DocumentTabUIModel]]
   let filterUIModel: [FilterUISection]
   let phase: ScenePhase
-  let pendingDeletionDocument: DocumentUIModel?
-  let succededIssuedDocuments: [DocumentUIModel]
+  let pendingDeletionDocument: DocumentTabUIModel?
+  let succededIssuedDocuments: [DocumentTabUIModel]
   let failedDocuments: [String]
-  let isFromOnPause: Bool
+  let isPaused: Bool
   let hasDefaultFilters: Bool
 
   var pendingDocumentTitle: String {
@@ -35,17 +36,35 @@ struct DocumentTabState: ViewState {
   }
 }
 
+@Observable
 final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, DocumentTabState> {
 
+  @ObservationIgnored
   private let interactor: DocumentTabInteractor
+  @ObservationIgnored
   private let SEARCH_INPUT_DEBOUNCE = 250
+  @ObservationIgnored
   private let onUpdateToolbar: (ToolBarContent, LocalizableStringKey) -> Void
 
-  @Published var isFilterModalShowing: Bool = false
-  @Published var isDeleteDeferredModalShowing: Bool = false
-  @Published var isSuccededDocumentsModalShowing: Bool = false
-  @Published var searchQuery: String = ""
+  var isFilterModalShowing: Bool = false
+  var isDeleteDeferredModalShowing: Bool = false
+  var isSuccededDocumentsModalShowing: Bool = false {
+    didSet {
+      debouncedSucceededModal.send(isSuccededDocumentsModalShowing)
+    }
+  }
+  var searchQuery: String = "" {
+    didSet {
+      debouncedSearchQuery.send(searchQuery)
+    }
+  }
 
+  @ObservationIgnored
+  private var debouncedSearchQuery = CurrentValueSubject<String, Never>("")
+  @ObservationIgnored
+  private var debouncedSucceededModal = CurrentValueSubject<Bool, Never>(false)
+
+  @ObservationIgnored
   private var deferredTask: Task<DeferredPartialState, Error>?
 
   init(
@@ -65,7 +84,7 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
         pendingDeletionDocument: nil,
         succededIssuedDocuments: [],
         failedDocuments: [],
-        isFromOnPause: true,
+        isPaused: true,
         hasDefaultFilters: true
       )
     )
@@ -85,14 +104,12 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
 
       let failedDocuments = viewState.failedDocuments
 
-      let state = await Task.detached { () -> DocumentsPartialState in
-        return await self.interactor.fetchDocuments(failedDocuments: failedDocuments)
-      }.value
+      let state = await interactor.fetchDocuments(failedDocuments: failedDocuments)
 
       switch state {
       case .success(let documents):
 
-        if viewState.isFromOnPause {
+        if viewState.isPaused {
           await interactor.initializeFilters(filterableList: documents)
         } else {
           await interactor.updateLists(filterableList: documents)
@@ -102,10 +119,10 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
 
         setState {
           $0.copy(
-            isFromOnPause: false
+            isPaused: false
           )
         }
-        onDocumentsRetrievedPostActions()
+        await onDocumentsRetrievedPostActions()
       case .failure:
         setState {
           $0.copy(
@@ -138,7 +155,7 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
   func setPhase(with phase: ScenePhase) {
     setState { $0.copy(phase: phase) }
     if phase == .active {
-      onDocumentsRetrievedPostActions()
+      Task { await onDocumentsRetrievedPostActions() }
     }
     if phase == .background {
       onPause()
@@ -147,9 +164,7 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
 
   func onPause() {
     self.deferredTask?.cancel()
-    if !isFilterModalShowing {
-      setState { $0.copy(isFromOnPause: true) }
-    }
+    self.setState { $0.copy(isPaused: true) }
   }
 
   func onDocumentDetails(documentId: String) {
@@ -157,17 +172,13 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
     isSuccededDocumentsModalShowing = false
 
     router.push(
-      with: .featureIssuanceModule(
-        .issuanceDocumentDetails(
-          config: IssuanceDetailUiConfig(
-            flow: .extraDocument(documentId)
-          )
-        )
+      with: .featureDashboardModule(
+        .documentDetails(id: documentId)
       )
     )
   }
 
-  func onDeleteDeferredDocument(with document: DocumentUIModel) {
+  func onDeleteDeferredDocument(with document: DocumentTabUIModel) {
     setState { $0.copy(pendingDeletionDocument: document) }
     toggleDeleteDeferredModal()
   }
@@ -177,16 +188,18 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
   }
 
   func deleteDeferredDocument() {
+
     toggleDeleteDeferredModal()
+
     guard let document = viewState.pendingDeletionDocument else {
       return
     }
+
     setState { $0.copy(isLoading: true).copy(pendingDeletionDocument: nil) }
+
     Task {
 
-      let state = await Task.detached { () -> DeleteDeferredPartialState in
-        return await self.interactor.deleteDeferredDocument(with: document.value.id)
-      }.value
+      let state = await interactor.deleteDeferredDocument(with: document.value.id)
 
       switch state {
       case .success:
@@ -212,8 +225,14 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
     onPause()
   }
 
+  func handleRefreshotification() {
+    if !viewState.isPaused {
+      fetch()
+    }
+  }
+
   private func listenForSuccededIssuedModalChanges() {
-    $isSuccededDocumentsModalShowing
+    debouncedSucceededModal
       .dropFirst()
       .removeDuplicates()
       .sink { [weak self] value in
@@ -225,7 +244,7 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
   }
 
   private func subscribeToSearch() {
-    $searchQuery
+    debouncedSearchQuery
       .dropFirst()
       .debounce(for: .milliseconds(SEARCH_INPUT_DEBOUNCE), scheduler: RunLoop.main)
       .removeDuplicates()
@@ -239,7 +258,7 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
 
   private func onFiltersChangeState() {
     Task {
-      for await state in interactor.onFilterChangeState() {
+      for await state in await interactor.onFilterChangeState() {
         switch state {
         case .filterApplyResult(let documents, let filterSections, let hasDefaultFilters):
           setState {
@@ -263,8 +282,8 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
     }
   }
 
-  private func onDocumentsRetrievedPostActions() {
-    if interactor.hasDeferredDocuments() && (self.deferredTask == nil || self.deferredTask?.isCancelled == true) {
+  private func onDocumentsRetrievedPostActions() async {
+    if await interactor.hasDeferredDocuments() && (self.deferredTask == nil || self.deferredTask?.isCancelled == true) {
       self.deferredTask = Task {
         try? await Task.sleep(seconds: 5)
         return await interactor.requestDeferredIssuance()
@@ -316,18 +335,26 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
     self.onUpdateToolbar(
       .init(
         trailingActions: [
-          Action(image: Theme.shared.image.plus) {
+          .init(
+            image: Theme.shared.image.plus,
+            accessibilityLocator: DocumentTabLocators.plusButton
+          ) {
             self.onAdd()
           },
-          Action(
+          .init(
             image: Theme.shared.image.filterMenuIcon,
-            hasIndicator: !viewState.hasDefaultFilters
+            accessibilityLocator: DocumentTabLocators.filterButton,
+            hasIndicator: !viewState.hasDefaultFilters,
+            disabled: viewState.filterUIModel.isEmpty
           ) {
             self.showFilters()
           }
         ],
         leadingActions: [
-          Action(image: Theme.shared.image.menuIcon) {
+          .init(
+            image: Theme.shared.image.menuIcon,
+            accessibilityLocator: ToolbarLocators.menuButton
+          ) {
             self.onMyWallet()
           }
         ]

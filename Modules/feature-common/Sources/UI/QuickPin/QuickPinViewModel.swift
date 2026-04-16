@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,8 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 import logic_ui
-import logic_business
 import logic_resources
+import Observation
 
 enum QuickPinStep {
   case validate
@@ -30,7 +30,8 @@ struct QuickPinState: ViewState {
   let title: LocalizableStringKey
   let caption: LocalizableStringKey
   let button: LocalizableStringKey
-  let success: LocalizableStringKey
+  let successTitle: LocalizableStringKey
+  let successCaption: LocalizableStringKey
   let successButton: LocalizableStringKey
   let successNavigationType: UIConfig.DeepLinkNavigationType
   let isCancellable: Bool
@@ -40,12 +41,20 @@ struct QuickPinState: ViewState {
   let quickPinSize: Int
 }
 
+@Observable
 final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinState> {
 
-  @Published var uiPinInputField: String = ""
-  @Published var isCancelModalShowing: Bool = false
+  var uiPinInputField: String = "" {
+    didSet {
+      debouncedPinInputField.send(uiPinInputField)
+    }
+  }
+  var isCancelModalShowing: Bool = false
 
+  @ObservationIgnored
   private let interactor: QuickPinInteractor
+  @ObservationIgnored
+  private var debouncedPinInputField = CurrentValueSubject<String, Never>("")
 
   init(
     router: Router,
@@ -56,6 +65,40 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
       fatalError("QuickPinViewModel:: Invalid configuraton")
     }
     self.interactor = interactor
+
+    var successNavigation: UIConfig.DeepLinkNavigationType {
+      switch config.flow {
+      case .setWithActivation:
+          .push(screen: .featureIssuanceModule(.issuanceAddDocument(config: IssuanceFlowUiConfig(flow: .noDocument))))
+      case .setWithoutActivation:
+          .push(screen: .featureDashboardModule(.dashboard))
+      case .update:
+          .pop(screen: .featureDashboardModule(.dashboard))
+      }
+    }
+
+    var successButton: LocalizableStringKey {
+      switch config.flow {
+      case .setWithActivation:
+          .quickPinSetSuccessButton
+      case .setWithoutActivation:
+          .quickPinSetNoActivationSuccessButton
+      case .update:
+          .quickPinUpdateSuccessButton
+      }
+    }
+
+    var successCaption: LocalizableStringKey {
+      switch config.flow {
+      case .setWithActivation:
+          .quickPinSetSuccess
+      case .setWithoutActivation:
+          .quickPinSetNoActivationSuccess
+      case .update:
+          .quickPinUpdateSuccess
+      }
+    }
+
     super.init(
       router: router,
       initialState: .init(
@@ -64,11 +107,12 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
         title: config.isSetFlow ? .quickPinSetTitle : .quickPinUpdateTitle,
         caption: config.isSetFlow ? .quickPinSetCaptionOne : .quickPinUpdateCaptionOne,
         button: .quickPinNextButton,
-        success: config.isSetFlow ? .quickPinSetSuccess : .quickPinUpdateSuccess,
-        successButton: config.isSetFlow ? .quickPinSetSuccessButton : .quickPinUpdateSuccessButton,
-        successNavigationType: config.isSetFlow
-        ? .push(screen: .featureIssuanceModule(.issuanceAddDocument(config: IssuanceFlowUiConfig(flow: .noDocument))))
-        : .pop(screen: .featureDashboardModule(.dashboard)),
+        successTitle: config.isSetFlow
+        ? .walletIsSecured
+        : .successTitlePunctuated,
+        successCaption: successCaption,
+        successButton: successButton,
+        successNavigationType: successNavigation,
         isCancellable: config.isUpdateFlow,
         pinError: nil,
         isButtonActive: false,
@@ -81,29 +125,31 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
   }
 
   func onButtonClick() {
-    switch viewState.step {
-    case .validate:
-      onValidate()
-    case .firstInput:
-      setState {
-        $0
-          .copy(
-            navigationTitle: .quickPinConfirmPin,
-            caption: viewState.config.isSetFlow ? .quickPinSetCaptionTwo : .quickPinUpdateCaptionThree,
-            button: .quickPinConfirmButton,
-            step: .retryInput(uiPinInputField)
-          )
-          .copy(pinError: nil)
-      }
-      uiPinInputField = ""
-    case .retryInput(let previousPin):
-      guard previousPin == uiPinInputField else {
+    Task {
+      switch viewState.step {
+      case .validate:
+        await onValidate()
+      case .firstInput:
         setState {
-          $0.copy(pinError: .quickPinDoNotMatch)
+          $0
+            .copy(
+              navigationTitle: .quickPinConfirmPin,
+              caption: viewState.config.isSetFlow ? .quickPinSetCaptionTwo : .quickPinUpdateCaptionThree,
+              button: .quickPinConfirmButton,
+              step: .retryInput(uiPinInputField)
+            )
+            .copy(pinError: nil)
         }
-        return
+        uiPinInputField = ""
+      case .retryInput(let previousPin):
+        guard previousPin == uiPinInputField else {
+          setState {
+            $0.copy(pinError: .quickPinDoNotMatch)
+          }
+          return
+        }
+        await onSuccess()
       }
-      onSuccess()
     }
   }
 
@@ -117,29 +163,33 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
   }
 
   func toolbarContent() -> ToolBarContent? {
-    var leadingActions: [Action] = []
+    var leadingActions: [ToolBarContent.Action] = []
     if viewState.isCancellable {
       leadingActions.append(
-        Action(
-          image: Theme.shared.image.chevronLeft
+        .init(
+          image: Theme.shared.image.chevronLeft,
+          accessibilityLocator: ToolbarLocators.chevronLeft
         ) {
           self.onShowCancellationModal()
-      })
+        })
     }
 
     return .init(
-      trailingActions: [Action(
-        title: viewState.button,
-        disabled: !viewState.isButtonActive
-      ) {
-        self.onButtonClick()
-      }],
+      trailingActions: [
+        .init(
+          title: viewState.button,
+          accessibilityLocator: QuickPinLocators.confirmButton,
+          disabled: !viewState.isButtonActive
+        ) {
+          self.onButtonClick()
+        }
+      ],
       leadingActions: leadingActions
     )
   }
 
-  private func onValidate() {
-    switch interactor.isPinValid(pin: uiPinInputField) {
+  private func onValidate() async {
+    switch await interactor.isPinValid(pin: uiPinInputField) {
     case .success:
       setState {
         $0
@@ -153,17 +203,13 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
       uiPinInputField = ""
     case .failure(let error):
       setState {
-        $0.copy(pinError: .custom(error.localizedDescription))
+        $0.copy(pinError: .custom(error.errorMessage))
       }
     }
   }
 
-  private func onSuccess() {
-    interactor.setPin(newPin: uiPinInputField)
-
-    let buttonTitle: LocalizableStringKey = viewState.config.isSetFlow ?
-      .walletIsSecured :
-      .successTitlePunctuated
+  private func onSuccess() async {
+    await interactor.setPin(newPin: uiPinInputField)
 
     let visualKind: UIConfig.Success.VisualKind = viewState.config.isSetFlow ?
       .customIcon(
@@ -179,8 +225,8 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
       with: .featureCommonModule(
         .genericSuccess(
           config: UIConfig.Success(
-            title: .init(value: buttonTitle),
-            subtitle: viewState.success,
+            title: .init(value: viewState.successTitle),
+            subtitle: viewState.successCaption,
             buttons: [
               .init(
                 title: viewState.successButton,
@@ -196,7 +242,7 @@ final class QuickPinViewModel<Router: RouterHost>: ViewModel<Router, QuickPinSta
   }
 
   private func subscribeToPinInput() {
-    $uiPinInputField
+    debouncedPinInputField
       .dropFirst()
       .removeDuplicates()
       .sink { [weak self] value in

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,11 +16,13 @@
 
 @_exported import logic_ui
 @_exported import logic_resources
+import Observation
 
 @Copyable
 public struct RequestViewState: ViewState {
   public let isLoading: Bool
   public let error: ContentErrorView.Config?
+  public let errorTitle: LocalizableStringKey?
   public let showMissingCredentials: Bool
   public let items: [RequestDataUiModel]
   public let trustedRelyingPartyInfo: LocalizableStringKey
@@ -32,11 +34,12 @@ public struct RequestViewState: ViewState {
   public let contentHeaderConfig: ContentHeaderConfig
 }
 
+@Observable
 open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestViewState> {
 
-  @Published var isRequestInfoModalShowing: Bool = false
-  @Published var isVerifiedEntityModalShowing: Bool = false
-  @Published var itemsChanged: Bool = false
+  var isRequestInfoModalShowing: Bool = false
+  var isVerifiedEntityModalShowing: Bool = false
+  var itemsChanged: Bool = false
 
   public init(router: Router, originator: AppRoute) {
     super.init(
@@ -44,6 +47,7 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
       initialState: .init(
         isLoading: true,
         error: nil,
+        errorTitle: nil,
         showMissingCredentials: true,
         items: RequestDataUiModel.mockData(),
         trustedRelyingPartyInfo: .requestDataVerifiedEntityMessage,
@@ -125,7 +129,7 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
       $0.copy(
         isLoading: false,
         error: .init(
-          description: .custom(error.localizedDescription),
+          description: .custom(error.errorMessage),
           cancelAction: self.router.pop(),
           action: { self.onErrorAction() }
         )
@@ -133,10 +137,11 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
     }
   }
 
-  public func onEmptyDocuments() {
+  public func onEmptyDocuments(error: String) {
     setState {
       $0.copy(
         isLoading: false,
+        errorTitle: .custom(error),
         items: [],
         initialized: true
       ).copy(error: nil)
@@ -167,6 +172,7 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
       .init(
         isLoading: true,
         error: nil,
+        errorTitle: nil,
         showMissingCredentials: true,
         items: RequestDataUiModel.mockData(),
         trustedRelyingPartyInfo: .requestDataVerifiedEntityMessage,
@@ -183,18 +189,21 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
   func toolbarContent() -> ToolBarContent {
     .init(
       trailingActions: [
-        Action(
+        .init(
           title: .shareButton,
+          accessibilityLocator: BaseRequestLocators.shareButton,
           disabled: !viewState.allowShare
         ) {
           self.onShare()
         }
       ],
       leadingActions: [
-        Action(
-          image: Theme.shared.image.chevronLeft) {
-            self.onPop()
-          }
+        .init(
+          image: Theme.shared.image.chevronLeft,
+          accessibilityLocator: ToolbarLocators.chevronLeft
+        ) {
+          self.onPop()
+        }
       ]
     )
   }

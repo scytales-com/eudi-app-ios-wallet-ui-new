@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,8 +16,6 @@
 
 public protocol RouterHost {
   @MainActor func push(with route: AppRoute)
-  @MainActor func popTo(with route: AppRoute, inclusive: Bool, animated: Bool)
-  @MainActor func pop(animated: Bool)
   @MainActor func pop()
   @MainActor func popTo(with route: AppRoute, inclusive: Bool)
   @MainActor func popTo(with route: AppRoute)
@@ -36,13 +34,9 @@ public final class PreviewRouter: RouterHost {
 
   public func push(with route: AppRoute) {}
 
-  public func popTo(with route: AppRoute, inclusive: Bool, animated: Bool) {}
-
   public func popTo(with route: AppRoute, inclusive: Bool) {}
 
   public func popTo(with route: AppRoute) {}
-
-  public func pop(animated: Bool) {}
 
   public func pop() {}
 

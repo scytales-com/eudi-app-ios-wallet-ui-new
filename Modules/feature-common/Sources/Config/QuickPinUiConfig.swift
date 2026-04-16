@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,9 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
 import logic_ui
-import logic_business
 
 public struct QuickPinUiConfig: UIConfigType, Equatable {
 
@@ -25,8 +23,16 @@ public struct QuickPinUiConfig: UIConfigType, Equatable {
     return "flow: \(flow.rawValue)"
   }
 
+  public var isSetFlowWithActivation: Bool {
+    self.flow == .setWithActivation
+  }
+
+  public var isSetFlowWithoutActivation: Bool {
+    self.flow == .setWithoutActivation
+  }
+
   public var isSetFlow: Bool {
-    self.flow == .set
+    self.flow == .setWithoutActivation || self.flow == .setWithActivation
   }
 
   public var isUpdateFlow: Bool {
@@ -40,7 +46,8 @@ public struct QuickPinUiConfig: UIConfigType, Equatable {
 
 public extension QuickPinUiConfig {
   enum Flow: String, Equatable, Sendable {
-    case set
+    case setWithActivation
+    case setWithoutActivation
     case update
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,14 +14,15 @@
  * governing permissions and limitations under the Licence.
  */
 import Foundation
-import Alamofire
 import logic_business
 
-protocol NetworkManager {
+protocol NetworkManager: Sendable {
+
   func execute<R: NetworkRequest, T: Decodable & Sendable>(
     with request: R,
     parameters: [NetworkParameter]?
   ) async throws -> T
+
   func prepare<R: NetworkRequest>(
     request: R,
     parameters: [NetworkParameter]?,
@@ -32,10 +33,10 @@ protocol NetworkManager {
 
 actor NetworkManagerImpl: NetworkManager {
 
-  private let configLogic: ConfigLogic
+  private let session: URLSession
 
-  init(configLogic: ConfigLogic) {
-    self.configLogic = configLogic
+  init(with sessionProvider: NetworkSessionProvider) {
+    self.session = sessionProvider.urlSession
   }
 
   func execute<R: NetworkRequest, T: Decodable & Sendable>(
@@ -43,28 +44,32 @@ actor NetworkManagerImpl: NetworkManager {
     parameters: [NetworkParameter]?
   ) async throws -> T {
 
-    let request = await self.prepare(
+    let urlRequest = await self.prepare(
       request: request,
       parameters: parameters,
-      baseHost: self.configLogic.walletHostUrl
+      baseHost: request.host
     )
 
-    return try await withCheckedThrowingContinuation { continuation in
-      AF.request(request)
-        .responseDecodable(of: T.self) { response in
+    let (data, response) = try await session.data(for: urlRequest)
 
-          self.log(
-            request: request,
-            responseData: response.data
-          )
+    self.log(
+      request: urlRequest,
+      responseData: data
+    )
 
-          switch response.result {
-          case let .success(data):
-            continuation.resume(returning: data)
-          case let .failure(error):
-            continuation.resume(throwing: error)
-          }
-        }
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw NetworkError.invalidResponse
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+      throw NetworkError.httpStatus(code: httpResponse.statusCode, data: data)
+    }
+
+    do {
+      let decoder = JSONDecoder()
+      return try decoder.decode(T.self, from: data)
+    } catch {
+      throw NetworkError.decoding(error)
     }
   }
 
@@ -105,14 +110,14 @@ actor NetworkManagerImpl: NetworkManager {
   nonisolated func log(request: URLRequest, responseData: Data? = nil) {
     print("1️⃣ Request: " + (request.url?.absoluteString ?? "") )
     print("2️⃣ Request Http Method: " + (request.httpMethod ?? "") )
-    print("3️⃣ Request HttpBody: " + (request.httpBody?.prettyJson ?? "") )
+    print("3️⃣ Request HttpBody: " + ((try? request.httpBody?.toJSONString(prettyPrinted: true)).orEmpty) )
     print("4️⃣ Request Headers: ")
     request.allHTTPHeaderFields?.forEach({ key, value in
       print("\(key): \(value)")
     })
 
     if let responseData {
-      print("✅ Response Body: " + (responseData.prettyJson ?? "") )
+      print("✅ Response Body: " + ((try? responseData.toJSONString(prettyPrinted: true)).orEmpty) )
     }
   }
 }

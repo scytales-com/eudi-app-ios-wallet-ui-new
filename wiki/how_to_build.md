@@ -5,10 +5,11 @@
 * [Overview](#overview)
 * [Setup Apps](#setup-apps)
 * [How to work with self signed certificates on iOS](#how-to-work-with-self-signed-certificates-on-ios)
+* [Document Provider extension configuration](configuration.md#document-provider-extension-configuration)
 
 ## Overview
 
-This guide aims to assist developers to build the iOS application.
+This guide aims to assist developers in building the application.
 
 # Setup Apps
 
@@ -37,7 +38,7 @@ To run the app on a device, follow similar steps to running it on the simulator.
 
 ### Running with remote services
 
-The app is configured to the type (debug/release) and variant (dev/demo) in the four xcconfig files. These are the contents of the xcconfig file and you don't need to change anything if you don't want to:
+The app is configured to the type (debug/release) and variant (dev/demo) in the four xcconfig files. These are the contents of the xcconfig file, and you don't need to change anything if you don't want to:
 
 ```
 BUILD_TYPE = RELEASE
@@ -65,42 +66,56 @@ Using this parsed information, instances such as `WalletKitConfig` and `RQESConf
 For instance, here's how `WalletKitConfig` resolves its configuration for OpenID4VCI remote services based on the build variant:
 
 ```swift
-var vciConfig: VciConfig {
+var vciConfig: [String: OpenId4VciConfiguration] {
+  let openId4VciConfigurations: [OpenId4VciConfiguration] = {
     switch configLogic.appBuildVariant {
     case .DEMO:
-        return .init(
-            issuerUrl: "https://issuer.eudiw.dev",
-            clientId: "wallet-dev",
-            redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!
+      return [
+        .init(
+          credentialIssuerURL: "https://issuer.eudiw.dev",
+          clientId: "wallet-dev",
+          keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+          authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+          requirePAR: true,
+          requireDpop: true,
+          cacheIssuerMetadata: true
         )
     case .DEV:
-        return .init(
-            issuerUrl: "https://dev.issuer.eudiw.dev",
-            clientId: "wallet-dev",
-            redirectUri: URL(string: "eu.europa.ec.euidi://authorization")!
+      return [
+        .init(
+          credentialIssuerURL: "https://ec.dev.issuer.eudiw.dev",
+          clientId: "wallet-dev",
+          keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
+          authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
+          requirePAR: true,
+          requireDpop: true,
+          cacheIssuerMetadata: true
         )
+      ]
     }
+  }()
+
+  // ...
 }
 ```
 
-In this example, the `vciConfig` property dynamically assigns configurations such as `issuerUrl`, `clientId`, and `redirectUri` based on the current appBuildVariant. This ensures that the appropriate settings are applied for each variant (e.g., .`DEMO` or `.DEV`).
+In this example, the `vciConfig` property dynamically assigns configurations, such as `issuerUrl`, `clientId`, `redirectUri`, `usePAR`, `useDpopIfSupported`, `keyAttestationsConfig`, and `cacheIssuerMetadata`, based on the current `appBuildVariant`. This ensures that the appropriate settings are applied for each variant (e.g., `.DEMO` or `.DEV`).
 
 ### Running with local services
 
-The first step here is to have all three services running locally on your machine, 
-you can follow these Repositories for further instructions:
+The first step is to run all three services locally on your machine. You can follow these Repositories for further instructions:
 * [Issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
 * [Web Verifier UI](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
 * [Web Verifier Endpoint](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
 
-### How to work with self signed certificates on iOS
+### How to work with self-signed certificates on iOS
 
-In addition to the change below, in order for the app to interact with locally running service a small code change is required to do this successfully.
+To enable the app to interact with a locally running service, a minor code change is required.
 
-Before running the app in the simulator add these lines of code to the top of the file WalletKitController just below the import statements. 
+Before running the app in the simulator, add the following lines of code to the top of the `NetworkSessionProvider` file inside the `logic-api` module, directly below the import statements.
 
 ```swift
-class SelfSignedDelegate: NSObject, URLSessionDelegate {
+final class SelfSignedDelegate: NSObject, URLSessionDelegate {
   func urlSession(
     _ session: URLSession,
     didReceive challenge: URLAuthenticationChallenge,
@@ -131,13 +146,20 @@ let walletSession: URLSession = {
 }()
 ```
 
-Once the above is in place add:
+Once the above is in place, adjust the initializer:
 
 ```swift
-wallet.urlSession = walletSession
+init() {
+  self.urlSession = walletSession
+}
 ```
 
-in the initializer. This change will allow the app to interact with web services that rely on self signed certificates.
+This change will allow the app to interact with web services that rely on self-signed certificates.
 
-For all configuration options please refer to [this document](configuration.md)
+## Document Provider extension configuration
 
+If you are enabling or troubleshooting the Identity Document Provider extension, including `SHARED_APP_GROUP_IDENTIFIER`, keychain-access-groups, and extension registration behavior, follow the dedicated configuration guide here:
+
+[Document Provider extension configuration](configuration.md#document-provider-extension-configuration)
+
+For all configuration options, please refer to [this document](configuration.md)

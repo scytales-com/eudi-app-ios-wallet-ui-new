@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -20,7 +20,7 @@
 @Copyable
 public struct DocumentSuccessState<T: Sendable>: ViewState {
   let config: DocumentSuccessUIConfig
-  let relyingParty: RelyingPartyData
+  let contentHeaderConfig: ContentHeaderConfig
   let items: [ListItemSection<T>]
   let navigationTitle: LocalizableStringKey
   let isLoading: Bool
@@ -51,13 +51,22 @@ open class DocumentSuccessViewModel<Router: RouterHost, RequestItem: Sendable>: 
       router: router,
       initialState: .init(
         config: config,
-        relyingParty: RelyingPartyData(
-          logo: config.issuerLogoUrl == nil ? nil : .remoteImage(config.issuerLogoUrl, nil),
-          isVerified: config.relyingPartyIsTrusted,
-          name: .custom(config.relyingParty ?? "")
+        contentHeaderConfig: ContentHeaderConfig(
+          appIconAndTextData: AppIconAndTextData(
+            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
+            appText: ThemeManager.shared.image.euditext
+          ),
+          description: config.isIssuingDocument
+          ? .issuanceSuccessHeaderDescription
+          : .successfullySharedFollowingInformation,
+          relyingPartyData: RelyingPartyData(
+            logo: config.issuerLogoUrl == nil ? nil : .remoteImage(config.issuerLogoUrl, nil),
+            isVerified: config.relyingPartyIsTrusted,
+            name: .custom(config.relyingParty ?? "")
+          )
         ),
         items: requestItems.removeTrailingContent(),
-        navigationTitle: config.relyingPartyIsTrusted
+        navigationTitle: config.isIssuingDocument
         ? .documentAdded
         : .dataShared,
         isLoading: false
@@ -84,8 +93,9 @@ open class DocumentSuccessViewModel<Router: RouterHost, RequestItem: Sendable>: 
   func toolbarContent() -> ToolBarContent {
     .init(
       trailingActions: [
-        Action(
-          title: .doneButton
+        .init(
+          title: .doneButton,
+          accessibilityLocator: DocumentSuccessLocators.doneButton
         ) {
           self.onDone()
         }

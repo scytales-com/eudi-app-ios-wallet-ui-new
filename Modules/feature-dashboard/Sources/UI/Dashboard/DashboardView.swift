@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,16 +16,16 @@
 import SwiftUI
 import logic_ui
 import logic_resources
-import logic_business
 import feature_common
-import logic_core
 
 struct DashboardView<Router: RouterHost>: View {
 
-  @ObservedObject private var viewModel: DashboardViewModel<Router>
+  @Environment(\.scenePhase) private var scenePhase
+
+  @State private var viewModel: DashboardViewModel<Router>
 
   public init(with viewModel: DashboardViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -33,27 +33,55 @@ struct DashboardView<Router: RouterHost>: View {
       padding: .zero,
       canScroll: false,
       navigationTitle: viewModel.viewState.navigationTitle,
-      toolbarContent: viewModel.viewState.toolBarContent
+      toolbarContent: viewModel.viewState.toolBarContent,
+      notificationActions: [
+        .init(
+          name: NSNotification.RevocationDashboard,
+          callback: {
+            guard let payload = $0 else { return }
+            viewModel.handleRevocationNotification(for: payload)
+          }
+        )
+      ]
     ) {
       content(
         tabView: { tab in
-          return switch tab {
+          switch tab {
           case .documents:
             viewModel.viewState.documentTab
-              .eraseToAnyView()
           case .home:
             viewModel.viewState.homeTab
-              .eraseToAnyView()
           case .transactions:
             viewModel.viewState.transactionTab
-              .eraseToAnyView()
           }
         },
         selectedTab: $viewModel.selectedTab
       )
     }
+    .sheetDialog(isPresented: $viewModel.isRevokedModalShowing) {
+      VStack(spacing: .zero) {
+
+        ContentTitleView(
+          title: .revokedModalTitle,
+          caption: .revokedModalDescription
+        )
+
+        revokedNotificationList(
+          state: viewModel.viewState,
+          onDocumentDetails: {
+            viewModel.onDocumentDetails(documentId: $0)
+          }
+        )
+      }
+    }
+    .onChange(of: scenePhase) {
+      viewModel.setPhase(with: scenePhase)
+    }
+    .onDisappear {
+      viewModel.onPause()
+    }
     .task {
-      await viewModel.handleDeepLink()
+      await viewModel.onCreate()
     }
   }
 }
@@ -61,28 +89,36 @@ struct DashboardView<Router: RouterHost>: View {
 @MainActor
 @ViewBuilder
 private func content(
-  tabView: @escaping (SelectedTab) -> AnyView,
+  @ViewBuilder tabView: @escaping (SelectedTab) -> some View,
   selectedTab: Binding<SelectedTab>
 ) -> some View {
   TabView(selection: selectedTab) {
 
     tabView(.home)
-    .tabItem {
-      Label(
-        LocalizableStringKey.home.toString,
-        systemImage: "house.fill"
-      )
-    }
-    .tag(SelectedTab.home)
+      .tabItem {
+        Label(
+          LocalizableStringKey.home.toString,
+          systemImage: "house.fill"
+        )
+        .accessibilityLocator(
+          TabViewLocators.home,
+          label: LocalizableStringKey.home.toString
+        )
+      }
+      .tag(SelectedTab.home)
 
     tabView(.documents)
-    .tabItem {
-      Label(
-        .documents,
-        systemImage: "doc.fill"
-      )
-    }
-    .tag(SelectedTab.documents)
+      .tabItem {
+        Label(
+          .documents,
+          systemImage: "doc.fill"
+        )
+        .accessibilityLocator(
+          TabViewLocators.documents,
+          label: LocalizableStringKey.documents.toString
+        )
+      }
+      .tag(SelectedTab.documents)
 
     tabView(.transactions)
       .tabItem {
@@ -90,9 +126,44 @@ private func content(
           .transactions,
           systemImage: "arrow.left.arrow.right"
         )
+        .accessibilityLocator(
+          TabViewLocators.transactions,
+          label: LocalizableStringKey.transactions.toString
+        )
       }
-      //.tag(SelectedTab.transactions)
+      .tag(SelectedTab.transactions)
   }
+}
+
+@MainActor
+@ViewBuilder
+private func revokedNotificationList<Router: RouterHost>(
+  state: DashboardState<Router>,
+  onDocumentDetails: @escaping (String) -> Void
+) -> some View {
+  VStack(spacing: SPACING_SMALL) {
+    ForEach(state.revokedDocuments.sorted(by: >), id: \.key) { key, value in
+
+      HStack {
+        Text(.custom(key))
+          .typography(Theme.shared.font.bodyLarge)
+          .foregroundColor(Theme.shared.color.onSurface)
+
+        Spacer()
+
+        Theme.shared.image.chevronRight
+          .renderingMode(.template)
+          .foregroundStyle(Theme.shared.color.primary)
+      }
+      .padding()
+      .background(Theme.shared.color.surfaceContainer)
+      .clipShape(.rect(cornerRadius: 8))
+      .onTapGesture {
+        onDocumentDetails(value)
+      }
+    }
+  }
+  .padding(.vertical)
 }
 
 #Preview {

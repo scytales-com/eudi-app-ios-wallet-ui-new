@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,9 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 import logic_authentication
-import logic_business
-import Combine
-import Foundation
 
 public enum QuickPinPartialState: Sendable {
   case success
@@ -24,13 +21,13 @@ public enum QuickPinPartialState: Sendable {
 }
 
 public protocol QuickPinInteractor: Sendable {
-  func setPin(newPin: String)
-  func isPinValid(pin: String) -> QuickPinPartialState
-  func changePin(currentPin: String, newPin: String) -> QuickPinPartialState
-  func hasPin() -> Bool
+  func setPin(newPin: String) async
+  func isPinValid(pin: String) async -> QuickPinPartialState
+  func changePin(currentPin: String, newPin: String) async -> QuickPinPartialState
+  func hasPin() async -> Bool
 }
 
-final class QuickPinInteractorImpl: QuickPinInteractor {
+final actor QuickPinInteractorImpl: QuickPinInteractor {
 
   private let pinStorageController: PinStorageController
 
@@ -60,10 +57,10 @@ final class QuickPinInteractorImpl: QuickPinInteractor {
   }
 
   public func hasPin() -> Bool {
-    return pinStorageController.retrievePin()?.isEmpty == false
+    pinStorageController.retrievePin()?.isEmpty == false
   }
 
   private func isCurrentPinValid(pin: String) -> Bool {
-    return pinStorageController.isPinValid(with: pin)
+    pinStorageController.isPinValid(with: pin)
   }
 }

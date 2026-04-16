@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -13,8 +13,6 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Foundation
-import logic_ui
 import logic_resources
 import feature_common
 import logic_business
@@ -33,20 +31,20 @@ public protocol DocumentOfferInteractor: Sendable {
     issuerName: String,
     successNavigation: UIConfig.TwoWayNavigationType
   ) async -> OfferDynamicIssuancePartialState
-
-  func getHoldersName(for documentIdentifier: String) -> String?
-  func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey?
   func fetchStoredDocuments(documentIds: [String]) async -> OfferDocumentsPartialState
 }
 
-final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
+final actor DocumentOfferInteractorImpl: DocumentOfferInteractor {
 
   private let walletController: WalletKitController
+  private let configLogic: ConfigLogic
 
   init(
-    walletController: WalletKitController
+    walletController: WalletKitController,
+    configLogic: ConfigLogic
   ) {
     self.walletController = walletController
+    self.configLogic = configLogic
   }
 
   func processOfferRequest(with uri: String) async -> OfferRequestPartialState {
@@ -55,8 +53,8 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       let codeMinLength = 4
       let codeMaxLength = 6
 
-      let offer = try await walletController.resolveOfferUrlDocTypes(uriOffer: uri)
-      let hasPidStored = !walletController.fetchIssuedDocuments(with: [.mDocPid, .sdJwtPid]).isEmpty
+      let offer = try await walletController.resolveOfferUrlDocTypes(offerUri: uri)
+      let hasPidStored = await !walletController.fetchIssuedDocuments(with: [.mDocPid, .sdJwtPid]).isEmpty
 
       if let spec = offer.txCodeSpec,
          let codeLength = spec.length,
@@ -66,14 +64,18 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
 
       let hasPidInOffer = offer.docModels.first(
         where: { offer in
-          let identifier = DocumentTypeIdentifier(rawValue: offer.docType.ifNilOrEmpty { offer.credentialConfigurationIdentifier })
-          // MARK: - TODO Re-activate once SD-JWT PID Rule book is in place in ARF.
-          // return identifier == .mDocPid || identifier == .sdJwtPid
-          return identifier == .mDocPid
+          let identifier = DocumentTypeIdentifier(
+            rawValue: offer.docType.ifNilOrEmpty {
+              offer.vct.ifNilOrEmpty {
+                offer.credentialConfigurationIdentifier
+              }
+            }
+          )
+          return identifier == .mDocPid || identifier == .sdJwtPid
         }
       ) != nil
 
-      if !hasPidStored && !hasPidInOffer {
+      if configLogic.forcePidActivation && !hasPidStored && !hasPidInOffer {
         return .failure(WalletCoreError.missingPid)
       }
 
@@ -161,11 +163,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       )
 
       if doc.status == .issued {
-        let state = await Task.detached { () -> OfferDocumentsPartialState in
-          return await self.fetchStoredDocuments(
-            documentIds: [doc.id]
-          )
-        }.value
+        let state = await self.fetchStoredDocuments(documentIds: [doc.id])
         switch state {
         case .success(let documents):
             return .success(
@@ -198,32 +196,14 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
       }
 
     } catch {
-      return .failure(WalletCoreError.unableToIssueAndStore)
+      return .failure(error)
     }
-  }
-
-  public func getHoldersName(for documentIdentifier: String) -> String? {
-    guard
-      let bearerName = walletController.fetchDocument(with: documentIdentifier)?.getBearersName()
-    else {
-      return nil
-    }
-    return  "\(bearerName.first) \(bearerName.last)"
-  }
-
-  public func getDocumentSuccessCaption(for documentIdentifier: String) -> LocalizableStringKey? {
-    guard
-      let document = walletController.fetchDocument(with: documentIdentifier)
-    else {
-      return nil
-    }
-    return .issuanceSuccessCaption([document.displayName.orEmpty])
   }
 
   func fetchStoredDocuments(documentIds: [String]) async -> OfferDocumentsPartialState {
-    let documents = walletController.fetchDocuments(with: documentIds)
+    let documents = await walletController.fetchDocuments(with: documentIds)
     let documentsDetails = documents.compactMap {
-      $0.transformToDocumentDetailsUi(isSensitive: false)
+      $0.transformToDocumentUi(isSensitive: false)
     }
 
     if documentsDetails.isEmpty {
@@ -237,11 +217,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
     documentIdentifiers: [String],
     isPartialState: Bool = false
   ) async -> OfferResultPartialState {
-    let state = await Task.detached { () -> OfferDocumentsPartialState in
-      return await self.fetchStoredDocuments(
-        documentIds: documentIdentifiers
-      )
-    }.value
+    let state = await self.fetchStoredDocuments(documentIds: documentIdentifiers)
     switch state {
     case .success(let documents):
         if isPartialState {
@@ -298,7 +274,7 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
 
   private func retrieveDocumentSuccessRoute(
     successNavigation: UIConfig.TwoWayNavigationType,
-    documents: [DocumentDetailsUIModel]
+    documents: [DocumentUIModel]
   ) -> AppRoute {
     var navigationType: UIConfig.DeepLinkNavigationType {
       return switch successNavigation {
@@ -313,7 +289,8 @@ final class DocumentOfferInteractorImpl: DocumentOfferInteractor {
           successNavigation: navigationType,
           relyingParty: documents.first?.issuer?.name,
           issuerLogoUrl: documents.first?.issuer?.logoUrl,
-          relyingPartyIsTrusted: false
+          relyingPartyIsTrusted: false,
+          isIssuingDocument: true
         ),
         requestItems: documents.map { item in
           ListItemSection(
@@ -347,6 +324,6 @@ public enum OfferDynamicIssuancePartialState: Sendable {
 }
 
 public enum OfferDocumentsPartialState: Sendable {
-  case success([DocumentDetailsUIModel])
+  case success([DocumentUIModel])
   case failure(Error)
 }

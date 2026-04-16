@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,10 +16,14 @@
 import Foundation
 import UIKit
 import logic_assembly
+import logic_core
+import SDWebImageSVGCoder
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-  private lazy var analyticsController: AnalyticsController = DIGraph.resolver.force(AnalyticsController.self)
+  private lazy var analyticsController: AnalyticsController = DIGraph.shared.resolver.force(AnalyticsController.self)
+  private lazy var revocationWorkManager: RevocationWorkManager = DIGraph.shared.resolver.force(RevocationWorkManager.self)
+  private lazy var reIssuanceWorkManager: ReIssuanceWorkManager = DIGraph.shared.resolver.force(ReIssuanceWorkManager.self)
 
   func application(
     _ application: UIApplication,
@@ -28,6 +32,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // Initialize Reporting
     initializeReporting()
+
+    // Initialize Workers
+    initializeWorkers()
+
+    // Register the SVG coder so SDWebImage can decode & render .svg images
+    registerSvgCoderToSdImage()
 
     return true
   }
@@ -44,5 +54,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   private func initializeReporting() {
     analyticsController.initialize()
+  }
+
+  private func registerSvgCoderToSdImage() {
+    SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
+  }
+
+  private func initializeWorkers() {
+    Task { await revocationWorkManager.start() }
+    Task { await reIssuanceWorkManager.start() }
   }
 }

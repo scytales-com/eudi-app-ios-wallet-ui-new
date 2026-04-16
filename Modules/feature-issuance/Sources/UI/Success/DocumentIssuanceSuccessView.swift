@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,19 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 import SwiftUI
-import logic_ui
-import logic_resources
 import feature_common
-import logic_core
 
 struct DocumentIssuanceSuccessView<Router: RouterHost, RequestItem: Sendable>: View {
 
-  @ObservedObject private var viewModel: DocumentIssuanceSuccessViewModel<Router, RequestItem>
+  @State private var viewModel: DocumentIssuanceSuccessViewModel<Router, RequestItem>
 
   init(
     with viewModel: DocumentIssuanceSuccessViewModel<Router, RequestItem>
   ) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {

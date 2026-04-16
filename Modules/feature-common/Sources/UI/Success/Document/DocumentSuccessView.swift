@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,24 +14,23 @@
  * governing permissions and limitations under the Licence.
  */
 import SwiftUI
-import logic_business
 import logic_ui
 
 public struct DocumentSuccessView<Router: RouterHost, RequestItem: Sendable>: View {
 
-  @ObservedObject private var viewModel: DocumentSuccessViewModel<Router, RequestItem>
+  @State private var viewModel: DocumentSuccessViewModel<Router, RequestItem>
 
   public init(
     with viewModel: DocumentSuccessViewModel<Router, RequestItem>
   ) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   public var body: some View {
     ContentScreenView(
       padding: .zero,
       canScroll: true,
-      navigationTitle: .dataShared,
+      navigationTitle: viewModel.viewState.navigationTitle,
       toolbarContent: viewModel.toolbarContent()
     ) {
       content(
@@ -49,15 +48,9 @@ private func content<RequestItem: Sendable>(
   ScrollView {
 
     VStack(spacing: .zero) {
-      ContentHeader(
-        config: ContentHeaderConfig(
-          appIconAndTextData: AppIconAndTextData(
-            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
-            appText: ThemeManager.shared.image.euditext
-          ),
-          description: .successfullySharedFollowingInformation,
-          relyingPartyData: viewState.relyingParty
-        )
+      ContentHeaderView(
+        config: viewState.contentHeaderConfig,
+        accessibilityDescription: DocumentSuccessLocators.documentSuccessDescription
       )
 
       VSpacer.large()
@@ -83,18 +76,23 @@ private func documents<RequestItem: Sendable>(
 ) -> some View {
   if !viewState.items.isEmpty {
     VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
-      ForEach(viewState.items, id: \.id) { section in
+      ForEach(viewState.items.indices, id: \.self) { index in
+        let section = viewState.items[index]
         WrapExpandableListView(
           header: .init(
-            mainText: .custom(section.title),
+            mainContent: .text(.custom(section.title)),
             supportingText: .viewDetails
           ),
           items: section.listItems,
           backgroundColor: backgroundColor,
           hideSensitiveContent: false,
+          isLoading: viewState.isLoading,
           onItemClick: { onSelectionChanged($0.groupId) }
         )
-        .shimmer(isLoading: viewState.isLoading)
+        .accessibilityElement()
+        .combineChilrenAccessibility(
+          locator: BaseRequestLocators.requestedDocument(index.string)
+        )
       }
     }
   }

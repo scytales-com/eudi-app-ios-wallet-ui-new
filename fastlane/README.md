@@ -15,10 +15,10 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios coverage
+### ios code_coverage
 
 ```sh
-[bundle exec] fastlane ios coverage
+[bundle exec] fastlane ios code_coverage
 ```
 
 Run test coverage
@@ -37,7 +37,7 @@ Run tests
 [bundle exec] fastlane ios deploy
 ```
 
-Build EUDI Wallet Demo version and upload it to AppCenter
+Build & Deploy Wallet
 
 ### ios github_release
 
@@ -118,14 +118,6 @@ Build Version
 ```
 
 Appstore Build Version
-
-### ios update_display_name
-
-```sh
-[bundle exec] fastlane ios update_display_name
-```
-
-Change App Display Name
 
 ----
 

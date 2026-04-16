@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -93,9 +93,10 @@ public struct PinTextFieldView: View {
               .stroke(
                 hasError ?
                 Theme.shared.color.error :
-                stateForDigit[index].color
+                  stateForDigit[index].color
               )
           )
+          .accessibilityLocator(Locators.pinTextField, with: "_\(index)")
         if shouldUseFullScreen && index < (maxDigits - 1) {
           Spacer()
         }
@@ -149,15 +150,9 @@ public struct PinTextFieldView: View {
   }
 
   private var backgroundField: some View {
-    let boundPin = Binding<String>(get: { self.numericText }, set: { newValue in
-      self.numericText = newValue
-      self.currentIndex = newValue.count > maxDigits ? maxDigits : newValue.count
-      self.submitPin()
-    })
-
     return TextField(
       "",
-      text: boundPin,
+      text: $numericText,
       onEditingChanged: { isEditing in
         self.isInEditMode = isEditing
         if isEditing, self.stateForDigit[safe: numericText.count] != nil {
@@ -169,11 +164,15 @@ public struct PinTextFieldView: View {
         stateForDigit = Array(repeating: FieldState.inactive, count: maxDigits)
       }
     )
-    .onChange(of: numericText, perform: { numericText in
+    .onChange(of: numericText) { _, newValue in
+      self.numericText = newValue
+      self.currentIndex = newValue.count > maxDigits ? maxDigits : newValue.count
+      self.submitPin()
+
       for index in (0..<maxDigits) {
         self.stateForDigit[index] = numericText.count == index  ? .active : .inactive
       }
-    })
+    }
     .accentColor(.clear)
     .foregroundColor(.clear)
     .keyboardType(.numberPad)

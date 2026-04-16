@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,10 +19,10 @@ import logic_resources
 
 struct QuickPinView<Router: RouterHost>: View {
 
-  @ObservedObject var viewModel: QuickPinViewModel<Router>
+  @State private var viewModel: QuickPinViewModel<Router>
 
   init(with viewModel: QuickPinViewModel<Router>) {
-    self.viewModel = viewModel
+    self._viewModel = State(wrappedValue: viewModel)
   }
 
   var body: some View {
@@ -37,16 +37,20 @@ struct QuickPinView<Router: RouterHost>: View {
         onButtonClick: { viewModel.onButtonClick() }
       )
     }
-    .confirmationDialog(
-      title: .quickPinUpdateCancellationTitle,
-      message: .quickPinUpdateCancellationCaption,
-      destructiveText: .cancelButton,
-      baseText: .quickPinUpdateCancellationContinue,
+    .dialogCompat(
+      .quickPinUpdateCancellationTitle,
       isPresented: $viewModel.isCancelModalShowing,
-      destructiveAction: {
-        viewModel.onPop()
+      actions: {
+        Button(.cancelButton, role: .destructive) {
+          viewModel.onPop()
+        }
+        Button(.quickPinUpdateCancellationContinue, role: .cancel) {
+          viewModel.onShowCancellationModal()
+        }
       },
-      baseAction: viewModel.onShowCancellationModal()
+      message: {
+        Text(.quickPinUpdateCancellationCaption)
+      }
     )
   }
 }
@@ -60,7 +64,7 @@ private func content(
   onButtonClick: @escaping () -> Void
 ) -> some View {
 
-  ContentHeader(
+  ContentHeaderView(
     config: ContentHeaderConfig(
       appIconAndTextData: AppIconAndTextData(
         appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
@@ -71,6 +75,7 @@ private func content(
 
   ContentTitleView(
     title: viewState.title,
+    accessibilityTitle: QuickPinLocators.quickPinTitle,
     caption: viewState.caption
   )
 
@@ -118,12 +123,13 @@ private func pinView(
 
 #Preview {
   let viewState = QuickPinState(
-    config: QuickPinUiConfig(flow: .set),
+    config: QuickPinUiConfig(flow: .setWithActivation),
     navigationTitle: .quickPinEnterPin,
     title: .quickPinSetTitle,
     caption: .quickPinSetCaptionOne,
     button: .quickPinNextButton,
-    success: .success,
+    successTitle: .quickPinSetTitle,
+    successCaption: .quickPinSetSuccess,
     successButton: .quickPinSetSuccessButton,
     successNavigationType: .push(screen: .featureDashboardModule(.dashboard)),
     isCancellable: false,
