@@ -57,10 +57,12 @@ final actor RequestAuthorizationInteractorImpl: RequestAuthorizationInteractor {
     context: ISO18013MobileDocumentRequestContext
   ) async throws {
     try await context.sendResponse { rawRequest in
+
       try await self.dcApiHandler.validateConsistency(
         request: context.request,
         rawRequest: rawRequest
       )
+
       try await self.dcApiHandler.validateRawRequest(rawRequest: rawRequest)
 
       let responseData = try await self.dcApiHandler.buildAndEncryptResponse(

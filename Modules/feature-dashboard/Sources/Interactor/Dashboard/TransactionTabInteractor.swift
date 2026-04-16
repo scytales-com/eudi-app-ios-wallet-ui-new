@@ -221,7 +221,7 @@ final actor TransactionTabInteractorImpl: TransactionTabInteractor {
           name: LocalizableStringKey.sortBy.toString,
           filters: [
             FilterItem(
-              id: FilterIds.ORDER_BY_DESCENDING,
+              id: FilterIds.FILTER_SORT_DEFAULT,
               name: LocalizableStringKey.transactionDate.toString,
               selected: true,
               isDefault: true,
@@ -230,7 +230,7 @@ final actor TransactionTabInteractorImpl: TransactionTabInteractor {
               })
             )
           ],
-          filterType: .orderBy
+          filterType: .other
         ),
         SingleSelectionFilterGroup(
           id: FilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
@@ -391,7 +391,7 @@ final actor TransactionTabInteractorImpl: TransactionTabInteractor {
             transactionType: .presentation
           )
         )
-      case .issuance, .signing:
+      case .issuance, .signing, .deletion:
         return FilterableItem(
           payload: transactionPayload,
           attributes: TransactionFilterableAttributes(
