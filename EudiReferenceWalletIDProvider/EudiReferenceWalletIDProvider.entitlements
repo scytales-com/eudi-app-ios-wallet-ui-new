@@ -4,7 +4,7 @@
 <dict>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)$(SHARED_APP_GROUP_IDENTIFIER)</string>
+		<string>$(AppIdentifierPrefix)com.scytales.euidi.dev</string>
 	</array>
 </dict>
 </plist>
