@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.$(SHARED_APP_GROUP_IDENTIFIER)</string>
+		<string>group.com.scytales.euidi.dev</string>
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
