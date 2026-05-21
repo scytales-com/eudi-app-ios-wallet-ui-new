@@ -27,9 +27,17 @@ struct BiometryView<Router: RouterHost>: View {
   }
 
   var body: some View {
+    let config = viewModel.viewState.config
+    let isEmbeddedPresentation = !config.displayNavigationBar
+
     ContentScreenView(
-      navigationTitle: viewModel.viewState.config.navigationTitle,
-      toolbarContent: viewModel.toolbarContent()
+      padding: isEmbeddedPresentation ? .zero : Theme.shared.dimension.padding,
+      navigationTitle: config.displayNavigationBar
+        ? config.navigationTitle
+        : nil,
+      toolbarContent: config.displayNavigationBar
+        ? viewModel.toolbarContent()
+        : nil
     ) {
       content(
         viewState: viewModel.viewState,
@@ -50,8 +58,14 @@ struct BiometryView<Router: RouterHost>: View {
         self.viewModel.setPhase(with: scenePhase)
       }
     }
+    .if(isEmbeddedPresentation) {
+      $0
+        .frame(maxWidth: .infinity)
+        .padding()
+        .toolbar(.hidden, for: .navigationBar)
+    }
     .task {
-      await self.viewModel.onAppearBiometry()
+      await self.viewModel.initialize()
     }
   }
 }
@@ -79,7 +93,9 @@ private func content(
     : viewState.config.quickPinOnlyCaption,
     accessibilityCaption: BiometryLocators.biometryScreenPinText,
     titleColor: Theme.shared.color.onSurface,
-    topSpacing: viewState.isCancellable ? .withToolbar : .withoutToolbar
+    topSpacing: viewState.config.displayNavigationBar && viewState.isCancellable
+      ? .withToolbar
+      : .withoutToolbar
   )
 
   VSpacer.large()
@@ -88,7 +104,10 @@ private func content(
     uiPinInputField: uiPinInputField,
     quickPinSize: viewState.quickPinSize,
     areBiometricsEnabled: viewState.areBiometricsEnabled,
-    pinError: viewState.pinError)
+    pinError: viewState.pinError,
+    isLockedOut: viewState.isLockedOut,
+    lockoutMessage: viewState.lockoutMessage
+  )
 
   Spacer()
 
@@ -110,25 +129,38 @@ private func pinView(
   uiPinInputField: Binding<String>,
   quickPinSize: Int,
   areBiometricsEnabled: Bool,
-  pinError: String?
+  pinError: LocalizableStringKey?,
+  isLockedOut: Bool,
+  lockoutMessage: LocalizableStringKey?
 ) -> some View {
+  let hasError = pinError != nil || isLockedOut
+
   VStack(spacing: .zero) {
 
     PinTextFieldView(
       numericText: uiPinInputField,
       maxDigits: quickPinSize,
       isSecureEntry: true,
-      canFocus: .constant(!areBiometricsEnabled),
+      canFocus: .constant(!areBiometricsEnabled && !isLockedOut),
       shouldUseFullScreen: false,
-      hasError: pinError != nil
+      hasError: hasError,
+      isDisabled: isLockedOut
     )
 
     VSpacer.mediumSmall()
 
-    if let error = pinError {
+    if let lockoutMessage {
+      HStack {
+        Text(lockoutMessage)
+          .typography(Theme.shared.font.bodySmall)
+          .foregroundColor(Theme.shared.color.error)
+          .multilineTextAlignment(.leading)
+        Spacer()
+      }
+    } else if let error = pinError {
       HStack {
         Text(error)
-          .typography(Theme.shared.font.bodyMedium)
+          .typography(Theme.shared.font.bodySmall)
           .foregroundColor(Theme.shared.color.error)
         Spacer()
       }
@@ -162,7 +194,9 @@ private func pinView(
         appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet,
         appText: ThemeManager.shared.image.euditext
       )
-    )
+    ),
+    isLockedOut: false,
+    lockoutMessage: nil
   )
 
   ContentScreenView {
