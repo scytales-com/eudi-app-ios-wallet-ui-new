@@ -1,5 +1,5 @@
 {
-  "originHash" : "6b4fdc56c787bd0014e5632905904fa9694ca07dd226830d4c59bcaa8709be8c",
+  "originHash" : "efbb800dea2433e7fe58b8e32edd405fcecae4ab2e704148dcd580c2cf33a365",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-iso18013-data-transfer.git",
       "state" : {
-        "revision" : "db189efd904e706e9483f53c350e642161ea84be",
-        "version" : "0.20.2"
+        "revision" : "929aa3367888352917a0b03f47c22bc33265c633",
+        "version" : "0.20.3"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
-        "revision" : "505f531f90d5a55aa2a1e574ee0bcf39bacb5fa8",
-        "version" : "0.38.2"
+        "revision" : "711161de6542cae30213051065c415ad1764036a",
+        "version" : "0.38.3"
       }
     },
     {
@@ -195,8 +195,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       "state" : {
-        "revision" : "255d7a537f6754dc537ddbca3867bf2604617fff",
-        "version" : "0.30.5"
+        "revision" : "c6490d3ec5e0e777d0736d38a644ed2f88b6894e",
+        "version" : "0.30.7"
       }
     },
     {
@@ -222,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
       "state" : {
-        "revision" : "cc37a8420ef0ebe110c45cc6214930cbd374881c",
-        "version" : "0.14.3"
+        "revision" : "961ca464b988dcbdfeccdaf8039f651ff6fa1d7b",
+        "version" : "0.14.4"
       }
     },
     {
@@ -283,10 +283,10 @@
     {
       "identity" : "phonenumberkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/marmelroy/PhoneNumberKit",
+      "location" : "https://github.com/PhoneNumberKit/PhoneNumberKit",
       "state" : {
-        "revision" : "2d547ffe38f61009219e34e5378d2aa4c13b6e51",
-        "version" : "4.2.12"
+        "revision" : "52bd68dffa07ec7fc42b9851911c59e9d57fc906",
+        "version" : "5.0.0"
       }
     },
     {
@@ -402,8 +402,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "a012e0ad8a8a72de92b0e008c81a9b793f70e73a",
-        "version" : "1.12.1"
+        "revision" : "2aed77ae5ec9a86d8fe42c12275e4c2653a286ee",
+        "version" : "1.13.1"
       }
     },
     {
