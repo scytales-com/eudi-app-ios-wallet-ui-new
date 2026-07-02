@@ -1,3 +1,4 @@
+- DCQL multiple selections
 - DC API support
 - New IACA Certificate for JP Interoperability Test
 - Wallet attestations (WIA/WUA)
