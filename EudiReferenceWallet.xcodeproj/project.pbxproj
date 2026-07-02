@@ -119,7 +119,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9F8701D62F6BE5BC00A865A9 /* Exceptions for "EudiReferenceWalletIDProvider" folder in "EudiReferenceWalletIDProvider" target */ = {
+		9F8701D62F6BE5BC00A865A9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				WalletIdProvider.plist,
@@ -129,18 +129,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9F8701CA2F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9F8701D62F6BE5BC00A865A9 /* Exceptions for "EudiReferenceWalletIDProvider" folder in "EudiReferenceWalletIDProvider" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = EudiReferenceWalletIDProvider;
-			sourceTree = "<group>";
-		};
+		9F8701CA2F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9F8701D62F6BE5BC00A865A9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = EudiReferenceWalletIDProvider; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -870,7 +859,6 @@
 			baseConfigurationReference = F1CACAE12AC3098C00B40DED /* WalletDemo.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -969,7 +957,6 @@
 			baseConfigurationReference = F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
@@ -1130,7 +1117,6 @@
 			baseConfigurationReference = F1CACADF2AC3097100B40DED /* WalletDev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1174,7 +1160,6 @@
 			baseConfigurationReference = F02921622B8E07870076A58B /* WalletDevRelease.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "Wallet/Preview\\ Content";
@@ -1255,8 +1240,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eu-digital-identity-wallet/av-lib-ios-w3c-dc-api.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.11.0;
+				kind = exactVersion;
+				version = 0.20.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

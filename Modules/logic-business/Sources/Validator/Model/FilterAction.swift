@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -28,7 +28,11 @@ public protocol FilterAction: Sendable {
   ) -> FilterableList
 }
 
-public struct Sort<T: FilterableAttributes, R: Comparable>: FilterAction {
+/// Marker protocol used to identify any `Sort` filter action without having
+/// to refer to its generic specializations.
+public protocol SortFilterAction: FilterAction {}
+
+public struct Sort<T: FilterableAttributes, R: Comparable>: FilterAction, SortFilterAction {
   public func applyFilterGroup(filterableItems: FilterableList, filterGroup: any FilterGroup) -> FilterableList {
     filterableItems
   }

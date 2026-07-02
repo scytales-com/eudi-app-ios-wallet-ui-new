@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -39,6 +39,11 @@ protocol WalletKitConfig: Sendable {
    * User authentication required accessing core's secure storage
    */
   var userAuthenticationRequired: Bool { get }
+
+  /**
+   * KeyOptions for creating & accessing attestation keys
+   */
+  var keyOptions: KeyOptions? { get }
 
   /**
    * The name of the file to be created to store logs
@@ -86,6 +91,14 @@ struct WalletKitConfigImpl: WalletKitConfig {
     false
   }
 
+  var keyOptions: KeyOptions? {
+    KeyOptions(
+      curve: .P256,
+      secureAreaName: SecureEnclaveSecureArea.name,
+      accessControl: []
+    )
+  }
+
   var issuersConfig: [String: VciConfig] {
 
     let openId4VciConfigurations: [VciConfig] = {
@@ -98,7 +111,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               clientId: "wallet-dev",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-              requirePAR: true,
+              parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               cacheIssuerMetadata: true
             ),
@@ -110,7 +123,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               clientId: "wallet-dev",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-              requirePAR: true,
+              parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               cacheIssuerMetadata: true
             ),
@@ -125,7 +138,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               clientId: "wallet-dev",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-              requirePAR: true,
+              parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               cacheIssuerMetadata: true
             ),
@@ -137,7 +150,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               clientId: "wallet-dev",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
-              requirePAR: true,
+              parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               cacheIssuerMetadata: true
             ),
@@ -162,7 +175,10 @@ struct WalletKitConfigImpl: WalletKitConfig {
   }
 
   var vpConfig: OpenId4VpConfiguration {
-    .init(clientIdSchemes: [.x509SanDns, .x509Hash])
+    .init(
+      clientIdSchemes: [.x509SanDns, .x509Hash],
+      allowPresentingPartialClaims: true
+    )
   }
 
   var trustedReaderRootCertificates: [x5chain] {
@@ -242,45 +258,41 @@ struct WalletKitConfigImpl: WalletKitConfig {
     return switch configLogic.appBuildVariant {
     case .DEMO:
       DocumentIssuanceConfig(
-        defaultRule: DocumentIssuanceRule(
-          policy: .rotateUse,
-          numberOfCredentials: 1
+        defaultCredentialOptions: CredentialOptions(
+          credentialPolicy: .rotateUse,
+          batchSize: 1
         ),
-        documentSpecificRules: [
-          DocumentTypeIdentifier.mDocPid: DocumentIssuanceRule(
-            policy: .oneTimeUse,
-            numberOfCredentials: 10
+        documentSpecificCredentialOptions: [
+          DocumentTypeIdentifier.mDocPid: CredentialOptions(
+            credentialPolicy: .oneTimeUse,
+            batchSize: 10
           ),
-          DocumentTypeIdentifier.sdJwtPid: DocumentIssuanceRule(
-            policy: .oneTimeUse,
-            numberOfCredentials: 10
+          DocumentTypeIdentifier.sdJwtPid: CredentialOptions(
+            credentialPolicy: .oneTimeUse,
+            batchSize: 10
           )
         ],
-        reIssuanceRule: ReIssuanceRule(
-          minNumberOfCredentials: 2,
-          minExpirationHours: 14,
+        reIssuanceBackgroundRule: ReIssuanceBackgroundRule(
           backgroundIntervalSeconds: 300
         )
       )
     case .DEV:
       DocumentIssuanceConfig(
-        defaultRule: DocumentIssuanceRule(
-          policy: .rotateUse,
-          numberOfCredentials: 1
+        defaultCredentialOptions: CredentialOptions(
+          credentialPolicy: .rotateUse,
+          batchSize: 1
         ),
-        documentSpecificRules: [
-          DocumentTypeIdentifier.mDocPid: DocumentIssuanceRule(
-            policy: .oneTimeUse,
-            numberOfCredentials: 60
+        documentSpecificCredentialOptions: [
+          DocumentTypeIdentifier.mDocPid: CredentialOptions(
+            credentialPolicy: .oneTimeUse,
+            batchSize: 60
           ),
-          DocumentTypeIdentifier.sdJwtPid: DocumentIssuanceRule(
-            policy: .oneTimeUse,
-            numberOfCredentials: 60
+          DocumentTypeIdentifier.sdJwtPid: CredentialOptions(
+            credentialPolicy: .oneTimeUse,
+            batchSize: 60
           )
         ],
-        reIssuanceRule: ReIssuanceRule(
-          minNumberOfCredentials: 2,
-          minExpirationHours: 14,
+        reIssuanceBackgroundRule: ReIssuanceBackgroundRule(
           backgroundIntervalSeconds: 300
         )
       )
@@ -290,7 +302,10 @@ struct WalletKitConfigImpl: WalletKitConfig {
 
 private extension WalletKitConfigImpl {
   func loadCertificate(_ name: String) -> SecCertificate? {
-    guard let data = Data(name: name, ext: "der") else { return nil }
+    guard
+      let url = Bundle.main.url(forResource: name, withExtension: "der"),
+      let data = try? Data(contentsOf: url)
+    else { return nil }
     return SecCertificateCreateWithData(nil, data as CFData)
   }
 }
