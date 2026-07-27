@@ -83,9 +83,11 @@ final actor StartupInteractorImpl: StartupInteractor {
   }
 
   private func manageStorageForFirstRun() async {
-    if !prefsController.getBool(forKey: .runAtLeastOnce) {
-      await walletKitController.clearAllDocuments()
-      keyChainController.clear()
+    guard !prefsController.getBool(forKey: .runAtLeastOnce) else { return }
+    try? await walletKitController.clearAllDocuments()
+
+    let didWipeStorage = keyChainController.clear()
+    if didWipeStorage {
       prefsController.setValue(true, forKey: .runAtLeastOnce)
     }
   }

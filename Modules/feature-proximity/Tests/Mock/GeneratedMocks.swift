@@ -4069,6 +4069,7 @@ import Cuckoo
 
 import Cuckoo
 import Foundation
+import Security
 import KeychainAccess
 @testable import logic_core
 @testable import logic_business
@@ -4235,9 +4236,9 @@ public class MockKeyChainController: KeyChainController, Cuckoo.ProtocolMock, @u
         )
     }
 
-    public func clear() {
+    public func clear() -> Bool {
         return cuckoo_manager.call(
-            "clear()",
+            "clear() -> Bool",
             parameters: (),
             escapingParameters: (),
             superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
@@ -4308,10 +4309,10 @@ public class MockKeyChainController: KeyChainController, Cuckoo.ProtocolMock, @u
             ))
         }
         
-        func clear() -> Cuckoo.ProtocolStubNoReturnFunction<()> {
+        func clear() -> Cuckoo.ProtocolStubFunction<(), Bool> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return .init(stub: cuckoo_manager.createStub(for: MockKeyChainController.self,
-                method: "clear()",
+                method: "clear() -> Bool",
                 parameterMatchers: matchers
             ))
         }
@@ -4414,10 +4415,10 @@ public class MockKeyChainController: KeyChainController, Cuckoo.ProtocolMock, @u
         
         
         @discardableResult
-        func clear() -> Cuckoo.__DoNotUse<(), Void> {
+        func clear() -> Cuckoo.__DoNotUse<(), Bool> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return cuckoo_manager.verify(
-                "clear()",
+                "clear() -> Bool",
                 callMatcher: callMatcher,
                 parameterMatchers: matchers,
                 sourceLocation: sourceLocation
@@ -4458,8 +4459,8 @@ public class KeyChainControllerStub:KeyChainController, @unchecked Sendable {
         return DefaultValueRegistry.defaultValue(for: (Void).self)
     }
     
-    public func clear() {
-        return DefaultValueRegistry.defaultValue(for: (Void).self)
+    public func clear() -> Bool {
+        return DefaultValueRegistry.defaultValue(for: (Bool).self)
     }
 }
 
@@ -7244,11 +7245,12 @@ public class MockWalletKitController: WalletKitController, Cuckoo.ProtocolMock, 
         )
     }
 
-    public func clearAllDocuments() async {
-        return await cuckoo_manager.call(
-            "clearAllDocuments() async",
+    public func clearAllDocuments() async throws {
+        return try await cuckoo_manager.callThrows(
+            "clearAllDocuments() async throws",
             parameters: (),
             escapingParameters: (),
+            errorType: Swift.Error.self,
             superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
             defaultCall: await __defaultImplStub!.clearAllDocuments()
         )
@@ -7675,10 +7677,10 @@ return await cuckoo_manager.call(
             ))
         }
         
-        func clearAllDocuments() -> Cuckoo.ProtocolStubNoReturnFunction<()> {
+        func clearAllDocuments() -> Cuckoo.ProtocolStubNoReturnThrowingFunction<(),Swift.Error> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return .init(stub: cuckoo_manager.createStub(for: MockWalletKitController.self,
-                method: "clearAllDocuments() async",
+                method: "clearAllDocuments() async throws",
                 parameterMatchers: matchers
             ))
         }
@@ -8080,7 +8082,7 @@ return await cuckoo_manager.call(
         func clearAllDocuments() -> Cuckoo.__DoNotUse<(), Void> {
             let matchers: [Cuckoo.ParameterMatcher<Void>] = []
             return cuckoo_manager.verify(
-                "clearAllDocuments() async",
+                "clearAllDocuments() async throws",
                 callMatcher: callMatcher,
                 parameterMatchers: matchers,
                 sourceLocation: sourceLocation
@@ -8495,7 +8497,7 @@ public class WalletKitControllerStub:WalletKitController, @unchecked Sendable {
         return DefaultValueRegistry.defaultValue(for: ([any DocClaimsDecodable]).self)
     }
     
-    public func clearAllDocuments() async {
+    public func clearAllDocuments() async throws {
         return DefaultValueRegistry.defaultValue(for: (Void).self)
     }
     

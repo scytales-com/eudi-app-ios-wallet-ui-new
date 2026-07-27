@@ -42,7 +42,7 @@ public protocol WalletKitController: Sendable {
   func fetchMainPidDocument() async -> (any DocClaimsDecodable)?
   func fetchDocument(with id: String) async -> (any DocClaimsDecodable)?
   func fetchDocuments(with ids: [String]) async -> [any DocClaimsDecodable]
-  func clearAllDocuments() async
+  func clearAllDocuments() async throws
   func deleteDocument(with id: String, status: DocumentStatus) async throws
   func loadDocuments() async throws
   func issueDocuments(
@@ -195,8 +195,9 @@ final actor WalletKitControllerImpl: WalletKitController {
     )
   }
 
-  func clearAllDocuments() async {
-    try? await wallet.deleteAllDocuments()
+  func clearAllDocuments() async throws {
+    try await wallet.deleteAllDocuments()
+
     try? await removeAllRegistration(
       with: wallet.loadAllDocuments()?.compactMap { return $0.id }
     )
