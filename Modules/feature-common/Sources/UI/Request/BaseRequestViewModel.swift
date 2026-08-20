@@ -16,6 +16,7 @@
 
 @_exported import logic_ui
 @_exported import logic_resources
+import logic_core
 import Observation
 
 @Copyable
@@ -27,22 +28,21 @@ public struct RequestViewState: ViewState {
   public let items: [RequestDataUiModel]
   public let combinations: [[RequestDataUiModel]]
   public let selectedCombinationIndex: Int
-  public let trustedRelyingPartyInfo: LocalizableStringKey
   public let relyingParty: LocalizableStringKey
   public let isTrusted: Bool
   public let allowShare: Bool
   public let originator: AppRoute
   public let initialized: Bool
-  public let contentHeaderConfig: ContentHeaderConfig
+  public let relyingPartyRegistration: RelyingPartyRegistrationData?
+  public let registrationWarning: RegistrationWarning?
 }
 
 @Observable
 open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestViewState> {
 
-  var isRequestInfoModalShowing: Bool = false
-  var isVerifiedEntityModalShowing: Bool = false
-  var isVerifierNotTrustedSheetShowing: Bool = false
+  var isTrustBlockedAlertShowing: Bool = false
   var itemsChanged: Bool = false
+  var isRiskAcknowledged: Bool = false
 
   public init(router: Router, originator: AppRoute) {
     super.init(
@@ -55,58 +55,29 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
         items: RequestDataUiModel.mockData(),
         combinations: [],
         selectedCombinationIndex: 0,
-        trustedRelyingPartyInfo: .requestDataVerifiedEntityMessage,
         relyingParty: .unknownVerifier,
         isTrusted: false,
         allowShare: false,
         originator: originator,
         initialized: false,
-        contentHeaderConfig: .init(
-          appIconAndTextData: AppIconAndTextData(
-            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet
-          ),
-          description: .dataSharingTitle
-        )
+        relyingPartyRegistration: nil,
+        registrationWarning: nil
       )
     )
   }
 
   open func doWork() async {}
 
-  open func getTitle() -> LocalizableStringKey {
-    return .custom("")
-  }
-
   open func getRelyingParty() -> LocalizableStringKey {
     return .custom("")
   }
 
   open func getRelyingPartyIsTrusted() -> Bool {
-    return false
-  }
-
-  open func getCaption() -> LocalizableStringKey {
-    return .custom("")
-  }
-
-  open func getDataRequestInfo() -> LocalizableStringKey {
-    return .custom("")
+    return viewState.isTrusted
   }
 
   open func getSuccessRoute() -> AppRoute? {
     return nil
-  }
-
-  open func getTitleCaption() -> LocalizableStringKey {
-    return .custom("")
-  }
-
-  open func getTrustedRelyingParty() -> LocalizableStringKey {
-    return .custom("")
-  }
-
-  open func getTrustedRelyingPartyInfo() -> LocalizableStringKey {
-    return .custom("")
   }
 
   open func onShare() {
@@ -202,6 +173,7 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
   }
 
   public func resetState() {
+    isRiskAcknowledged = false
     setState { previous in
       .init(
         isLoading: true,
@@ -211,14 +183,24 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
         items: RequestDataUiModel.mockData(),
         combinations: [],
         selectedCombinationIndex: 0,
-        trustedRelyingPartyInfo: .requestDataVerifiedEntityMessage,
         relyingParty: .unknownVerifier,
         isTrusted: false,
         allowShare: false,
         originator: previous.originator,
         initialized: false,
-        contentHeaderConfig: initialHeaderConfig()
+        relyingPartyRegistration: nil,
+        registrationWarning: nil
       )
+    }
+  }
+
+  public func onReceivedRegistration(_ registration: RelyingPartyRegistration) {
+    isRiskAcknowledged = false
+    setState {
+      $0
+        .copy(isTrusted: registration.isFullyVerified)
+        .copy(relyingPartyRegistration: registration.toRegistrationData(fallbackName: .unknownVerifier))
+        .copy(registrationWarning: registration.toWarning())
     }
   }
 
@@ -236,7 +218,6 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
   }
 
   func onPop() {
-    isRequestInfoModalShowing = false
     if let route = getPopRoute() {
       router.popTo(with: route)
     } else {
@@ -244,16 +225,8 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
     }
   }
 
-  func onShowRequestInfoModal() {
-    isRequestInfoModalShowing = !isRequestInfoModalShowing
-  }
-
-  func onVerifiedEntityModal() {
-    isVerifiedEntityModalShowing = !isVerifiedEntityModalShowing
-  }
-
   open func stopPresentation() async {}
-  public func onVerifierNotTrusted() {
+  public func onTrustBlocked() {
     setState {
       $0.copy(
         isLoading: false,
@@ -264,12 +237,12 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
         initialized: true
       ).copy(error: nil)
     }
-    isVerifierNotTrustedSheetShowing = true
+    isTrustBlockedAlertShowing = true
     Task { await stopPresentation() }
   }
 
-  func onVerifierNotTrustedClose() {
-    isVerifierNotTrustedSheetShowing = false
+  func onTrustBlockedClose() {
+    isTrustBlockedAlertShowing = false
     onPop()
   }
 
@@ -308,15 +281,6 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
         )
       }
     }
-  }
-
-  private func initialHeaderConfig() -> ContentHeaderConfig {
-    .init(
-      appIconAndTextData: AppIconAndTextData(
-        appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet
-      ),
-      description: .dataSharingTitle
-    )
   }
 
   private func canShare(with items: [RequestDataUiModel]) -> Bool {

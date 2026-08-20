@@ -13,28 +13,21 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Swinject
-import logic_core
+import Foundation
+import EudiWalletKit
 import logic_business
 
-public final class FeatureIssuanceAssembly: Assembly {
+public extension Array where Element == PolicyPurpose {
 
-  public init() {}
+  var localizedValue: String? {
+    let language = Locale.current.systemLanguageCode?.lowercased()
+    return first { $0.lang.languageSubtag == language }?.value ?? first?.value
+  }
+}
 
-  public func assemble(container: Container) {
-    container.register(AddDocumentInteractor.self) { r in
-      AddDocumentInteractorImpl(
-        walletController: r.force(WalletKitController.self)
-      )
-    }
-    .inObjectScope(ObjectScope.transient)
+private extension String {
 
-    container.register(DocumentOfferInteractor.self) { r in
-      DocumentOfferInteractorImpl(
-        walletController: r.force(WalletKitController.self),
-        configLogic: r.force(ConfigLogic.self)
-      )
-    }
-    .inObjectScope(ObjectScope.transient)
+  var languageSubtag: String {
+    components(separatedBy: "-").first?.lowercased() ?? lowercased()
   }
 }

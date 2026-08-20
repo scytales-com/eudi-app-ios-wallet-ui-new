@@ -21,6 +21,7 @@ public struct OnlineAuthenticationRequestSuccessModel: Sendable {
   var relyingParty: String
   var dataRequestInfo: String
   var isTrusted: Bool
+  var relyingPartyRegistration: RelyingPartyRegistration
 }
 
 public enum PresentationCoordinatorPartialState: Sendable {
@@ -54,6 +55,7 @@ public protocol PresentationInteractor: Sendable {
   func updatePresentationCoordinator(with coordinator: RemoteSessionCoordinator) async
   func storeDynamicIssuancePendingUrl(with url: URL) async
   func stopPresentation() async
+  func registrationForFailedRequest() async -> RelyingPartyRegistration?
 }
 
 final actor PresentationInteractorImpl: PresentationInteractor {
@@ -98,30 +100,42 @@ final actor PresentationInteractorImpl: PresentationInteractor {
 
   public func onRequestReceived() async -> PresentationRequestPartialState {
     do {
-      let response = try await sessionCoordinatorHolder.getActiveRemoteCoordinator().requestReceived()
+      let coordinator = try await sessionCoordinatorHolder.getActiveRemoteCoordinator()
+      let response = try await coordinator.requestReceived()
       let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
+      let registrationPolicy = coordinator.relyingPartyRegistration
+      var overaskedClaims: [String: Set<[String]>] = [:]
       let combinations = response.itemSets
         .map { documentSet in
           documentSet.filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
         }
-        .map { documentSet in
-          documentSet.toUiModels(
+        .map { documentSet -> [RequestDataUiModel] in
+          let overasked = documentSet.overaskedClaims(policy: registrationPolicy)
+          overaskedClaims.merge(overasked) { current, _ in current }
+          return documentSet.toUiModels(
             with: self.walletKitController,
-            claimsAreSelectable: false
+            claimsAreSelectable: false,
+            overaskedClaims: overasked
           )
         }
         .filter { !$0.isEmpty }
-      guard !combinations.isEmpty else { return .failure(WalletCoreError.unableFetchDocuments) }
       return .success(
         .init(
           requestDataCombinations: combinations,
           relyingParty: response.relyingParty,
           dataRequestInfo: response.dataRequestInfo,
-          isTrusted: response.isTrusted
+          isTrusted: response.isTrusted,
+          relyingPartyRegistration: await walletKitController.getVerifierRegistration(
+            policy: registrationPolicy,
+            trustViolations: coordinator.relyingPartyWarningViolations,
+            overaskedClaims: overaskedClaims.toRequestedClaims(),
+            verifierName: response.relyingParty,
+            verifierIsTrusted: response.isTrusted
+          )
         )
       )
     } catch {
-      return error.isIssuerNotTrusted ? .notSecuredRequest : .failure(error)
+      return error.isTrustBlocked ? .notSecuredRequest : .failure(error)
     }
   }
 
@@ -165,6 +179,10 @@ final actor PresentationInteractorImpl: PresentationInteractor {
 
   public func storeDynamicIssuancePendingUrl(with url: URL) async {
     await walletKitController.storeDynamicIssuancePendingUrl(with: url)
+  }
+
+  public func registrationForFailedRequest() async -> RelyingPartyRegistration? {
+    await walletKitController.getVerifierRegistrationForFailedRequest()
   }
 
   public func stopPresentation() async {

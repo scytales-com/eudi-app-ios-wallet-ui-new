@@ -66,7 +66,7 @@ final actor DocumentDetailsInteractorImpl: DocumentDetailsInteractor {
       )
       return .success
     } catch {
-      return error.isIssuerNotTrusted ? .issuerNotTrusted : .failure(error)
+      return error.isTrustBlocked ? .issuerNotTrusted : .failure(error)
     }
   }
 

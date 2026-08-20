@@ -540,7 +540,11 @@ private extension TestDeepLinkController {
 private extension TestDeepLinkController {
   struct MockPresentationService: PresentationService {
     var zkpDocumentIds: [WalletStorage.Document.ID]?
-    
+
+    var wrpVerifierPolicy: WrpRegistrationPolicy?
+
+    var wrpVerifierWarnings: [String: [PresentationPolicyViolation]]?
+
     func waitForDisconnect() async throws {}
     
     var transactionLog: TransactionLog

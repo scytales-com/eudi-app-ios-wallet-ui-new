@@ -20,6 +20,8 @@ import logic_business
 public protocol ProximitySessionCoordinator: Sendable {
 
   var sendableCurrentValueSubject: SendableCurrentValueSubject<PresentationState> { get }
+  var relyingPartyRegistration: WrpRegistrationPolicy? { get }
+  var relyingPartyWarningViolations: [String] { get }
 
   init(session: PresentationSession)
 
@@ -40,6 +42,9 @@ final class ProximitySessionCoordinatorImpl: ProximitySessionCoordinator {
 
   private let session: PresentationSession
   private let sendableAnyCancellable: SendableAnyCancellable = .init()
+
+  var relyingPartyRegistration: WrpRegistrationPolicy? { session.wrpVerifierPolicy }
+  var relyingPartyWarningViolations: [String] { (session.wrpVerifierWarnings?[""] ?? []).map(\.message) }
 
   init(session: PresentationSession) {
     self.session = session
@@ -89,7 +94,7 @@ final class ProximitySessionCoordinatorImpl: ProximitySessionCoordinator {
   }
 
   public func requestReceived() async throws -> PresentationRequest {
-    guard session.disclosedDocumentSets.contains(where: { !$0.isEmpty }) else {
+    guard session.disclosedDocumentSets.contains(where: { !$0.docElements.isEmpty }) else {
       throw session.uiError ?? .init(description: "Failed to Find knonw documents to send", code: .noDocumentsAvailable)
     }
     return createRequest()
@@ -119,7 +124,7 @@ final class ProximitySessionCoordinatorImpl: ProximitySessionCoordinator {
 
   private func createRequest() -> PresentationRequest {
     PresentationRequest(
-      itemSets: session.disclosedDocumentSets,
+      itemSets: session.disclosedDocumentSets.map(\.docElements),
       relyingParty: session.readerCertIssuer ?? LocalizableStringKey.unknownVerifier.toString,
       dataRequestInfo: session.readerCertValidationMessage ?? LocalizableStringKey.requestDataInfoNotice.toString,
       isTrusted: session.readerCertIssuerValid == true

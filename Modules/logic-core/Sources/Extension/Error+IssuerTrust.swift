@@ -16,15 +16,38 @@
 import Foundation
 import EudiWalletKit
 import MdocSecurity18013
+import enum OpenID4VP.ValidationError
+import enum OpenID4VCI.WRPRCError
 
 public extension Error {
-  var isIssuerNotTrusted: Bool {
-    if let walletError = self as? WalletError, walletError.code == .trustError {
-      return true
+
+  var isTrustBlocked: Bool {
+
+    if self is WRPRCError { return true }
+
+    if self is RegistrationRefusedError { return true }
+
+    if let walletError = self as? WalletError {
+
+      if walletError.code == .trustError || walletError.code == .invalidWrprc { return true }
+
+      if let innerError = walletError.innerError, innerError.isRegistrationPolicyRejection {
+        return true
+      }
     }
+
     if let msoError = self as? MsoValidationError, msoError.containsIssuerTrustFailure {
       return true
     }
+
+    return false
+  }
+}
+
+private extension Error {
+  var isRegistrationPolicyRejection: Bool {
+    guard let validationError = self as? ValidationError else { return false }
+    if case .authorizationPolicyNotMet = validationError { return true }
     return false
   }
 }

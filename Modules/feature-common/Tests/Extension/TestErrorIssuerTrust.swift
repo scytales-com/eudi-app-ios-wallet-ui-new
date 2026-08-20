@@ -26,31 +26,31 @@ final class TestErrorIssuerTrust: EudiTest {
 
   func testIsIssuerNotTrusted_whenWalletErrorTrustError_thenReturnsTrue() {
     let error: Error = WalletError(description: "trust", code: .trustError)
-    XCTAssertTrue(error.isIssuerNotTrusted)
+    XCTAssertTrue(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenWalletErrorOtherCode_thenReturnsFalse() {
     let error: Error = WalletError(description: "boom", code: .internalError)
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenWalletErrorNotSecuredRequest_thenReturnsFalse() {
     // `.notSecuredRequest` is a distinct code from `.trustError`; only `.trustError`
     // maps to an untrusted issuer.
     let error: Error = WalletError(description: "not secured", code: .notSecuredRequest)
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 
   // MARK: - MsoValidationError
 
   func testIsIssuerNotTrusted_whenMsoIssuerTrustFailed_thenReturnsTrue() {
     let error: Error = MsoValidationError.issuerTrustFailed("untrusted issuer")
-    XCTAssertTrue(error.isIssuerNotTrusted)
+    XCTAssertTrue(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenMsoOtherCase_thenReturnsFalse() {
     let error: Error = MsoValidationError.signatureVerificationFailed("bad signature")
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenMsoMultipleErrorsContainsTrustFailure_thenReturnsTrue() {
@@ -58,7 +58,7 @@ final class TestErrorIssuerTrust: EudiTest {
       .signatureVerificationFailed("bad signature"),
       .issuerTrustFailed("untrusted issuer")
     ])
-    XCTAssertTrue(error.isIssuerNotTrusted)
+    XCTAssertTrue(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenMsoMultipleErrorsNoTrustFailure_thenReturnsFalse() {
@@ -66,12 +66,12 @@ final class TestErrorIssuerTrust: EudiTest {
       .signatureVerificationFailed("bad signature"),
       .validityInfo("expired")
     ])
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenMsoMultipleErrorsEmpty_thenReturnsFalse() {
     let error: Error = MsoValidationError.multipleErrors([])
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 
   func testIsIssuerNotTrusted_whenMsoNestedMultipleErrorsContainsTrustFailure_thenReturnsTrue() {
@@ -82,13 +82,13 @@ final class TestErrorIssuerTrust: EudiTest {
         .issuerTrustFailed("untrusted issuer")
       ])
     ])
-    XCTAssertTrue(error.isIssuerNotTrusted)
+    XCTAssertTrue(error.isTrustBlocked)
   }
 
   // MARK: - Unrelated errors
 
   func testIsIssuerNotTrusted_whenGenericError_thenReturnsFalse() {
     let error: Error = NSError(domain: "com.eudi.test", code: 1)
-    XCTAssertFalse(error.isIssuerNotTrusted)
+    XCTAssertFalse(error.isTrustBlocked)
   }
 }

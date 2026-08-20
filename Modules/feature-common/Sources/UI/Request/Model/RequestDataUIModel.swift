@@ -353,7 +353,8 @@ public extension Array where Element == DocElements {
   ///   (presentation, where selection happens at the combination level).
   func toUiModels(
     with walletKitController: WalletKitController,
-    claimsAreSelectable: Bool = true
+    claimsAreSelectable: Bool = true,
+    overaskedClaims: [String: Set<[String]>] = [:]
   ) -> [RequestDataUiModel] {
     self.compactMap { element in
 
@@ -410,11 +411,16 @@ public extension Array where Element == DocElements {
         return nil
       }
 
+      let overaskedPaths = overaskedClaims[element.docId] ?? []
+
       return .init(
         section: .init(
           id: element.docId,
           title: title,
-          listItems: dataRows.toListItems(claimsAreSelectable: claimsAreSelectable)
+          listItems: dataRows.toListItems(
+            claimsAreSelectable: claimsAreSelectable,
+            overaskedPaths: overaskedPaths
+          )
         )
       )
     }
@@ -448,25 +454,45 @@ private extension Array where Element == DocClaim {
 }
 
 private extension Array where Element == DocumentElementClaim {
-  func toListItems(claimsAreSelectable: Bool) -> [PresentationExpandableListItem] {
-    self.compactMap { $0.toListItem(claimsAreSelectable: claimsAreSelectable) }
+
+  func toListItems(
+    claimsAreSelectable: Bool,
+    overaskedPaths: Set<[String]>
+  ) -> [PresentationExpandableListItem] {
+    self.compactMap {
+      $0.toListItem(claimsAreSelectable: claimsAreSelectable, overaskedPaths: overaskedPaths)
+    }
   }
 }
 
 private extension DocumentElementClaim {
-  func toListItem(claimsAreSelectable: Bool) -> PresentationExpandableListItem? {
-    return self.toExpandableListItem(claimsAreSelectable: claimsAreSelectable)
+  func toListItem(
+    claimsAreSelectable: Bool,
+    overaskedPaths: Set<[String]>
+  ) -> PresentationExpandableListItem? {
+    return self.toExpandableListItem(
+      claimsAreSelectable: claimsAreSelectable,
+      overaskedPaths: overaskedPaths
+    )
   }
 }
 
 private extension DocumentElementClaim {
-  func toExpandableListItem(claimsAreSelectable: Bool) -> PresentationExpandableListItem? {
+  func toExpandableListItem(
+    claimsAreSelectable: Bool,
+    overaskedPaths: Set<[String]>
+  ) -> PresentationExpandableListItem? {
     switch self {
     case .group(let id, let title, let items):
       return .nested(
         .init(
           collapsed: .init(groupId: id, mainContent: .text(.custom(title))),
-          expanded: items.compactMap { $0.toExpandableListItem(claimsAreSelectable: claimsAreSelectable) },
+          expanded: items.compactMap {
+            $0.toExpandableListItem(
+              claimsAreSelectable: claimsAreSelectable,
+              overaskedPaths: overaskedPaths
+            )
+          },
           isExpanded: false
         )
       )
@@ -475,13 +501,12 @@ private extension DocumentElementClaim {
       let title,
       _,
       _,
-      _,
+      let claimPath,
       _,
       let value,
       let status
     ):
-      // When claims are not selectable (presentation), rows are read-only: no checkbox is shown
-      // and the entire combination is disclosed.
+      let isOverasked = overaskedPaths.contains(claimPath)
       let trailingContent: TrailingContent = claimsAreSelectable
         ? .checkbox(!status.isRequired && status.isAvailable, status.isAvailable, { _ in })
         : .empty
@@ -493,6 +518,8 @@ private extension DocumentElementClaim {
               groupId: id,
               mainContent: .text(.custom(value)),
               overlineText: .custom(title),
+              supportingText: isOverasked ? .notRegisteredData : nil,
+              supportingTextColor: isOverasked ? Theme.shared.color.warning : Theme.shared.color.secondaryLabel,
               isEnable: !status.isRequired,
               trailingContent: trailingContent
             ),
@@ -507,6 +534,8 @@ private extension DocumentElementClaim {
                 groupId: id,
                 mainContent: .image(image),
                 overlineText: .custom(title),
+                supportingText: isOverasked ? .notRegisteredData : nil,
+                supportingTextColor: isOverasked ? Theme.shared.color.warning : Theme.shared.color.secondaryLabel,
                 isEnable: !status.isRequired,
                 trailingContent: trailingContent
               ),
@@ -519,6 +548,8 @@ private extension DocumentElementClaim {
               collapsed: .init(
                 groupId: id,
                 mainContent: .text(.custom(title)),
+                supportingText: isOverasked ? .notRegisteredData : nil,
+                supportingTextColor: isOverasked ? Theme.shared.color.warning : Theme.shared.color.secondaryLabel,
                 leadingContent: .remoteImage(image: image),
                 isEnable: !status.isRequired,
                 trailingContent: trailingContent

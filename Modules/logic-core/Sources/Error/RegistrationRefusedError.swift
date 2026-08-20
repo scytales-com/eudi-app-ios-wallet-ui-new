@@ -13,28 +13,8 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-import Swinject
-import logic_core
-import logic_business
+import Foundation
 
-public final class FeatureIssuanceAssembly: Assembly {
-
+public struct RegistrationRefusedError: Error, Equatable {
   public init() {}
-
-  public func assemble(container: Container) {
-    container.register(AddDocumentInteractor.self) { r in
-      AddDocumentInteractorImpl(
-        walletController: r.force(WalletKitController.self)
-      )
-    }
-    .inObjectScope(ObjectScope.transient)
-
-    container.register(DocumentOfferInteractor.self) { r in
-      DocumentOfferInteractorImpl(
-        walletController: r.force(WalletKitController.self),
-        configLogic: r.force(ConfigLogic.self)
-      )
-    }
-    .inObjectScope(ObjectScope.transient)
-  }
 }

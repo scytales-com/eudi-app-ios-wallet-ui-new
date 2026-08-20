@@ -57,7 +57,7 @@ extension Constants {
     var docDataFormat: MdocDataModel18013.DocDataFormat
     var validFrom: Date?
     var validUntil: Date?
-    var statusIdentifier: MdocDataModel18013.StatusIdentifier?
+    var statusList: MdocDataModel18013.StatusList?
     var secureAreaName: String?
     var credentialsUsageCounts: MdocDataModel18013.CredentialsUsageCounts?
     var credentialPolicy: MdocDataModel18013.CredentialPolicy
@@ -95,7 +95,7 @@ extension Constants {
       docDataFormat: .cbor,
       validFrom: nil,
       validUntil: nil,
-      statusIdentifier: nil,
+      statusList: nil,
       secureAreaName: nil,
       credentialsUsageCounts: credentialsUsageCounts,
       credentialPolicy: .oneTimeUse,
@@ -134,7 +134,7 @@ extension Constants {
       docDataFormat: .cbor,
       validFrom: nil,
       validUntil: nil,
-      statusIdentifier: nil,
+      statusList: nil,
       secureAreaName: nil,
       credentialsUsageCounts: credentialsUsageCounts,
       credentialPolicy: .oneTimeUse,
@@ -209,7 +209,11 @@ extension Constants {
     func sendResponse(userAccepted: Bool, itemsToSend: EudiWalletKit.RequestItems, deviceNameSpacesToSend: MdocDataTransfer18013.RequestDeviceNameSpaces?, onSuccess: (@Sendable (URL?) -> Void)?) async throws {}
 
     var zkpDocumentIds: [WalletStorage.Document.ID]?
-    
+
+    var wrpVerifierPolicy: WrpRegistrationPolicy?
+
+    var wrpVerifierWarnings: [String: [PresentationPolicyViolation]]?
+
     func waitForDisconnect() async throws {}
     
     var transactionLog: TransactionLog

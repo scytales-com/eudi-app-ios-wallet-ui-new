@@ -1,6 +1,116 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "relying_party_overasked_warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning: Some of the requested data are not registered with this interacting party. Review carefully before sharing your data."
+          }
+        }
+      }
+    },
+    "not_registered_data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not registered data"
+          }
+        }
+      }
+    },
+    "issuance_registration_blocked_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issuance blocked"
+          }
+        }
+      }
+    },
+    "issuance_registration_blocked_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This issuance request has been blocked because the provider is not registered for it.\n\nNo document has been added to your Wallet."
+          }
+        }
+      }
+    },
+    "continue_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        }
+      }
+    },
+    "understand_risks_agree" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I understand the risks and agree to share my data"
+          }
+        }
+      }
+    },
+    "relying_party_not_verified_warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning: The information registered about the entity could not be obtained. Review carefully before sharing your data."
+          }
+        }
+      }
+    },
+    "intended_use" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intended use"
+          }
+        }
+      }
+    },
+    "privacy_policy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy policy"
+          }
+        }
+      }
+    },
+    "relying_party_id" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(ID: %@)"
+          }
+        }
+      }
+    },
     "add_doc" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -129,6 +239,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Authenticate, authorise transactions and share your digital documents in person or online."
+          }
+        }
+      }
+    },
+    "restart_required_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart the app to apply this change"
+          }
+        }
+      }
+    },
+    "restart_required_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart required"
+          }
+        }
+      }
+    },
+    "validate_issuer_registration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Registration Certificates"
           }
         }
       }
@@ -1236,6 +1379,17 @@
         }
       }
     },
+    "issuance_request_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issuance request"
+          }
+        }
+      }
+    },
     "issuance_request" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2009,17 +2163,6 @@
         }
       }
     },
-    "request_data_share_caption" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please review carefully before sharing your data."
-          }
-        }
-      }
-    },
     "request_data_share_quick_pin_caption" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2038,39 +2181,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ requests the following"
-          }
-        }
-      }
-    },
-    "request_data_sheet_caption" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "It allows us to verify your identity with the requesting party"
-          }
-        }
-      }
-    },
-    "request_data_verified_entity" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Relying Party"
-          }
-        }
-      }
-    },
-    "request_data_verified_entity_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A relying party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications."
           }
         }
       }
@@ -2324,17 +2434,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share"
-          }
-        }
-      }
-    },
-    "share_data_review_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please review carefully before sharing your data."
           }
         }
       }

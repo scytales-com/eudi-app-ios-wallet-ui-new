@@ -75,8 +75,10 @@ public protocol ImageManagerProtocol: Sendable {
   var copy: Image { get }
   var changePin: Image { get }
   var batchCounter: Image { get }
+  var issuerRegistration: Image { get }
   var retrieveLogs: Image { get }
   var changelog: Image { get }
+  var arrowUpRightSquare: Image { get }
 }
 
 final class ImageManager: ImageManagerProtocol {
@@ -141,8 +143,10 @@ final class ImageManager: ImageManagerProtocol {
     case copy = "doc.on.doc"
     case changePin = "123.rectangle"
     case batchCounter = "number"
+    case issuerRegistration = "checkmark.seal"
     case retrieveLogs = "arrow.up.forward.square"
     case changelog = "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+    case arrowUpRightSquare = "arrow.up.right.square"
   }
 
   // MARK: - Properties
@@ -328,6 +332,10 @@ final class ImageManager: ImageManagerProtocol {
   var changePin: Image {
     Image(systemName: ImageEnum.changePin.rawValue)
   }
+  var issuerRegistration: Image {
+    Image(systemName: ImageEnum.issuerRegistration.rawValue)
+  }
+
   var batchCounter: Image {
     Image(systemName: ImageEnum.batchCounter.rawValue)
   }
@@ -336,5 +344,8 @@ final class ImageManager: ImageManagerProtocol {
   }
   var changelog: Image {
     Image(systemName: ImageEnum.changelog.rawValue)
+  }
+  var arrowUpRightSquare: Image {
+    Image(systemName: ImageEnum.arrowUpRightSquare.rawValue)
   }
 }

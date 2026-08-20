@@ -47,26 +47,14 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
         relyingParty: .custom(authenticationRequest.relyingParty),
         isTrusted: authenticationRequest.isTrusted
       )
-      setState {
-        $0.copy(
-          contentHeaderConfig: .init(
-            appIconAndTextData: AppIconAndTextData(
-              appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet
-            ),
-            description: .dataSharingTitle,
-            mainText: getTitle(),
-            relyingPartyData: RelyingPartyData(
-              isVerified: viewState.isTrusted,
-              name: getRelyingParty(),
-              description: getCaption()
-            )
-          )
-        )
-      }
+      self.onReceivedRegistration(authenticationRequest.relyingPartyRegistration)
     case .notSecuredRequest:
-      self.onVerifierNotTrusted()
+      self.onTrustBlocked()
     case .failure(let error):
       self.onEmptyDocuments(error: error.errorMessage)
+      if let registration = await interactor.registrationForFailedRequest() {
+        self.onReceivedRegistration(registration)
+      }
     }
   }
 
@@ -128,36 +116,8 @@ final class PresentationRequestViewModel<Router: RouterHost>: BaseRequestViewMod
     await interactor.stopPresentation()
   }
 
-  override func getTitle() -> LocalizableStringKey {
-    .dataSharingRequest
-  }
-
-  override func getCaption() -> LocalizableStringKey {
-    .requestsTheFollowing
-  }
-
-  override func getDataRequestInfo() -> LocalizableStringKey {
-    .requestDataInfoNotice
-  }
-
   override func getRelyingParty() -> LocalizableStringKey {
     viewState.relyingParty
-  }
-
-  override func getRelyingPartyIsTrusted() -> Bool {
-    viewState.isTrusted
-  }
-
-  override func getTitleCaption() -> LocalizableStringKey {
-    .requestDataTitle([""])
-  }
-
-  override func getTrustedRelyingParty() -> LocalizableStringKey {
-    .requestDataVerifiedEntity
-  }
-
-  override func getTrustedRelyingPartyInfo() -> LocalizableStringKey {
-    .requestDataVerifiedEntityMessage
   }
 
   func handleDeepLinkNotification(with info: [AnyHashable: Any]) {

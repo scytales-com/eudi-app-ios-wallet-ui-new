@@ -35,7 +35,7 @@ struct DocumentDetailsViewState: ViewState {
 final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, DocumentDetailsViewState> {
 
   var isDeletionModalShowing: Bool = false
-  var isIssuerNotTrustedSheetShowing: Bool = false
+  var isTrustBlockedAlertShowing: Bool = false
   var isVisible = true
   var showReissuanceDialog: Bool = false
   var showBookmarkAlert = false
@@ -134,7 +134,7 @@ final class DocumentDetailsViewModel<Router: RouterHost>: ViewModel<Router, Docu
         router.pop()
       case .issuerNotTrusted:
         setState { $0.copy(isLoading: false).copy(error: nil) }
-        isIssuerNotTrustedSheetShowing = true
+        isTrustBlockedAlertShowing = true
       case .failure(let error):
         self.setState {
           $0.copy(

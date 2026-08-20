@@ -17,6 +17,7 @@ import Foundation
 import logic_ui
 import logic_resources
 import feature_common
+import logic_core
 import Observation
 
 @Copyable
@@ -32,7 +33,7 @@ struct OfferCodeViewState: ViewState {
 @Observable
 final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeViewState> {
 
-  var isIssuerNotTrustedSheetShowing: Bool = false
+  var isTrustBlockedAlertShowing: Bool = false
 
   var codeInput: String = "" {
     didSet {
@@ -94,7 +95,7 @@ final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeV
     case .noPending: break
     case .issuerNotTrusted:
       setState { $0.copy(isLoading: false).copy(error: nil) }
-      isIssuerNotTrustedSheetShowing = true
+      isTrustBlockedAlertShowing = true
     case .failure(let error):
       setState {
         $0.copy(
@@ -171,7 +172,7 @@ final class OfferCodeViewModel<Router: RouterHost>: ViewModel<Router, OfferCodeV
         )
       case .issuerNotTrusted:
         setState { $0.copy(isLoading: false).copy(error: nil) }
-        isIssuerNotTrustedSheetShowing = true
+        isTrustBlockedAlertShowing = true
       case .failure(let error):
         setState {
           $0.copy(

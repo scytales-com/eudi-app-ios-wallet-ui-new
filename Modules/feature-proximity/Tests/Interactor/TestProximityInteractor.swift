@@ -48,8 +48,32 @@ final class TestProximityInteractor: EudiTest {
     
     stub(presentationSessionCoordinator) { mock in
       when(mock.stopPresentation()).thenDoNothing()
+      // Requests without a registration certificate: no policy, no violations.
+      when(mock.relyingPartyRegistration.get).thenReturn(nil)
+      when(mock.relyingPartyWarningViolations.get).thenReturn([])
     }
-    
+
+    stub(walletKitController) { mock in
+      // Registration mapping is exercised by its own tests; here it just needs to resolve.
+      when(
+        mock.getVerifierRegistration(
+          policy: any(),
+          trustViolations: any(),
+          overaskedClaims: any(),
+          verifierName: any(),
+          verifierIsTrusted: any()
+        )
+      ).thenReturn(
+        RelyingPartyRegistration(
+          name: nil,
+          uniqueId: nil,
+          isVerified: true,
+          logoUrl: nil,
+          registration: .notSupported
+        )
+      )
+    }
+
     self.interactor = ProximityInteractorImpl(
       with: presentationSessionCoordinator,
       and: walletKitController,
@@ -290,11 +314,13 @@ final class TestProximityInteractor: EudiTest {
     
     // Then
     switch state {
-    case .success(let uimodels, let relyingParty, let dataRequestInfo, let isTrusted):
+    case .success(let uimodels, let relyingParty, let dataRequestInfo, let isTrusted, let registration):
       XCTAssertEqual(uimodels, expectedUiModels)
       XCTAssertEqual(relyingParty, request.relyingParty)
       XCTAssertEqual(dataRequestInfo, request.dataRequestInfo)
       XCTAssertEqual(isTrusted, request.isTrusted)
+      // proximity carries no registration certificate
+      XCTAssertEqual(registration.registration, .notSupported)
     default:
       XCTFail("Wrong state \(state)")
     }
@@ -523,7 +549,7 @@ final class TestProximityInteractor: EudiTest {
     }
   }
 
-  func testOnRequestReceived_WhenAllDocumentsAreRevoked_ThenVerifyFailureState() async {
+  func testOnRequestReceived_WhenAllDocumentsAreRevoked_ThenVerifySuccessWithNoItems() async {
     // Given
     let mockResponse = Self.mockPresentationRequest
     let revokedDocIds = mockResponse.itemSets.flatMap { $0 }.map { $0.docId }
@@ -540,13 +566,10 @@ final class TestProximityInteractor: EudiTest {
 
     // Then
     switch state {
-    case .failure(let error):
-      XCTAssertEqual(
-        error.localizedDescription,
-        WalletCoreError.unableFetchDocuments.localizedDescription
-      )
+    case .success(let items, _, _, _, _):
+      XCTAssertTrue(items.isEmpty)
     default:
-      XCTFail("Expected failure state, got \(state)")
+      XCTFail("Expected success state, got \(state)")
     }
   }
 

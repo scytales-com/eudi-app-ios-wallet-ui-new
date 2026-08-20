@@ -41,7 +41,8 @@ struct AddDocumentViewState: ViewState {
 @Observable
 final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocumentViewState> {
 
-  var isIssuerNotTrustedSheetShowing: Bool = false
+  var isTrustBlockedAlertShowing: Bool = false
+  var isRegistrationBlockedAlertShowing: Bool = false
 
   private let interactor: AddDocumentInteractor
   private let deepLinkController: DeepLinkController
@@ -91,6 +92,14 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
         )
         .copy(error: nil)
       }
+    case .issuerNotTrusted:
+      setState {
+        $0.copy(
+          addDocumentCellModels: [:]
+        )
+        .copy(error: nil)
+      }
+      isTrustBlockedAlertShowing = true
     case .failure(let error):
       setState {
         $0.copy(
@@ -156,6 +165,13 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
     router.pop()
   }
 
+  func onTrustBlockedClose() {
+    isTrustBlockedAlertShowing = false
+    if case .extraDocument = viewState.config.flow {
+      pop()
+    }
+  }
+
   func toolbarContent() -> ToolBarContent? {
     let scanAction = scanToolbarAction()
     return switch viewState.config.flow {
@@ -215,7 +231,7 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
         )
         .copy(error: nil)
       }
-      isIssuerNotTrustedSheetShowing = true
+      isTrustBlockedAlertShowing = true
     case .failure(let error):
       setState {
         $0.copy(
@@ -272,7 +288,15 @@ final class AddDocumentViewModel<Router: RouterHost>: ViewModel<Router, AddDocum
           )
           .copy(error: nil)
         }
-        isIssuerNotTrustedSheetShowing = true
+        isTrustBlockedAlertShowing = true
+      case .registrationBlocked:
+        setState {
+          $0.copy(
+            addDocumentCellModels: transformCellLoadingState(with: false)
+          )
+          .copy(error: nil)
+        }
+        isRegistrationBlockedAlertShowing = true
       case .failure(let error):
         setState {
           $0.copy(

@@ -26,6 +26,17 @@ protocol WalletKitConfig: Sendable {
   var issuersConfig: [String: VciConfig] { get }
 
   /**
+   * Whether the issuer's WRP registration certificate (WRPRC), delivered in the issuer metadata
+   * `issuer_info`, is validated during issuance.
+   *
+   * Requires `trustConfiguration.requireSignedMetadata`, which supplies the WRPAC the certificate
+   * is bound to. Note that a missing WRPRC is a hard failure in the OpenID4VCI library, not a
+   * warning: enabling this against an issuer that does not publish `issuer_info` fails every
+   * issuance.
+   */
+  var validateIssuerRegistrationCertificate: Bool { get }
+
+  /**
    * VP Configuration
    */
   var vpConfig: OpenId4VpConfiguration { get }
@@ -77,15 +88,18 @@ struct WalletKitConfigImpl: WalletKitConfig {
   let configLogic: ConfigLogic
   let transactionLoggerImpl: TransactionLogger
   let walletKitAttestationProvider: WalletKitAttestationProvider
+  let prefsController: PrefsController
 
   init(
     configLogic: ConfigLogic,
     transactionLogger: TransactionLogger,
-    walletKitAttestationProvider: WalletKitAttestationProvider
+    walletKitAttestationProvider: WalletKitAttestationProvider,
+    prefsController: PrefsController
   ) {
     self.configLogic = configLogic
     self.transactionLoggerImpl = transactionLogger
     self.walletKitAttestationProvider = walletKitAttestationProvider
+    self.prefsController = prefsController
   }
 
   var userAuthenticationRequired: Bool {
@@ -98,6 +112,10 @@ struct WalletKitConfigImpl: WalletKitConfig {
       secureAreaName: SecureEnclaveSecureArea.name,
       accessControl: []
     )
+  }
+
+  var validateIssuerRegistrationCertificate: Bool {
+    prefsController.getBool(forKey: .validateIssuerRegistrationCertificate)
   }
 
   var issuersConfig: [String: VciConfig] {
@@ -121,7 +139,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
               parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
-              cacheIssuerMetadata: true
+              validateRegistrationCertificate: validateIssuerRegistrationCertificate,
+              cacheIssuerMetadata: false
             ),
             order: 1
           ),
@@ -140,7 +159,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
               parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
-              cacheIssuerMetadata: true
+              validateRegistrationCertificate: validateIssuerRegistrationCertificate,
+              cacheIssuerMetadata: false
             ),
             order: 0
           )
@@ -162,7 +182,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
               parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
-              cacheIssuerMetadata: true
+              validateRegistrationCertificate: validateIssuerRegistrationCertificate,
+              cacheIssuerMetadata: false
             ),
             order: 1
           ),
@@ -181,7 +202,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
               parUsage: .required(authorizationCodeDPoPBinding: true),
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
-              cacheIssuerMetadata: true
+              validateRegistrationCertificate: validateIssuerRegistrationCertificate,
+              cacheIssuerMetadata: false
             ),
             order: 0
           )
@@ -214,7 +236,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
       pidProviders: "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PIDProviders.jwt",
       walletProviders: nil,
       wrpacProviders: "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPACProviders.jwt",
-      wrprcProviders: nil,
+      wrprcProviders: "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPRCProviders.jwt",
       pubEaaProviders: "https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PubEAAProviders.jwt",
       qeaProviders: nil,
       eaaProviders: [:]
@@ -237,7 +259,9 @@ struct WalletKitConfigImpl: WalletKitConfig {
       ),
       defaultPolicy: .warning,
       requireSignedMetadata: true,
-      statusTrustPolicy: .warning
+      statusTrustPolicy: .warning,
+      wrprcVpTrustPolicy: .warning,
+      wrprcVciTrustPolicy: .enforce
     )
   }
 

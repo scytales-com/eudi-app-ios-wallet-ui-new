@@ -46,6 +46,30 @@ final class TestPresentationInteractor: EudiTest {
 
     stub(presentationCoordinator) { mock in
       when(mock.stopPresentation()).thenDoNothing()
+      // Requests without a registration certificate: no policy, no violations.
+      when(mock.relyingPartyRegistration.get).thenReturn(nil)
+      when(mock.relyingPartyWarningViolations.get).thenReturn([])
+    }
+
+    stub(walletKitController) { mock in
+      // Registration mapping is exercised by its own tests; here it just needs to resolve.
+      when(
+        mock.getVerifierRegistration(
+          policy: any(),
+          trustViolations: any(),
+          overaskedClaims: any(),
+          verifierName: any(),
+          verifierIsTrusted: any()
+        )
+      ).thenReturn(
+        RelyingPartyRegistration(
+          name: nil,
+          uniqueId: nil,
+          isVerified: true,
+          logoUrl: nil,
+          registration: .notSupported
+        )
+      )
     }
 
     interactor = PresentationInteractorImpl(
@@ -536,7 +560,7 @@ final class TestPresentationInteractor: EudiTest {
     }
   }
 
-  func testOnRequestReceived_WhenAllDocumentsRevoked_ThenReturnsFailure() async {
+  func testOnRequestReceived_WhenAllDocumentsRevoked_ThenReturnsSuccessWithNoCombinations() async {
     // Given
     let mockResponse = Self.mockPresentationRequest
     let allDocIds = mockResponse.itemSets.flatMap { $0 }.map { $0.docId }
@@ -565,13 +589,10 @@ final class TestPresentationInteractor: EudiTest {
 
     // Then
     switch result {
-    case .failure(let error):
-      XCTAssertEqual(
-        error.localizedDescription,
-        WalletCoreError.unableFetchDocuments.localizedDescription
-      )
+    case .success(let model):
+      XCTAssertTrue(model.requestDataCombinations.isEmpty)
     default:
-      XCTFail("Expected failure, got \(result)")
+      XCTFail("Expected success, got \(result)")
     }
   }
 

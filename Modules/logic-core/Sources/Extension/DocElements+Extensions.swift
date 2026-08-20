@@ -18,3 +18,34 @@ extension DocElements: @retroactive Equatable {
     lhs.id == rhs.id
   }
 }
+
+public extension Array where Element == DocElements {
+
+  func toRequestedClaims() -> [RequestedClaim] {
+    flatMap { element -> [RequestedClaim] in
+      switch element {
+      case .msoMdoc(let mdoc):
+        mdoc.nameSpacedElements.flatMap { nameSpace in
+          nameSpace.elements.map {
+            RequestedClaim(
+              queryId: mdoc.docId,
+              path: [nameSpace.nameSpace, $0.elementIdentifier]
+            )
+          }
+        }
+      case .sdJwt(let sdJwt):
+        sdJwt.sdJwtElements.map {
+          RequestedClaim(queryId: sdJwt.docId, path: $0.elementPath)
+        }
+      }
+    }
+  }
+}
+
+public extension Array where Element == [DocElements] {
+
+  func toRequestedClaims() -> [RequestedClaim] {
+    var seen: Set<RequestedClaim> = []
+    return flatMap { $0.toRequestedClaims() }.filter { seen.insert($0).inserted }
+  }
+}

@@ -27,7 +27,8 @@ public final class LogicCoreAssembly: Assembly {
       WalletKitConfigImpl(
         configLogic: r.force(ConfigLogic.self),
         transactionLogger: r.force(TransactionLogger.self),
-        walletKitAttestationProvider: r.force(WalletKitAttestationProvider.self)
+        walletKitAttestationProvider: r.force(WalletKitAttestationProvider.self),
+        prefsController: r.force(PrefsController.self)
       )
     }
     .inObjectScope(ObjectScope.container)

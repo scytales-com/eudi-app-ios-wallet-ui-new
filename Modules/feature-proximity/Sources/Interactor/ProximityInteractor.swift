@@ -33,7 +33,13 @@ public enum ProximityResponsePreparationPartialState: Sendable {
 }
 
 public enum ProximityRequestPartialState: Sendable {
-  case success([RequestDataUiModel], relyingParty: String, dataRequestInfo: String, isTrusted: Bool)
+  case success(
+    [RequestDataUiModel],
+    relyingParty: String,
+    dataRequestInfo: String,
+    isTrusted: Bool,
+    relyingPartyRegistration: RelyingPartyRegistration
+  )
   case notSecuredRequest
   case failure(Error)
 }
@@ -64,6 +70,7 @@ public protocol ProximityInteractor: Sendable {
   func onResponsePrepare(requestItems: [RequestDataUiModel]) async -> ProximityResponsePreparationPartialState
   func onSendResponse() async -> ProximityResponsePartialState
   func stopPresentation() async
+  func registrationForFailedRequest() async -> RelyingPartyRegistration?
 
 }
 
@@ -119,20 +126,30 @@ final actor ProximityInteractorImpl: ProximityInteractor {
 
   public func onRequestReceived() async -> ProximityRequestPartialState {
     do {
-      let response = try await sessionCoordinatorHolder.getActiveProximityCoordinator().requestReceived()
+      let coordinator = try await sessionCoordinatorHolder.getActiveProximityCoordinator()
+      let response = try await coordinator.requestReceived()
       let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
       let documents = (response.itemSets.first ?? []).filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
-      guard !documents.isEmpty else { return .failure(WalletCoreError.unableFetchDocuments) }
+      let registrationPolicy = coordinator.relyingPartyRegistration
+      let overaskedClaims = documents.overaskedClaims(policy: registrationPolicy)
       return .success(
         documents.toUiModels(
-          with: self.walletKitController
+          with: self.walletKitController,
+          overaskedClaims: overaskedClaims
         ),
         relyingParty: response.relyingParty,
         dataRequestInfo: response.dataRequestInfo,
-        isTrusted: response.isTrusted
+        isTrusted: response.isTrusted,
+        relyingPartyRegistration: await walletKitController.getVerifierRegistration(
+          policy: registrationPolicy,
+          trustViolations: coordinator.relyingPartyWarningViolations,
+          overaskedClaims: overaskedClaims.toRequestedClaims(),
+          verifierName: response.relyingParty,
+          verifierIsTrusted: response.isTrusted
+        )
       )
     } catch {
-      return error.isIssuerNotTrusted ? .notSecuredRequest : .failure(error)
+      return error.isTrustBlocked ? .notSecuredRequest : .failure(error)
     }
   }
 
@@ -168,6 +185,10 @@ final actor ProximityInteractorImpl: ProximityInteractor {
     } catch {
       return .failure(error)
     }
+  }
+
+  public func registrationForFailedRequest() async -> RelyingPartyRegistration? {
+    await walletKitController.getVerifierRegistrationForFailedRequest()
   }
 
   public func stopPresentation() async {

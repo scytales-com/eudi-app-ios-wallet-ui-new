@@ -28,14 +28,11 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case tryAgain
   case shareButton
   case cancelButton
-  case requestDataCaption
   case requestDataInfoNotice
   case requestDataTitle([String])
   case requestCombinationTitle([String])
   case documentAdded
-  case requestDataSheetCaption
   case okButton
-  case shareDataReview
   case success
   case successfullySharedFollowingInformation
   case incompleteRequestDataSelection
@@ -52,8 +49,6 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case addDocumentRequest
   case proximityConnectivityCaption
   case unavailableField
-  case requestDataVerifiedEntity
-  case requestDataVerifiedEntityMessage
   case changeQuickPinOption
   case quickPinSetTitle
   case quickPinEnterPin
@@ -190,6 +185,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case beyondThiryDays
   case beforeToday
   case issuanceRequest
+  case issuanceRequestTitle
   case myEuWallet
   case categoryGovernment
   case categoryHealth
@@ -268,10 +264,23 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case documentDetailsIssuerCardExpiredMessageText
   case documentDetailsIssuerCardIssuedActionButtonText
   case batchIssuanceCounter
+  case validateIssuerRegistration
+  case restartRequiredTitle
+  case restartRequiredMessage
   case documentProviderExtensionAcceptButton
   case documentProviderExtensionRejectButton
   case enterYourPin
   case homeScreenAuthenticateDescription
+  case relyingPartyId([String])
+  case privacyPolicy
+  case intendedUse
+  case understandRisksAgree
+  case relyingPartyNotVerifiedWarning
+  case relyingPartyOveraskedWarning
+  case notRegisteredData
+  case issuanceRegistrationBlockedTitle
+  case issuanceRegistrationBlockedMessage
+  case continueButton
 }
 
 public extension LocalizableStringKey {

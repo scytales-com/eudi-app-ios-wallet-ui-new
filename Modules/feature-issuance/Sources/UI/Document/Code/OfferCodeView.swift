@@ -37,16 +37,15 @@ struct OfferCodeView<Router: RouterHost>: View {
         codeIsFocused: $viewModel.codeIsFocused
       )
     }
-    .sheetDialog(isPresented: $viewModel.isIssuerNotTrustedSheetShowing) {
-      TrustBlockedSheetContent(
-        title: .issuanceBlockedTitle,
-        message: .issuanceBlockedMessage,
-        onClose: {
-          viewModel.isIssuerNotTrustedSheetShowing = false
-          viewModel.onPop()
-        }
-      )
-    }
+    .alertView(
+      isPresented: $viewModel.isTrustBlockedAlertShowing,
+      title: .issuanceBlockedTitle,
+      message: .issuanceBlockedMessage,
+      actions: {
+        Button(.close) { viewModel.isTrustBlockedAlertShowing = false
+          viewModel.onPop() }
+      }
+    )
     .task {
       await viewModel.checkPendingIssuance()
     }

@@ -33,6 +33,23 @@ final class TestDocumentOfferInteractor: EudiTest {
     super.setUp()
     self.walletKitController = MockWalletKitController()
     self.configLogic = MockConfigLogic()
+    stub(walletKitController) { mock in
+      // The offer carries the issuer's registration; tests that need a different scenario
+      // override this.
+      when(mock.getIssuerRegistration(for: any())).thenReturn(
+        .verified(
+          details: RegistrationDetails(
+            tradeName: "issuer",
+            uniqueId: "issuer",
+            logoUrl: nil,
+            intendedUse: nil,
+            privacyPolicyUrl: nil,
+            serviceDescription: nil
+          )
+        )
+      )
+    }
+
     self.interactor = DocumentOfferInteractorImpl(
       walletController: walletKitController,
       configLogic: configLogic
@@ -493,7 +510,7 @@ final class TestDocumentOfferInteractor: EudiTest {
         docTypes: any(),
         txCodeValue: txCodeValue
       )
-      .thenReturn([])
+      .thenReturn(IssuanceResult(documents: [], issuerRegistration: nil))
     }
     
     // When
@@ -548,7 +565,7 @@ final class TestDocumentOfferInteractor: EudiTest {
         docTypes: any(),
         txCodeValue: txCodeValue
       )
-      .thenReturn([document])
+      .thenReturn(IssuanceResult(documents: [document], issuerRegistration: nil))
     }
     
     // When
@@ -603,7 +620,7 @@ final class TestDocumentOfferInteractor: EudiTest {
         docTypes: any(),
         txCodeValue: txCodeValue
       )
-      .thenReturn([document])
+      .thenReturn(IssuanceResult(documents: [document], issuerRegistration: nil))
       
       when(mock.fetchDocuments(with: any())).thenReturn([Constants.createEuPidModel()])
     }
@@ -676,7 +693,7 @@ final class TestDocumentOfferInteractor: EudiTest {
         docTypes: docOffers,
         txCodeValue: txCodeValue
       )
-      .thenReturn([document])
+      .thenReturn(IssuanceResult(documents: [document], issuerRegistration: nil))
       
       when(mock.fetchDocuments(with: any())).thenReturn([Constants.createEuPidModel()])
     }
@@ -872,6 +889,36 @@ final class TestDocumentOfferInteractor: EudiTest {
     }
   }
 
+  func testProcessOfferRequest_WhenIssuerRegistrationIsBlocked_ThenReturnRegistrationBlocked() async {
+    // Given: the offer resolves, but the issuer never established a registration — the case of an
+    // issuer that publishes no registration certificate at all.
+    let uri = "uri"
+    let offer = OfferedIssuanceModel(
+      issuerName: "issuerName",
+      issuerLogoUrl: "https://logo",
+      docModels: [],
+      txCodeSpec: nil
+    )
+    stub(walletKitController) { mock in
+      mock.resolveOfferUrlDocTypes(offerUri: uri).thenReturn(offer)
+      mock.fetchIssuedDocuments(with: any()).thenReturn([Constants.createEuPidModel()])
+      when(mock.getIssuerRegistration(for: any())).thenReturn(
+        .blocked(reason: .notRegisteredAsProvider)
+      )
+    }
+
+    // When
+    let result = await interactor.processOfferRequest(with: uri)
+
+    // Then: the flow stops before the offer screen is built, rather than issuing and undoing it.
+    switch result {
+    case .registrationBlocked(let reason):
+      XCTAssertEqual(reason, .notRegisteredAsProvider)
+    default:
+      XCTFail("Expected registrationBlocked, got \(result)")
+    }
+  }
+
   func testProcessOfferRequest_WhenResolveOfferUrlDocTypes_ThenReturnSuccess() async {
     // Given
     let expectedDocumentOfferUIModel = DocumentOfferUIModel(
@@ -917,7 +964,7 @@ final class TestDocumentOfferInteractor: EudiTest {
     
     // Then
     switch result {
-    case .success(let doc):
+    case .success(let doc, _):
       XCTAssertEqual(doc.issuerName, expectedDocumentOfferUIModel.issuerName)
     default:
       XCTFail("Expected success, but got \(result)")
