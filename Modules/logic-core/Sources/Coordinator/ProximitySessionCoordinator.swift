@@ -46,6 +46,10 @@ final class ProximitySessionCoordinatorImpl: ProximitySessionCoordinator {
   var relyingPartyRegistration: WrpRegistrationPolicy? { session.wrpVerifierPolicy }
   var relyingPartyWarningViolations: [String] { (session.wrpVerifierWarnings?[""] ?? []).map(\.message) }
 
+  private var overaskedClaims: [OveraskedClaim] {
+    (session.wrpVerifierWarnings?.values.flatMap { $0 } ?? []).toOveraskedClaims()
+  }
+
   init(session: PresentationSession) {
     self.session = session
     self.session.$status
@@ -127,7 +131,8 @@ final class ProximitySessionCoordinatorImpl: ProximitySessionCoordinator {
       itemSets: session.disclosedDocumentSets.map(\.docElements),
       relyingParty: session.readerCertIssuer ?? LocalizableStringKey.unknownVerifier.toString,
       dataRequestInfo: session.readerCertValidationMessage ?? LocalizableStringKey.requestDataInfoNotice.toString,
-      isTrusted: session.readerCertIssuerValid == true
+      isTrusted: session.readerCertIssuerValid == true,
+      overaskedClaims: overaskedClaims
     )
   }
 }

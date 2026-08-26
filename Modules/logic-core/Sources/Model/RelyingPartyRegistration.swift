@@ -15,6 +15,7 @@
  */
 import Foundation
 import WalletStorage
+import struct OpenID4VP.ClaimPath
 
 public struct RelyingPartyRegistration: Sendable, Equatable {
 
@@ -46,7 +47,7 @@ public struct RelyingPartyRegistration: Sendable, Equatable {
 
 public enum RegistrationStatus: Sendable, Equatable {
 
-  case verified(details: RegistrationDetails, overaskedClaims: [RequestedClaim])
+  case verified(details: RegistrationDetails, overaskedClaims: [OveraskedClaim])
   case notVerified(details: RegistrationDetails?)
   case notSupported
 
@@ -58,7 +59,7 @@ public enum RegistrationStatus: Sendable, Equatable {
     }
   }
 
-  public var overaskedClaims: [RequestedClaim] {
+  public var overaskedClaims: [OveraskedClaim] {
     guard case .verified(_, let overaskedClaims) = self else { return [] }
     return overaskedClaims
   }
@@ -101,14 +102,18 @@ public struct RegistrationDetails: Sendable, Equatable {
   }
 }
 
-public struct RequestedClaim: Sendable, Equatable, Hashable {
+public struct OveraskedClaim: Sendable, Equatable, Hashable {
 
-  public let queryId: String?
-  public let path: [String]
+  public let attestationType: String
+  public let path: ClaimPath?
 
-  public init(queryId: String?, path: [String]) {
-    self.queryId = queryId
+  public init(attestationType: String, path: ClaimPath?) {
+    self.attestationType = attestationType
     self.path = path
+  }
+
+  public func appliesTo(attestationType: String) -> Bool {
+    self.attestationType == attestationType
   }
 }
 

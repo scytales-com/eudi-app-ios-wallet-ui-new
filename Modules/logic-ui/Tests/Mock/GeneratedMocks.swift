@@ -4049,9 +4049,9 @@ return await cuckoo_manager.call(
         )
     }
 
-    public func getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.RequestedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration {
+    public func getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.OveraskedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration {
         return await cuckoo_manager.call(
-            "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.RequestedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
+            "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.OveraskedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
             parameters: (p0, p1, p2, p3, p4),
             escapingParameters: (p0, p1, p2, p3, p4),
             superclassCall: Cuckoo.MockManager.crashOnProtocolSuperclassCall(),
@@ -4432,10 +4432,10 @@ return await cuckoo_manager.call(
             ))
         }
         
-        func getVerifierRegistration<M1: Cuckoo.OptionalMatchable, M2: Cuckoo.Matchable, M3: Cuckoo.Matchable, M4: Cuckoo.OptionalMatchable, M5: Cuckoo.Matchable>(policy p0: M1, trustViolations p1: M2, overaskedClaims p2: M3, verifierName p3: M4, verifierIsTrusted p4: M5) -> Cuckoo.ProtocolStubFunction<(WrpRegistrationPolicy?, [String], [logic_core.RequestedClaim], String?, Bool), RelyingPartyRegistration> where M1.OptionalMatchedType == WrpRegistrationPolicy, M2.MatchedType == [String], M3.MatchedType == [logic_core.RequestedClaim], M4.OptionalMatchedType == String, M5.MatchedType == Bool {
-            let matchers: [Cuckoo.ParameterMatcher<(WrpRegistrationPolicy?, [String], [logic_core.RequestedClaim], String?, Bool)>] = [wrap(matchable: p0) { $0.0 }, wrap(matchable: p1) { $0.1 }, wrap(matchable: p2) { $0.2 }, wrap(matchable: p3) { $0.3 }, wrap(matchable: p4) { $0.4 }]
+        func getVerifierRegistration<M1: Cuckoo.OptionalMatchable, M2: Cuckoo.Matchable, M3: Cuckoo.Matchable, M4: Cuckoo.OptionalMatchable, M5: Cuckoo.Matchable>(policy p0: M1, trustViolations p1: M2, overaskedClaims p2: M3, verifierName p3: M4, verifierIsTrusted p4: M5) -> Cuckoo.ProtocolStubFunction<(WrpRegistrationPolicy?, [String], [logic_core.OveraskedClaim], String?, Bool), RelyingPartyRegistration> where M1.OptionalMatchedType == WrpRegistrationPolicy, M2.MatchedType == [String], M3.MatchedType == [logic_core.OveraskedClaim], M4.OptionalMatchedType == String, M5.MatchedType == Bool {
+            let matchers: [Cuckoo.ParameterMatcher<(WrpRegistrationPolicy?, [String], [logic_core.OveraskedClaim], String?, Bool)>] = [wrap(matchable: p0) { $0.0 }, wrap(matchable: p1) { $0.1 }, wrap(matchable: p2) { $0.2 }, wrap(matchable: p3) { $0.3 }, wrap(matchable: p4) { $0.4 }]
             return .init(stub: cuckoo_manager.createStub(for: MockWalletKitController.self,
-                method: "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.RequestedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
+                method: "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.OveraskedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
                 parameterMatchers: matchers
             ))
         }
@@ -4994,10 +4994,10 @@ return await cuckoo_manager.call(
         
         
         @discardableResult
-        func getVerifierRegistration<M1: Cuckoo.OptionalMatchable, M2: Cuckoo.Matchable, M3: Cuckoo.Matchable, M4: Cuckoo.OptionalMatchable, M5: Cuckoo.Matchable>(policy p0: M1, trustViolations p1: M2, overaskedClaims p2: M3, verifierName p3: M4, verifierIsTrusted p4: M5) -> Cuckoo.__DoNotUse<(WrpRegistrationPolicy?, [String], [logic_core.RequestedClaim], String?, Bool), RelyingPartyRegistration> where M1.OptionalMatchedType == WrpRegistrationPolicy, M2.MatchedType == [String], M3.MatchedType == [logic_core.RequestedClaim], M4.OptionalMatchedType == String, M5.MatchedType == Bool {
-            let matchers: [Cuckoo.ParameterMatcher<(WrpRegistrationPolicy?, [String], [logic_core.RequestedClaim], String?, Bool)>] = [wrap(matchable: p0) { $0.0 }, wrap(matchable: p1) { $0.1 }, wrap(matchable: p2) { $0.2 }, wrap(matchable: p3) { $0.3 }, wrap(matchable: p4) { $0.4 }]
+        func getVerifierRegistration<M1: Cuckoo.OptionalMatchable, M2: Cuckoo.Matchable, M3: Cuckoo.Matchable, M4: Cuckoo.OptionalMatchable, M5: Cuckoo.Matchable>(policy p0: M1, trustViolations p1: M2, overaskedClaims p2: M3, verifierName p3: M4, verifierIsTrusted p4: M5) -> Cuckoo.__DoNotUse<(WrpRegistrationPolicy?, [String], [logic_core.OveraskedClaim], String?, Bool), RelyingPartyRegistration> where M1.OptionalMatchedType == WrpRegistrationPolicy, M2.MatchedType == [String], M3.MatchedType == [logic_core.OveraskedClaim], M4.OptionalMatchedType == String, M5.MatchedType == Bool {
+            let matchers: [Cuckoo.ParameterMatcher<(WrpRegistrationPolicy?, [String], [logic_core.OveraskedClaim], String?, Bool)>] = [wrap(matchable: p0) { $0.0 }, wrap(matchable: p1) { $0.1 }, wrap(matchable: p2) { $0.2 }, wrap(matchable: p3) { $0.3 }, wrap(matchable: p4) { $0.4 }]
             return cuckoo_manager.verify(
-                "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.RequestedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
+                "getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.OveraskedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration",
                 callMatcher: callMatcher,
                 parameterMatchers: matchers,
                 sourceLocation: sourceLocation
@@ -5204,7 +5204,7 @@ public class WalletKitControllerStub:WalletKitController, @unchecked Sendable {
         return DefaultValueRegistry.defaultValue(for: (IssuerRegistration?).self)
     }
     
-    public func getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.RequestedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration {
+    public func getVerifierRegistration(policy p0: WrpRegistrationPolicy?, trustViolations p1: [String], overaskedClaims p2: [logic_core.OveraskedClaim], verifierName p3: String?, verifierIsTrusted p4: Bool) async -> RelyingPartyRegistration {
         return DefaultValueRegistry.defaultValue(for: (RelyingPartyRegistration).self)
     }
     
@@ -6512,6 +6512,20 @@ import EudiWalletKit
 
 
 
+// MARK: - Mocks generated from file: '../Modules/logic-core/Sources/Extension/PresentationPolicyViolation+Overasking.swift'
+
+import Cuckoo
+import Foundation
+import EudiWalletKit
+import MdocDataModel18013
+import struct OpenID4VP.ClaimPath
+@testable import logic_core
+@testable import logic_business
+@testable import logic_analytics
+@testable import logic_ui
+
+
+
 // MARK: - Mocks generated from file: '../Modules/logic-core/Sources/Extension/String+Extensions.swift'
 
 import Cuckoo
@@ -6559,20 +6573,6 @@ import Cuckoo
 
 import Cuckoo
 import Foundation
-@testable import logic_core
-@testable import logic_business
-@testable import logic_analytics
-@testable import logic_ui
-
-
-
-// MARK: - Mocks generated from file: '../Modules/logic-core/Sources/Extension/WrpRegistrationPolicy+Overasking.swift'
-
-import Cuckoo
-import Foundation
-import EudiWalletKit
-import MdocDataModel18013
-import struct OpenID4VP.ClaimPath
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics
@@ -6651,6 +6651,7 @@ import Foundation
 import Cuckoo
 import Foundation
 import WalletStorage
+import struct OpenID4VP.ClaimPath
 @testable import logic_core
 @testable import logic_business
 @testable import logic_analytics

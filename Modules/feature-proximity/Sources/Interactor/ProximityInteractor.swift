@@ -131,11 +131,11 @@ final actor ProximityInteractorImpl: ProximityInteractor {
       let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
       let documents = (response.itemSets.first ?? []).filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
       let registrationPolicy = coordinator.relyingPartyRegistration
-      let overaskedClaims = documents.overaskedClaims(policy: registrationPolicy)
+      let overaskedClaims = response.overaskedClaims
       return .success(
         documents.toUiModels(
           with: self.walletKitController,
-          overaskedClaims: overaskedClaims
+          overaskedPaths: documents.overaskedPaths(from: overaskedClaims)
         ),
         relyingParty: response.relyingParty,
         dataRequestInfo: response.dataRequestInfo,
@@ -143,7 +143,7 @@ final actor ProximityInteractorImpl: ProximityInteractor {
         relyingPartyRegistration: await walletKitController.getVerifierRegistration(
           policy: registrationPolicy,
           trustViolations: coordinator.relyingPartyWarningViolations,
-          overaskedClaims: overaskedClaims.toRequestedClaims(),
+          overaskedClaims: overaskedClaims,
           verifierName: response.relyingParty,
           verifierIsTrusted: response.isTrusted
         )

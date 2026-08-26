@@ -16,6 +16,7 @@
 import XCTest
 import logic_core
 import logic_resources
+import struct OpenID4VP.ClaimPath
 @testable import feature_common
 @testable import logic_test
 
@@ -39,7 +40,12 @@ final class TestRelyingPartyRegistrationUiModel: EudiTest {
     let registration = relyingParty(
       status: .verified(
         details: details(),
-        overaskedClaims: [RequestedClaim(queryId: "doc-id", path: ["namespace", "age"])]
+        overaskedClaims: [
+          OveraskedClaim(
+            attestationType: "eu.europa.ec.eudi.pid.1",
+            path: ClaimPath([.claim(name: "namespace"), .claim(name: "age")])
+          )
+        ]
       )
     )
 

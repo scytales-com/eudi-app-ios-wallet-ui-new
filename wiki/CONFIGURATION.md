@@ -212,11 +212,18 @@ The app treats the two directions differently, and the asymmetry is deliberate:
   certificate that failed validation still describes the requester where it decoded far enough to
   do so, since the warning and the missing badge already carry the verdict.
 
-Two settings govern the issuance side, and both must be on for it to refuse anything:
+All of the presentation behaviour above is conditional on `validateIssuerRegistrationCertificate`.
+With it off no verifier registration is resolved or displayed on either flow, and the requester is
+identified by its access certificate alone. Remote presentation skips the check outright, since the
+setting reaches `OpenId4VpConfiguration` and no registration policy is installed. Proximity still
+performs it inside WalletKit, which exposes no equivalent flag, but the app ignores the result.
+
+Two settings govern the issuance side, and both must be on for it to refuse anything. The first of
+them governs presentation as well:
 
 | Setting | Where | Effect |
 |---|---|---|
-| `validateIssuerRegistrationCertificate` | `WalletKitConfig` | Turns WRPRC validation on for OpenID4VCI. Off means no registration is ever evaluated and issuance never refuses on this basis. An issuer that publishes no `issuer_info` never reaches the validation hook at all, so no registration is established and the app refuses on that basis; enabling this against such an issuer fails every issuance. |
+| `validateIssuerRegistrationCertificate` | `WalletKitConfig` | Turns WRPRC validation on, for OpenID4VCI and for presentation alike. It is exposed as **Check Registration Certificates** in Settings and **defaults to off**. Off means no registration is ever evaluated: issuance never refuses on this basis, and no verifier registration is resolved or shown. An issuer that publishes no `issuer_info` never reaches the validation hook at all, so no registration is established and the app refuses on that basis; enabling this against such an issuer fails every issuance. |
 | `wrprcVciTrustPolicy` | `TrustConfiguration` | Decides what a failed WRPRC check does to an **issuance**. `.enforce` refuses: an expired, revoked or suspended certificate, a missing status list, a broken trust chain, or an offer reaching past the registered scope all stop the flow. `.warning` records the problem and lets the issuance through. |
 
 `wrprcVpTrustPolicy` is the same decision for **presentations**, and the app deliberately sets it to

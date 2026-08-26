@@ -104,18 +104,16 @@ final actor PresentationInteractorImpl: PresentationInteractor {
       let response = try await coordinator.requestReceived()
       let revokedDocuments = (try? await walletKitController.fetchRevokedDocuments()) ?? []
       let registrationPolicy = coordinator.relyingPartyRegistration
-      var overaskedClaims: [String: Set<[String]>] = [:]
+      let overaskedClaims = response.overaskedClaims
       let combinations = response.itemSets
         .map { documentSet in
           documentSet.filter { item in !revokedDocuments.contains(where: { $0 == item.docId }) }
         }
         .map { documentSet -> [RequestDataUiModel] in
-          let overasked = documentSet.overaskedClaims(policy: registrationPolicy)
-          overaskedClaims.merge(overasked) { current, _ in current }
-          return documentSet.toUiModels(
+          documentSet.toUiModels(
             with: self.walletKitController,
             claimsAreSelectable: false,
-            overaskedClaims: overasked
+            overaskedPaths: documentSet.overaskedPaths(from: overaskedClaims)
           )
         }
         .filter { !$0.isEmpty }
@@ -128,7 +126,7 @@ final actor PresentationInteractorImpl: PresentationInteractor {
           relyingPartyRegistration: await walletKitController.getVerifierRegistration(
             policy: registrationPolicy,
             trustViolations: coordinator.relyingPartyWarningViolations,
-            overaskedClaims: overaskedClaims.toRequestedClaims(),
+            overaskedClaims: overaskedClaims,
             verifierName: response.relyingParty,
             verifierIsTrusted: response.isTrusted
           )

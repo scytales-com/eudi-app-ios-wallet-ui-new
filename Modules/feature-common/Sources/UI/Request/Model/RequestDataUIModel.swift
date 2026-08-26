@@ -184,13 +184,16 @@ public extension Array where Element == RequestDataUiModel {
       currentList.forEach {
         switch $0 {
         case .single(let item):
+          let row = PresentationExpandableListItem.single(
+            item.copy(collapsed: item.collapsed.copy(supportingText: nil))
+          )
           switch item.collapsed.trailingContent {
           case .checkbox(_, let isSelected, _):
             if isSelected {
-              newList.append($0)
+              newList.append(row)
             }
           default:
-            newList.append($0)
+            newList.append(row)
           }
         case .nested(let item):
           newList.append($0)
@@ -354,7 +357,7 @@ public extension Array where Element == DocElements {
   func toUiModels(
     with walletKitController: WalletKitController,
     claimsAreSelectable: Bool = true,
-    overaskedClaims: [String: Set<[String]>] = [:]
+    overaskedPaths: [String: Set<[String]>] = [:]
   ) -> [RequestDataUiModel] {
     self.compactMap { element in
 
@@ -411,7 +414,7 @@ public extension Array where Element == DocElements {
         return nil
       }
 
-      let overaskedPaths = overaskedClaims[element.docId] ?? []
+      let overaskedPathsForDocument = overaskedPaths[element.docId] ?? []
 
       return .init(
         section: .init(
@@ -419,7 +422,7 @@ public extension Array where Element == DocElements {
           title: title,
           listItems: dataRows.toListItems(
             claimsAreSelectable: claimsAreSelectable,
-            overaskedPaths: overaskedPaths
+            overaskedPaths: overaskedPathsForDocument
           )
         )
       )

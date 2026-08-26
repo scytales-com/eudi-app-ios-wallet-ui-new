@@ -130,7 +130,7 @@ Use this checklist before the first production release.
 | Issuers | All OpenID4VCI issuer URLs point to production issuer services controlled or approved by the implementer. |
 | Wallet provider | `walletProviderAttestationUrl` points to the production Wallet Provider service and supports the expected attestation endpoints. |
 | Trust anchors | Demo and development certificates are replaced by production IACA, reader, verifier, or trust-framework anchors. |
-| Registration certificates | `wrprcProviders` points at the production registration trusted list, every production issuer and verifier presents a registration certificate that validates against it, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise. |
+| Registration certificates | `wrprcProviders` points at the production registration trusted list, `validateIssuerRegistrationCertificate` is enabled, every production issuer and verifier presents a registration certificate that validates against it, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise. |
 | RQES | QTSP, TSA, client ID, redirect URI, and signing policy are production values. No QTSP client secret is hardcoded in the app. |
 | Secrets | No production secret is hardcoded in Swift, plist files, xcconfig files, or build settings. |
 | Network | App Transport Security is enforced; trust-all certificate logic is absent; TLS policy and certificate pinning strategy are agreed. |
@@ -982,7 +982,8 @@ Production requirements:
 * Keep `validateIssuerRegistrationCertificate` enabled, and confirm every production issuer
   publishes `issuer_info`. An issuer that publishes none never reaches the validation hook, so no
   registration is established and the app refuses; enabling this against such an issuer fails every
-  issuance.
+  issuance. The setting defaults to off and governs presentation too, so leaving it off ships a
+  wallet that neither refuses an unregistered issuer nor shows a verifier's registration.
 * Keep `wrprcVciTrustPolicy` at `.enforce`. It decides whether a failed WRPRC check refuses the
   issuance — under `.warning` such an issuance proceeds and the app stores the document. Leave
   `wrprcVpTrustPolicy` at `.warning`: presentations are required to reach the consent screen behind

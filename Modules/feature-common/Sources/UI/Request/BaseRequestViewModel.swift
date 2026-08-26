@@ -196,8 +196,10 @@ open class BaseRequestViewModel<Router: RouterHost>: ViewModel<Router, RequestVi
 
   public func onReceivedRegistration(_ registration: RelyingPartyRegistration) {
     isRiskAcknowledged = false
+    let resolvedName = registration.name.map { LocalizableStringKey.custom($0) }
     setState {
       $0
+        .copy(relyingParty: resolvedName ?? $0.relyingParty)
         .copy(isTrusted: registration.isFullyVerified)
         .copy(relyingPartyRegistration: registration.toRegistrationData(fallbackName: .unknownVerifier))
         .copy(registrationWarning: registration.toWarning())

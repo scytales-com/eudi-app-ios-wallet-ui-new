@@ -93,8 +93,9 @@ If you're planning to use this application in production, we recommend reviewing
 - Issuers and verifiers are trusted on two independent layers: an access certificate proves who
   they are, and a registration certificate establishes what they are registered to do. Issuance
   requires both — a provider that cannot be authenticated, or that is not registered for the
-  document it offers, is refused and nothing is stored. On presentation the registration is shown
-  to the user and a request beyond its scope requires explicit acknowledgement before sharing. See
+  document it offers, is refused and nothing is stored. On presentation, while registration checking
+  is enabled, the registration is shown to the user and a request beyond its scope requires explicit
+  acknowledgement before sharing. See
   [wiki/GO_LIVE.md](wiki/GO_LIVE.md#registration-certificates-the-second-trust-layer) for the
   production requirements this places on your backends.
 
@@ -155,9 +156,11 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 5. Review your presentation request, tap "Next", and then select "Open with your Wallet".
 6. When prompted to open the wallet app, tap "Open".
 7. You will be redirected to the app's "Request" screen, where you can select or deselect which attributes to share with the Verifier. You must select at least one attribute to proceed.
-   The screen also shows who is asking, taken from the Verifier's registration certificate. If that
-   certificate is missing or cannot be validated, or if the request reaches beyond what the Verifier
-   registered for, a warning appears and "Share" stays disabled until you acknowledge it.
+   The screen also shows who is asking. With "Check Registration Certificates" enabled in Settings
+   that identity comes from the Verifier's registration certificate, and if that certificate is
+   missing or cannot be validated, or if the request reaches beyond what the Verifier registered
+   for, a warning appears and "Share" stays disabled until you acknowledge it. With the setting off
+   — its default — no registration is evaluated and the Verifier is named by its access certificate.
 8. Tap "Share".
 9. Enter the PIN you set up during the initial steps.
 10. Upon successful submission, tap "Close".
@@ -173,9 +176,9 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 5. You will be prompted to enable Bluetooth (if it is not already enabled) and grant the necessary permissions for the app to use it (if you have not already done so).
 6. The Verifier scans the presented QR code.
 7. The app's "Request" screen will load. Here, you can select or deselect which attributes to share
-   with the Verifier. You must select at least one attribute to proceed. As in the remote flow, a
-   reader whose registration certificate cannot be validated raises a warning that keeps "Share"
-   disabled until you acknowledge it.
+   with the Verifier. You must select at least one attribute to proceed. As in the remote flow, and
+   subject to the same setting, a reader whose registration certificate cannot be validated raises a
+   warning that keeps "Share" disabled until you acknowledge it.
 8. Tap "Share".
 9. Enter the PIN you set up during the initial steps.
 10. Upon successful authentication, tap "Close".
