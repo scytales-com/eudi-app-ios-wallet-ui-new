@@ -27,7 +27,7 @@ final actor WalletKitTransactionLogControllerImpl: TransactionLogger {
   func log(transaction: MdocDataModel18013.TransactionLog) async throws {
     do {
 
-      let jsonResultData = try JSONEncoder().encode(transaction)
+      let jsonResultData = try JSONEncoder().encode(transaction.withPresenterName())
       let value = try jsonResultData.toJSONString()
 
       try await transactionLogStorageController.store(

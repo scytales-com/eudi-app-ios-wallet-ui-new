@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 import logic_storage
+import Security
 import Foundation
 
 extension logic_storage.TransactionLog {
@@ -28,5 +29,28 @@ extension logic_storage.TransactionLog {
       throw WalletCoreError.unableToFetchTransactionLog
     }
     return .init(id: id, transactionLogData: parse(coreLog))
+  }
+}
+
+extension MdocDataModel18013.TransactionLog {
+  func withPresenterName() -> Self {
+    guard
+      type == .presentation,
+      let relyingParty = self.relyingParty,
+      let certificate = relyingParty.certificateChain.first
+        .flatMap({ SecCertificateCreateWithData(nil, $0 as CFData) }),
+      let presenterName = SecCertificateCopySubjectSummary(certificate) as String?,
+      !presenterName.isEmpty
+    else {
+      return self
+    }
+    return copy(
+      relyingParty: .init(
+        name: presenterName,
+        isVerified: relyingParty.isVerified,
+        certificateChain: relyingParty.certificateChain,
+        readerAuth: relyingParty.readerAuth
+      )
+    )
   }
 }
