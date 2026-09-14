@@ -21,7 +21,12 @@ import EudiEtsi1196x2
 protocol WalletKitConfig: Sendable {
 
   /**
-   * VCI Configuration
+   * VCI Configuration, keyed by issuer host.
+   *
+   * `allowPlainJwtProof` is set per issuer and defaults to `false`, which keeps the HAIP-compliant
+   * proof policy: only attested proofs (`attestation`, or `jwt` with key attestation) are sent.
+   * Set it to `true` only for an issuer that does not support key attestation and requires a plain
+   * JWT proof; the proof is then bound to a key without wallet attestation, using ES256/ES384/ES512.
    */
   var issuersConfig: [String: VciConfig] { get }
 
@@ -137,6 +142,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               ),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
               parUsage: .required(authorizationCodeDPoPBinding: true),
+              allowPlainJwtProof: false,
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
               validateRegistrationCertificate: validateIssuerRegistrationCertificate,
@@ -157,6 +163,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               ),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
               parUsage: .required(authorizationCodeDPoPBinding: true),
+              allowPlainJwtProof: false,
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
               validateRegistrationCertificate: validateIssuerRegistrationCertificate,
@@ -180,6 +187,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               ),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
               parUsage: .required(authorizationCodeDPoPBinding: true),
+              allowPlainJwtProof: false,
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
               validateRegistrationCertificate: validateIssuerRegistrationCertificate,
@@ -200,6 +208,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
               ),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
               parUsage: .required(authorizationCodeDPoPBinding: true),
+              allowPlainJwtProof: false,
               requireDpop: true,
               issuerMetadataPolicy: trustConfiguration.issuerMetadataPolicy,
               validateRegistrationCertificate: validateIssuerRegistrationCertificate,

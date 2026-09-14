@@ -24,7 +24,12 @@ Via the *WalletKitConfig* protocol inside the logic-core module.
 ```swift
 protocol WalletKitConfig: Sendable {
   /**
-   * VCI Configuration
+   * VCI Configuration, keyed by issuer host.
+   *
+   * `allowPlainJwtProof` is set per issuer and defaults to `false`, which keeps the HAIP-compliant
+   * proof policy: only attested proofs (`attestation`, or `jwt` with key attestation) are sent.
+   * Set it to `true` only for an issuer that does not support key attestation and requires a plain
+   * JWT proof; the proof is then bound to a key without wallet attestation, using ES256/ES384/ES512.
    */
   var issuersConfig: [String: VciConfig] { get }
 }
@@ -60,6 +65,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
                 keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
                 authFlowRedirectionURI: URL(string: "your_demo_redirect")!,
                 parUsage: .required(authorizationCodeDPoPBinding: should_bind_par_dpop_bool),
+                allowPlainJwtProof: should_allow_plain_jwt_proof_bool,
                 requireDpop: should_use_dpop_bool,
                 cacheIssuerMetadata: should_cache_metadata_bool
             ),
@@ -76,6 +82,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
                   keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
                   authFlowRedirectionURI: URL(string: "your_dev_redirect")!,
                   parUsage: .required(authorizationCodeDPoPBinding: should_bind_par_dpop_bool),
+                  allowPlainJwtProof: should_allow_plain_jwt_proof_bool,
                   requireDpop: should_use_dpop_bool,
                   cacheIssuerMetadata: should_cache_metadata_bool
               ),
@@ -89,6 +96,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
 	}
 }
 ```
+
+`allowPlainJwtProof` selects the credential proof policy for that issuer. Leave it `false` (the default) to stay HAIP-compliant: the wallet sends only attested proofs, either the `attestation` proof type or a `jwt` proof carrying a key attestation from the Wallet Provider. Set it to `true` only for an issuer that does not support key attestation and requires a plain JWT proof; the wallet then also accepts plain `jwt` proofs signed with ES256, ES384 or ES512, and the proof key is no longer attested. The reference issuers require attested proofs, so every issuer in this repo sets it to `false`.
 
 2. Wallet Attestation Provider
 
@@ -381,7 +390,7 @@ production values for every config surface listed below.
 | Configuration area | Source file | Production value to provide |
 | --- | --- | --- |
 | Build variant/type | `Wallet/Config/*.xcconfig`, `ConfigLogic.swift` | `BUILD_VARIANT = PROD`, `BUILD_TYPE = RELEASE` for production archives. |
-| Issuers | `WalletKitConfig.swift` | Production OpenID4VCI issuer URLs, client IDs, redirect URIs, PAR/DPoP policy, metadata caching policy, and display order. |
+| Issuers | `WalletKitConfig.swift` | Production OpenID4VCI issuer URLs, client IDs, redirect URIs, PAR/DPoP policy, proof-type policy (`allowPlainJwtProof`), metadata caching policy, and display order. |
 | Wallet provider attestation | `WalletProviderAttestationConfig.swift` | Production Wallet Provider host used for wallet/key attestation. |
 | Reader trust anchors | `WalletKitConfig.swift`, certificate resources | Production IACA/reader/verifier trust anchors only. |
 | OpenID4VP | `WalletKitConfig.swift` | Approved client ID schemes, preregistered verifier entries where needed, and partial claim disclosure policy. |
