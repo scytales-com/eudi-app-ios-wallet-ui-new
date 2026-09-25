@@ -1,3 +1,4 @@
+- Transaction logs
 - WRPRC integration
 - DCQL multiple selections
 - DC API support
