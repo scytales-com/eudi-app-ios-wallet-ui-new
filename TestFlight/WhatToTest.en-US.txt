@@ -1,3 +1,4 @@
+- OpenID4VP untrusted verifier cert.
 - Transaction logs
 - WRPRC integration
 - DCQL multiple selections
@@ -7,7 +8,6 @@
 - Batch issuing integration
 - SD-JWT PID ARF 1.8 Wallet Activation
 - Nested field support for presentation
-- OpenID4VP draft 23 support
 - SD-JWT support
 - Localisation metadata support
 - RQES functionality
