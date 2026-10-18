@@ -42,7 +42,6 @@ final class RemoteSessionCoordinatorImpl: RemoteSessionCoordinator {
 
   private let sendableAnyCancellable: SendableAnyCancellable = .init()
   private let session: PresentationSession
-  private let transactionDataSets: SendableCurrentValueSubject<[[String: [PresentationTransactionData]]]> = .init([])
 
   var relyingPartyRegistration: WrpRegistrationPolicy? { session.wrpVerifierPolicy }
   var relyingPartyWarningViolations: [String] { (session.wrpVerifierWarnings?[""] ?? []).map(\.message) }
@@ -77,8 +76,7 @@ final class RemoteSessionCoordinatorImpl: RemoteSessionCoordinator {
   }
 
   public func initialize() async {
-    let requests = await session.receiveRequest()
-    transactionDataSets.setValue(requests?.toTransactionDataSets() ?? [])
+    _ = await session.receiveRequest()
   }
 
   public func requestReceived() async throws -> PresentationRequest {
@@ -89,7 +87,12 @@ final class RemoteSessionCoordinatorImpl: RemoteSessionCoordinator {
   }
 
   public func sendResponse(response: RequestItemConvertible) async throws {
-    try await session.sendResponse(userAccepted: true, itemsToSend: response.items, onCancel: nil) { url in
+    try await session.sendResponse(
+      userAccepted: true,
+      itemsToSend: response.items,
+      requestName: response.requestName,
+      onCancel: nil
+    ) { url in
       self.sendableCurrentValueSubject.setValue(.responseSent(url))
     }
   }
@@ -120,9 +123,10 @@ final class RemoteSessionCoordinatorImpl: RemoteSessionCoordinator {
       itemSets: session.disclosedDocumentSets.map(\.docElements),
       relyingParty: session.readerCertIssuer ?? LocalizableStringKey.unknownVerifier.toString,
       dataRequestInfo: session.readerCertValidationMessage ?? LocalizableStringKey.requestDataInfoNotice.toString,
-      isTrusted: session.readerCertIssuerValid == true,
+      isTrusted: session.readerAuthenticationStatus == .authenticated,
       overaskedClaims: overaskedClaims,
-      transactionDataSets: transactionDataSets.getValue()
+      transactionDataSets: session.disclosedDocumentSets.map { $0.transactionDataDomains() },
+      requestNames: session.disclosedDocumentSets.map(\.requestName)
     )
   }
 }
