@@ -1,0 +1,45 @@
+name: Nightly Merge Upstream
+
+on:
+  schedule:
+    # Every night at 01:17 UTC (03:17 EET / 04:17 EEST).
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merge-upstream-main
+  cancel-in-progress: false
+
+jobs:
+  merge-upstream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # Set this optional secret to a PAT with repository contents and
+          # workflows write access when upstream changes workflow files.
+          token: ${{ secrets.UPSTREAM_SYNC_TOKEN || github.token }}
+
+      - name: Prepare merge preserving repository changes
+        # Merge Upstream uses --ff-only. Prepare a merge commit so it also
+        # works when main has diverged from upstream. Conflicts stop the job.
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch --no-tags https://github.com/eu-digital-identity-wallet/eudi-app-ios-wallet-ui.git main
+          git merge --no-edit FETCH_HEAD
+
+      - name: Merge Upstream
+        uses: exions/merge-upstream@f319e34ccad113d4f524e9ca33f5dab14b51117c # v1.1.0
+        with:
+          upstream: eu-digital-identity-wallet/eudi-app-ios-wallet-ui
+          upstream-branch: main
+          branch: main
+          token: ${{ secrets.UPSTREAM_SYNC_TOKEN || github.token }}
