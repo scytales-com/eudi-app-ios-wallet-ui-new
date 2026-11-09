@@ -36,7 +36,8 @@ public struct BaseRequestView<Router: RouterHost>: View {
       BaseRequestViewContainer(
         viewState: viewModel.viewState,
         isRiskAcknowledged: $viewModel.isRiskAcknowledged,
-        onShare: viewModel.onShare,
+        canShare: viewModel.canShare,
+        onShare: viewModel.onShareClick,
         onSelectionChanged: { id in
           Task {
             await viewModel.onSelectionChanged(id: id)
@@ -55,6 +56,8 @@ public struct BaseRequestView<Router: RouterHost>: View {
     .task {
       if !viewModel.viewState.initialized {
         await viewModel.doWork()
+      } else {
+        await viewModel.onReappear()
       }
     }
     .alertView(
@@ -63,6 +66,15 @@ public struct BaseRequestView<Router: RouterHost>: View {
       message: .incompleteRequestDataSelection,
       actions: {
         Button(.okButton) {}
+      }
+    )
+    .alertView(
+      isPresented: $viewModel.isUserImageConfirmationShowing,
+      title: .requestUserImageConfirmationTitle,
+      message: .requestUserImageConfirmationMessage,
+      actions: {
+        Button(.shareButton) { viewModel.onUserImageShareConfirmed() }
+        Button(.cancelButton, role: .cancel) {}
       }
     )
     .alertView(
@@ -82,18 +94,17 @@ private struct BaseRequestViewContainer: View {
 
   let viewState: RequestViewState
   @Binding var isRiskAcknowledged: Bool
+  let canShare: Bool
   let onShare: () -> Void
   let onSelectionChanged: (String) -> Void
   var onCombinationSelected: (Int) -> Void = { _ in }
   var onCombinationItemClick: (Int, String) -> Void = { _, _ in }
 
+  @State private var scrollAreaHeight: CGFloat = .zero
+
   private var registrationWarning: RegistrationWarning? {
     guard viewState.initialized, !viewState.isLoading else { return nil }
     return viewState.registrationWarning
-  }
-
-  private var canShare: Bool {
-    viewState.allowShare && (registrationWarning == nil || isRiskAcknowledged)
   }
 
   var body: some View {
@@ -119,28 +130,48 @@ private struct BaseRequestViewContainer: View {
   @MainActor
   @ViewBuilder
   private func scrollableContent() -> some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
+    ScrollViewReader { proxy in
+      ScrollView {
+        VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
 
-        if let registration = viewState.relyingPartyRegistration {
-          RelyingPartyRegistrationView(data: registration)
-            .shimmer(isLoading: viewState.isLoading)
-        }
-
-        titledSection(.requestRequestedDataTitle) {
-          if viewState.combinations.count > 1 {
-            combinationsContent()
-          } else {
-            singleCombinationContent()
+          if let registration = viewState.relyingPartyRegistration {
+            RelyingPartyRegistrationView(data: registration)
+              .shimmer(isLoading: viewState.isLoading)
           }
-        }
 
-        VSpacer.medium()
+          if viewState.items.requestsUserImage() {
+            WarningNoticeView(message: .requestUserImageNotice)
+          }
+
+          titledSection(.requestRequestedDataTitle) {
+            if viewState.combinations.count > 1 {
+              combinationsContent(proxy: proxy)
+            } else {
+              singleCombinationContent(proxy: proxy)
+            }
+          }
+
+          VSpacer.medium()
+        }
+        .padding(Theme.shared.dimension.padding)
       }
-      .padding(Theme.shared.dimension.padding)
+      .onGeometryChange(for: CGFloat.self) { geometry in
+        geometry.size.height - geometry.safeAreaInsets.top - geometry.safeAreaInsets.bottom
+      } action: { height in
+        scrollAreaHeight = height
+      }
+      .safeAreaInset(edge: .bottom, spacing: .zero) {
+        bottomBar()
+      }
     }
-    .safeAreaInset(edge: .bottom, spacing: .zero) {
-      bottomBar()
+  }
+
+  /// The warning and Share stay in a bar over the bottom of the scroll area, so the claims of a document or group
+  /// opened just above the bar would be out of sight. An opened item that fits above the bar is scrolled the least
+  /// that shows it whole; a taller one is scrolled to the top, so its first claims show rather than its last.
+  private func showOpened(_ id: String, height: CGFloat, with proxy: ScrollViewProxy) {
+    withAnimation {
+      proxy.scrollTo(id, anchor: height > scrollAreaHeight ? .top : nil)
     }
   }
 
@@ -165,10 +196,12 @@ private struct BaseRequestViewContainer: View {
 
   @MainActor
   @ViewBuilder
-  private func singleCombinationContent() -> some View {
+  private func singleCombinationContent(proxy: ScrollViewProxy) -> some View {
     ForEach(viewState.items.indices, id: \.self) { index in
       documentSection(
         viewState.items[index],
+        scrollId: viewState.items[index].section.id,
+        proxy: proxy,
         onItemClick: { onSelectionChanged($0) }
       )
       .accessibilityElement()
@@ -184,7 +217,7 @@ private struct BaseRequestViewContainer: View {
 
   @MainActor
   @ViewBuilder
-  private func combinationsContent() -> some View {
+  private func combinationsContent(proxy: ScrollViewProxy) -> some View {
     ForEach(viewState.combinations.indices, id: \.self) { index in
       WrapSelectableCardView(
         title: .requestCombinationTitle(["\(index + 1)", "\(viewState.combinations.count)"]),
@@ -195,6 +228,8 @@ private struct BaseRequestViewContainer: View {
             ForEach(viewState.combinations[index].documents.indices, id: \.self) { sectionIndex in
               documentSection(
                 viewState.combinations[index].documents[sectionIndex],
+                scrollId: "\(index):\(viewState.combinations[index].documents[sectionIndex].section.id)",
+                proxy: proxy,
                 onItemClick: { onCombinationItemClick(index, $0) }
               )
             }
@@ -216,6 +251,8 @@ private struct BaseRequestViewContainer: View {
   @ViewBuilder
   private func documentSection(
     _ section: RequestDataUiModel,
+    scrollId: String,
+    proxy: ScrollViewProxy,
     onItemClick: @escaping (String) -> Void
   ) -> some View {
     WrapExpandableListView(
@@ -227,8 +264,12 @@ private struct BaseRequestViewContainer: View {
       backgroundColor: Theme.shared.color.groupedElevatedBackground,
       hideSensitiveContent: false,
       isLoading: viewState.isLoading,
-      onItemClick: { onItemClick($0.groupId) }
+      onItemClick: { onItemClick($0.groupId) },
+      onExpand: { headerId, height in
+        showOpened(headerId ?? scrollId, height: height, with: proxy)
+      }
     )
+    .id(scrollId)
   }
 
   @MainActor
@@ -263,6 +304,7 @@ private struct BaseRequestViewContainer: View {
         backgroundColor: Theme.shared.color.groupedElevatedBackground,
         hideSensitiveContent: false,
         isLoading: viewState.isLoading,
+        expandsWhen: true,
         onItemClick: { item in
           if let url = transactionData.documentUrlsByItemId[item.id] {
             openURL(url)
@@ -343,6 +385,7 @@ private struct BaseRequestViewContainer: View {
     BaseRequestViewContainer(
       viewState: viewState,
       isRiskAcknowledged: .constant(false),
+      canShare: true,
       onShare: {},
       onSelectionChanged: { _ in }
     )
