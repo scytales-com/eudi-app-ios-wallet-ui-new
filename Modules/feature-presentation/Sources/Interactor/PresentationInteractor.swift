@@ -102,6 +102,8 @@ final actor PresentationInteractorImpl: PresentationInteractor {
     return await onRequestReceived()
   }
 
+  /// Offers only the options whose documents are all unblocked, each as WalletKit built it. An option that holds a
+  /// revoked, suspended or unrecognised document is left out whole, not offered without that document.
   public func onRequestReceived() async -> PresentationRequestPartialState {
     do {
       let coordinator = presentationCoordinator
@@ -113,8 +115,10 @@ final actor PresentationInteractorImpl: PresentationInteractor {
       let requestNames = response.requestNames
       let presentable = response.itemSets
         .enumerated()
+        .filter { _, documentSet in
+          documentSet.allSatisfy { item in blockedDocuments[item.docId] == nil }
+        }
         .map { index, documentSet in
-          let documentSet = documentSet.filter { item in blockedDocuments[item.docId] == nil }
           let uiModels = documentSet.toUiModels(
             with: self.walletKitController,
             claimsAreSelectable: false,

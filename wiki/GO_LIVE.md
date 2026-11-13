@@ -857,7 +857,7 @@ is more than one, as on Android:
 * A request whose transaction data cannot be shown in full is declined with an explanation, never shown in part
   (`PresentationInteractorImpl.canShowTransactionData`): an entry WalletKit cannot read, or an entry bound to a
   document the consent screen does not show. Each option is checked against its own transaction data; an option
-  that is not offered, because its documents are blocked, is not checked. WalletKit binds transaction data
+  that is not offered, because it holds a blocked document, is not checked. WalletKit binds transaction data
   to SD-JWT and mdoc documents alike.
 * When WalletKit itself cannot take a remote request (transaction data it cannot process, no document that satisfies
   the query, a reader certificate whose authentication was required and not established), it sends the error to the
@@ -1498,12 +1498,16 @@ The rules are the Android wallet's (`RevocationRecordUpdate`, Android's `revocat
   records that status. A record stored before the status was kept counts as unrecognised too, so the
   next check that reads the document's status replaces or clears it.
 * Every record blocks the document. A revoked, suspended or unrecognised document is left out of
-  remote and proximity presentations; if the records cannot be read, the request fails rather than
-  offer a blocked document. The Digital Credentials API registrations leave them out; the extension declines a
-  request that would include one, when it loads and again on Accept, and declines when the records cannot be read
-  (`WalletKitController.reconcileRegistrations`, `DocumentProviderPolicy.checkRequest`). The documents list,
-  the details screen and the issuer card show a suspended document as suspended and the others as
-  revoked; the list's "Revoked" filter lists all of them.
+  proximity presentations, and a remote request does not offer an option that holds one: the wallet
+  never offers an option with a blocked document removed. The documents that match one
+  `multiple: true` query form a single option, so it is not offered when one of them is blocked
+  (`PresentationInteractorImpl.onRequestReceived`). If the records cannot be read, the request fails
+  rather than offer a blocked document. The Digital Credentials API registrations leave them out;
+  the extension declines a request that would include one, when it loads and again on Accept, and
+  declines when the records cannot be read (`WalletKitController.reconcileRegistrations`,
+  `DocumentProviderPolicy.checkRequest`). The documents list, the details screen and the issuer card
+  show a suspended document as suspended and the others as revoked; the list's "Revoked" filter
+  lists all of them.
 * When the records cannot be read, the documents tab shows every document as revoked, as the sharing flows refuse.
 * The dashboard notice, "Revoked or suspended documents", lists only the documents a check blocks for
   the first time. A change from one blocked status to another (suspended to revoked) refreshes the
