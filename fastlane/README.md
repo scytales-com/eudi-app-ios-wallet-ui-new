@@ -63,6 +63,30 @@ Upload tag to remote repo
 
 Upload IPA to TestFlight
 
+### ios prepare_binary
+
+```sh
+[bundle exec] fastlane ios prepare_binary
+```
+
+Rename the IPA to the full version name
+
+### ios check_browserstack
+
+```sh
+[bundle exec] fastlane ios check_browserstack
+```
+
+Check the BrowserStack settings: false when the upload is not configured, an error when it is only partly configured
+
+### ios upload_browserstack
+
+```sh
+[bundle exec] fastlane ios upload_browserstack
+```
+
+Upload IPA to BrowserStack App Automate
+
 ### ios reset_project
 
 ```sh
