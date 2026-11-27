@@ -857,8 +857,10 @@ is more than one, as on Android:
 * A request whose transaction data cannot be shown in full is declined with an explanation, never shown in part
   (`PresentationInteractorImpl.canShowTransactionData`): an entry WalletKit cannot read, or an entry bound to a
   document the consent screen does not show. Each option is checked against its own transaction data; an option
-  that is not offered, because it holds a blocked document, is not checked. WalletKit binds transaction data
-  to SD-JWT and mdoc documents alike.
+  that is not offered (one whose blocked document cannot be left out, or one that
+  [Choosing Credentials For `multiple: true` Queries](#choosing-credentials-for-multiple-true-queries) leaves out)
+  is not checked.
+  WalletKit binds transaction data to SD-JWT and mdoc documents alike.
 * When WalletKit itself cannot take a remote request (transaction data it cannot process, no document that satisfies
   the query, a reader certificate whose authentication was required and not established), it sends the error to the
   verifier's response endpoint, and the wallet then shows its error screen, or for the certificate the trust alert
@@ -886,6 +888,40 @@ transaction type and without document actions. Signing results appear in separat
 Before release, exercise QES approval and QES requests with transaction data: check the details under
 each applicable option, the document links where supplied, and the recorded details after
 restarting the app. Also check that requests without transaction data show no extra section.
+
+### Choosing Credentials For `multiple: true` Queries
+
+A DCQL credential query with `multiple: true` (OpenID4VP 1.0, section 6.1) accepts more than one credential, and
+WalletKit puts every matching credential into one option of the request screen. When such a query has two or more
+matches in an option, the user chooses which to share (`PresentationInteractorImpl.onRequestReceived` and
+`onResponsePrepare`; the option rules are in `logic-core`'s `PresentationCredentialQueriesDomain+Extensions.swift`, the
+screen's in `feature-common`'s `RequestDataUIModel.swift`):
+
+* Each match the user can choose is a card with a checkbox on the left of its header, "Share this document"
+  (`request_credential_choice_title`), and the document's own card inside it, as the options' cards have a radio
+  button. None is ticked at first, and Share stays disabled until every such query has a ticked match, unless the
+  query already has a match that is shared with its option. The checkboxes of an option that is not selected are
+  disabled; the choice is kept when the user switches options. VoiceOver reads the header with the document's name
+  ("Share this document, PID (SD-JWT VC)").
+* A credential for a query that accepts one credential, and the only match of a query, are shared with their option.
+  In an option that offers a choice they show a ticked checkbox the user cannot change; an option with no choice
+  shows no checkboxes.
+* A match that carries transaction data is always shared; in an option that offers a choice it shows a ticked
+  checkbox the user cannot change. WalletKit authorizes the transaction with the credential it assigned it to.
+* A revoked, suspended or unrecognised match is left out of its option when every query it answers accepts more than
+  one credential and keeps a match that is not blocked, and it carries no transaction data; the user chooses among
+  the rest when two or more remain, and a single remaining match is always shared.
+  Otherwise the whole option is left out (see [Revocation And Status Checking](#revocation-and-status-checking)).
+* Share sends the shared credentials under the option's name, and each keeps the query ids WalletKit gave it.
+  WalletKit checks the selection again before anything is sent and refuses one that leaves a required credential set
+  unsatisfied.
+* An option that would give a query that accepts one credential two of them is not offered. WalletKit builds such an
+  option when two `credential_sets` name the same query, but refuses to send it (OpenID4VP 1.0, section 8.1). Nor is
+  an option in which a query has no credential the screen can show.
+* Proximity presentations and the Digital Credentials API offer no such choice: their requests carry no DCQL queries.
+
+Before release, exercise a `multiple: true` request with two or more matching credentials: share one, then several,
+and check what the verifier receives; repeat with `credential_sets` alternatives and with a blocked match.
 
 ### Relay Attack Risk In Presentation Flows
 
@@ -1012,8 +1048,9 @@ Current registration behavior:
 * Registrations are reconciled against storage rather than tracked incrementally, so a document deleted in the app is deregistered, and a registration left behind by an earlier build is removed after login by a pass that runs in a task of its own once the dashboard has loaded the documents, so a slow registration store holds up neither the tabs nor the background checks. Passes run one at a time (`SerialCheckRunner`).
 * A document with a revocation record (revoked, suspended or unrecognised) is not registered, and the registrations are
   updated whenever a revocation check stores or clears a record; when the records cannot be read nothing is
-  registered, as on Android. The extension also declines a request that would include such a document
-  (`RequestAuthorizationInteractor.loadRequestData`). See [Revocation And Status Checking](#revocation-and-status-checking).
+  registered, as on Android. The extension does not offer an option that would include such a document, and declines
+  the request when no option is left (`DocumentProviderPolicy.options`,
+  `RequestAuthorizationInteractor.loadRequestData`). See [Revocation And Status Checking](#revocation-and-status-checking).
 * Settings has a switch, "Allow document requests from apps and websites (DC API)", which is on by default and shown
   only on iOS 26 and later. While it is off, nothing is registered and every registration is withdrawn when the user
   turns it off (`Prefs.Key.offerDocumentsToApps`, on by default in `PrefsControllerImpl`). The extension declines a
@@ -1026,14 +1063,17 @@ Current request handling:
   asks for the wallet PIN or biometrics first, with the same screen as the app's login, and reads the
   request's documents only after that. No requested value is shown before the user has authenticated.
 * Accept asks for the PIN or biometrics again before the response is sent.
+* The request is answered with one document of each requested type the wallet holds. When it holds several of a type,
+  the sheet shows "Option 1 of N" cards with a radio button, one document of each type in each and the first
+  selected, as the request screen offers its options (`DocumentProviderPolicy.options`). The portrait notice and
+  Accept's confirmation follow the selected option.
 * The request is validated once, when it is loaded, so each request writes one history entry. Accept sends only the
-  documents and claims the sheet showed (`DocumentProviderSelection`), after reading their revocation records
-  again, and then completes that entry. Each document's claims are worked out from that document alone, and a
-  document with none of them is left out, so documents of the same type with different claims are each sent with
-  their own. A request declined while it loads, after its validation, or one
-  the user rejects with the Reject button, is recorded as not completed, with the reason; once Accept or a decline has
-  recorded the outcome, Reject only closes the sheet. A sheet dismissed another way leaves the entry not completed,
-  without a reason.
+  selected option's documents and the claims the sheet showed for them (`DocumentProviderSelection`), after reading
+  their revocation records again, and then completes that entry. Each document's claims are worked out from that
+  document alone, and a document with none of them is left out. A request declined while it loads, after its
+  validation, or one the user rejects with the Reject button, is recorded as not completed, with the reason; once
+  Accept or a decline has recorded the outcome, Reject only closes the sheet. A sheet dismissed another way leaves the
+  entry not completed, without a reason.
 * The requester is shown without the verified badge and behind the warning "The identity of this
   relying party could not be verified"; Accept stays disabled until the user acknowledges it, as on
   Android. Without a website origin the requester gets the generic name, not the one in its
@@ -1050,7 +1090,7 @@ Production validation:
 * Confirm the document is registered with the system.
 * Trigger a web presentment request.
 * Confirm the extension appears and can authorize or deny the request.
-* Delete the document and confirm its registration is removed; revoke or suspend it and confirm that its registration is withdrawn and that the extension declines a request for it.
+* Delete the document and confirm its registration is removed; revoke or suspend it and confirm that its registration is withdrawn and that the extension declines a request for it, or, while other documents of its type are held, offers only those.
 
 ## Trust Store
 
@@ -1504,13 +1544,17 @@ The rules are the Android wallet's (`RevocationRecordUpdate`, Android's `revocat
   records that status. A record stored before the status was kept counts as unrecognised too, so the
   next check that reads the document's status replaces or clears it.
 * Every record blocks the document. A revoked, suspended or unrecognised document is left out of
-  proximity presentations, and a remote request does not offer an option that holds one: the wallet
-  never offers an option with a blocked document removed. The documents that match one
-  `multiple: true` query form a single option, so it is not offered when one of them is blocked
+  proximity presentations, and a remote request does not offer an option that holds one. The one
+  exception is a match that answers only `multiple: true` queries, each of which keeps a match that is
+  not blocked, and that carries no transaction data: it is left out of its option and the user chooses
+  among the rest, if two or more remain (see
+  [Choosing Credentials For `multiple: true` Queries](#choosing-credentials-for-multiple-true-queries)).
+  Otherwise the wallet never offers an option with a blocked document removed
   (`PresentationInteractorImpl.onRequestReceived`). If the records cannot be read, the request fails
   rather than offer a blocked document. The Digital Credentials API registrations leave them out;
-  the extension declines a request that would include one, when it loads and again on Accept, and
-  declines when the records cannot be read (`WalletKitController.reconcileRegistrations`,
+  the extension leaves out every option that would include one, declines the request when none is
+  left, checks the selected option again on Accept, and declines when the records cannot be read
+  (`WalletKitController.reconcileRegistrations`, `DocumentProviderPolicy.options`,
   `DocumentProviderPolicy.checkRequest`). The documents list, the details screen and the issuer card
   show a suspended document as suspended and the others as revoked; the list's "Revoked" filter
   lists all of them.
@@ -2835,6 +2879,8 @@ Before release candidate approval, test:
 * Incorrect PIN attempts and lockout; a change of the device date during a lockout (no effect) and a restart during
   one (it begins again).
 * A request with transaction data: every entry is shown before Share; one that cannot be shown in full is declined.
+* A `multiple: true` request with two or more matches: none ticked, Share disabled until one is; only the ticked
+  documents reach the verifier and the success screen; a blocked match is left out.
 * A response that fails to send, then Back on the request screen: the verifier gets no second answer, and the history
   keeps the first result.
 * Biometric enablement (asks for the PIN first) and disablement (PIN or biometric); Back from the check changes
@@ -2853,8 +2899,9 @@ Before release candidate approval, test:
 * An offer from an issuer that is not configured refused; a partial issuance naming the documents not added.
 * The portrait notice, and Share or Accept asking for confirmation.
 * "Allow document requests from apps and websites (DC API)" off: registrations withdrawn, the extension declines.
-* A DC API request for claims that two documents of the same type hold between them: each document is sent with only
-  the claims the sheet showed for it.
+* A DC API request while the wallet holds two documents of a requested type: the sheet offers each as an option, the
+  first selected, and the verifier receives only the selected one, with the claims the sheet showed; the portrait
+  notice and Accept's confirmation follow the selected option.
 * A proximity request that several document sets satisfy offers the choice.
 * A BLE reader whose authentication fails is refused on the QR screen and receives nothing; a reader that sends no
   reader authentication raises the warning.
