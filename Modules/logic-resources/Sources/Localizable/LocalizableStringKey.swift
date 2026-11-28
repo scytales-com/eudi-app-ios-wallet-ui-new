@@ -104,7 +104,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case addDoc
   case filters
   case sortByIssuedDateSectionTitle
-  case showResults
+  case applyButton
   case welcomeBack([String])
   case pleaseWait
   case requestDataShareQuickPinCaption
@@ -159,6 +159,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case bleDisabledModalCaption
   case bleDisabledModalButton
   case requestDataNoDocument
+  case requestDataNoDetailsShared
   case issuanceDetailsDeletionTitle([String])
   case deleteDocument
   case removeFromWallet
@@ -188,8 +189,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case issuanceSuccessDeferredCaption([String])
   case pending
   case issuanceFailed
-  case deferredDocumentsIssuedModalTitle
-  case defferedDocumentsIssuedModalCaption
+  case deferredDocumentsIssuedAnnouncement([String])
   case retrieveLogs
   case qrScanInformativeText
   case unableToPresentAndShare

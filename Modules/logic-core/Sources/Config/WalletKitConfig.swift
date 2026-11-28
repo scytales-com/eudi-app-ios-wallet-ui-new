@@ -69,6 +69,10 @@ protocol WalletKitConfig: Sendable {
    * `revocationPolicy` is set on both trust sources, so that a library default does not change it:
    * `.disabled` for the development trust lists, `.ocspOnly` for the static fallback. Choose a
    * policy for production; see GO_LIVE Trust Store.
+   *
+   * The ETSI source's `loteSignerTrustAnchors` authenticate the lists' signer: a list whose signing
+   * certificate is not one of them and does not chain to one of them is rejected, and with none every
+   * list is rejected.
    */
   var trustConfiguration: TrustConfiguration { get }
 
@@ -105,6 +109,9 @@ protocol WalletKitConfig: Sendable {
   /// How long the factory reset waits for a background check under way to finish before it gives up without
   /// deleting anything, as the Android wallet's `workerStopTimeout`.
   var workerStopTimeoutSeconds: TimeInterval { get }
+
+  /// When deferred credentials are requested again.
+  var deferredIssuanceConfig: DeferredIssuanceConfig { get }
 
   /**
    * Configuration for document issuance, including default rules and specific overrides.
@@ -298,6 +305,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
       trustSource: .etsi(
         EtsiTrustSource(
           loteLocations: loteLocations,
+          loteSignerTrustAnchors: loteSignerTrustAnchors,
           contextTypeMappings: classifications,
           revocationPolicy: .disabled
         )
@@ -332,6 +340,13 @@ struct WalletKitConfigImpl: WalletKitConfig {
       "pidissuerca02_ut",
       "r45_staging"
     ].compactMap { loadCertificate($0) }
+  }
+
+  /// The certificates that authenticate the signer of the trusted lists that `trustConfiguration` fetches.
+  /// The development lists are signed under `pidissuerca02_eu`; use your scheme operator's list-signing
+  /// certificate in production (see GO_LIVE Trust Store).
+  var loteSignerTrustAnchors: [Data] {
+    ["pidissuerca02_eu"].compactMap { loadCertificate($0) }
   }
 
   var logFileName: String? {
@@ -373,7 +388,8 @@ struct WalletKitConfigImpl: WalletKitConfig {
         .other(formatType: "eu.europa.ec.eudi.hiid.1"),
         .other(formatType: "urn:eu.europa.ec.eudi:hiid:1"),
         .other(formatType: "eu.europa.ec.eudi.ehic.1"),
-        .other(formatType: "urn:eu.europa.ec.eudi:ehic:1")
+        .other(formatType: "urn:eu.europa.ec.eudi:ehic:1"),
+        .other(formatType: "urn:eudi:ehic:1")
       ],
       .SocialSecurity: [
         .other(formatType: "eu.europa.ec.eudi.pda1.1"),
@@ -401,6 +417,10 @@ struct WalletKitConfigImpl: WalletKitConfig {
 
   var workerStopTimeoutSeconds: TimeInterval {
     30
+  }
+
+  var deferredIssuanceConfig: DeferredIssuanceConfig {
+    DeferredIssuanceConfig(initialPollingDelaySeconds: 5, failureRetryDelaySeconds: 30)
   }
 
   var documentIssuanceConfig: DocumentIssuanceConfig {

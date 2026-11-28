@@ -284,6 +284,8 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "ble_disabled_modal_button")
     case .requestDataNoDocument:
       bundle.localizedString(forKey: "request_data_no_document")
+    case .requestDataNoDetailsShared:
+      bundle.localizedString(forKey: "request_data_no_details_shared")
     case .issuanceDetailsDeletionTitle(let args):
       bundle.localizedStringWithArguments(forKey: "issuance_details_doc_deletion_title", arguments: args)
     case .deleteDocument:
@@ -334,10 +336,8 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "issuance_failed")
     case .pending:
       bundle.localizedString(forKey: "pending")
-    case .deferredDocumentsIssuedModalTitle:
-      bundle.localizedString(forKey: "deferred_document_issued_modal_title")
-    case .defferedDocumentsIssuedModalCaption:
-      bundle.localizedString(forKey: "deferred_document_issued_modal_caption")
+    case .deferredDocumentsIssuedAnnouncement(let args):
+      bundle.localizedStringWithArguments(forKey: "deferred_documents_issued_announcement", arguments: args)
     case .retrieveLogs:
       bundle.localizedString(forKey: "retrieve_logs")
     case .qrScanInformativeText:
@@ -456,8 +456,8 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "filters")
     case .sortByIssuedDateSectionTitle:
       bundle.localizedString(forKey: "sort_by_issued_date")
-    case .showResults:
-      bundle.localizedString(forKey: "show_results")
+    case .applyButton:
+      bundle.localizedString(forKey: "apply_button")
     case .reset:
       bundle.localizedString(forKey: "reset")
     case .all:

@@ -14,11 +14,32 @@
  * governing permissions and limitations under the Licence.
  */
 import XCTest
+import EudiWalletKit
 import logic_business
 @testable import logic_core
 @testable import logic_test
 
 final class TestWalletKitConfig: EudiTest {
+
+  private actor StubTransactionLogger: TransactionLogger {
+    func log(transaction: TransactionEntry) async throws {}
+  }
+
+  func testDocumentsCategories_WhenTheEhicIsAnSdJwtVc_ThenItIsInHealth() {
+    // Given
+    let config = WalletKitConfigImpl(
+      configLogic: MockConfigLogic(),
+      transactionLogger: StubTransactionLogger(),
+      walletKitAttestationProvider: MockWalletKitAttestationProvider(),
+      prefsController: MockPrefsController()
+    )
+
+    // When
+    let health = config.documentsCategories[.Health] ?? []
+
+    // Then
+    XCTAssertTrue(health.contains(.other(formatType: "urn:eudi:ehic:1")))
+  }
 
   func testLogFileName_WhenTheBuildIsDebug_ThenWritesTheLogFile() {
     // When
@@ -34,5 +55,21 @@ final class TestWalletKitConfig: EudiTest {
 
     // Then
     XCTAssertNil(fileName)
+  }
+
+  func testDeferredIssuanceConfig_WhenNotOverridden_ThenWaitsFiveSecondsAndRetriesAfterThirty() {
+    // Given
+    let config = WalletKitConfigImpl(
+      configLogic: MockConfigLogic(),
+      transactionLogger: StubTransactionLogger(),
+      walletKitAttestationProvider: MockWalletKitAttestationProvider(),
+      prefsController: MockPrefsController()
+    )
+
+    // When
+    let deferredIssuanceConfig = config.deferredIssuanceConfig
+
+    // Then
+    XCTAssertEqual(deferredIssuanceConfig, DeferredIssuanceConfig(initialPollingDelaySeconds: 5, failureRetryDelaySeconds: 30))
   }
 }
